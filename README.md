@@ -4,8 +4,20 @@
 Tower defense 2D (PixiJS + React + Zustand). 4 torres (Arqueiro, Canhão, Gelo, Tesla), 7 tipos de inimigo
 (voador, curandeiro, blindado, chefe com fases), 10 ondas.
 
-**Atalhos:** 1-4 escolhem torre · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
+**Atalhos:** 1-5 escolhem torre · Q meteoro · W congelar · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
 M liga/desliga o som · R reinicia.
+
+## Etapa 7 — fases, gameplay e arte
+- **3 fases** (Trilha Inicial, Cânion de Cinzas, Fortaleza Gelada) com tema, obstáculos que bloqueiam construção,
+  dificuldade própria (vida/quantidade dos inimigos, ouro, vidas) e ondas geradas por `gerarOndas`. A Fortaleza
+  tem 14 ondas e **2 chefes**. Vencer libera a próxima; progresso (até 3 estrelas) salvo em `localStorage`.
+- **Nova torre:** Morteiro (alcance enorme, área grande, lento, só terrestres) com dois caminhos de upgrade.
+- **Habilidades ativas:** ☄ Meteoro (**Q**, mira no mapa, 40 s de recarga) e ❄ Congelar (**W**, 55 s).
+- **Arte procedural:** terreno gerado em canvas por fase (ruído em camadas, detalhes, trilha texturizada com
+  sombra e seixos, árvores/rochas/lagos/lava/cristais), vinheta, gradação de cor por tema (`ColorMatrixFilter`),
+  **bloom** aditivo com `BlurFilter`, luzes dinâmicas (projéteis, explosões, lava, torres), atmosfera animada
+  (vagalumes, brasas, neve), torres com mira rotativa e recuo, inimigos com sombreamento, olhos que seguem a
+  direção, asas animadas e chefe com aura. **Qualidade adaptativa:** se o FPS cai, bloom e gradação são desligados.
 
 ## Etapa 6 — polimento
 - **Menu principal** com fundo animado, Continuar / Novo jogo, Como jogar, Opções (volumes) e Sobre.

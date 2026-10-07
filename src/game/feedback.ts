@@ -71,14 +71,15 @@ function tratar(e: EventoJogo): void {
     case 'tiro': {
       audio.tocar('tiro_' + e.torre, rnd(-0.06, 0.06));
       const a = Math.atan2(e.para.y - e.de.y, e.para.x - e.de.x);
-      const cor = e.torre === 'gelo' ? 0xcaf0f8 : e.torre === 'tesla' ? 0xd0a0ff : e.torre === 'canhao' ? 0xf8961e : COR.ouro;
-      const n = e.torre === 'canhao' ? 6 : 3;
+      const cor = e.torre === 'gelo' ? 0xcaf0f8 : e.torre === 'tesla' ? 0xd0a0ff : (e.torre === 'canhao' || e.torre === 'morteiro') ? 0xf8961e : COR.ouro;
+      const n = e.torre === 'canhao' || e.torre === 'morteiro' ? 6 : 3;
       for (let i = 0; i < n; i++) {
         const d = a + rnd(-0.35, 0.35);
         const v = rnd(60, 150);
         emitirParticula({ x: e.de.x + Math.cos(a) * 14, y: e.de.y + Math.sin(a) * 14, vx: Math.cos(d) * v, vy: Math.sin(d) * v, cor, tam: rnd(1.5, 3), ttl: rnd(0.12, 0.25) });
       }
       if (e.torre === 'canhao') tremer(0.8);
+      if (e.torre === 'morteiro') tremer(1.2);
       break;
     }
     case 'acerto':
@@ -136,6 +137,20 @@ function tratar(e: EventoJogo): void {
       anel(e.pos, 90, COR.inimigoElite, 0.6);
       explodir(e.pos, 30, COR.inimigoElite, 220, 4, 0.7);
       tremer(9);
+      break;
+    case 'meteoro':
+      audio.tocar('meteoro');
+      explodir(e.pos, 60, 0xff6b1a, 300, 5, 0.9, 120);
+      explodir(e.pos, 30, 0xffd60a, 220, 3, 0.6, 60);
+      explodir(e.pos, 20, 0xffffff, 160, 2.5, 0.35, 0);
+      anel(e.pos, e.raio, 0xff6b1a, 0.6);
+      anel(e.pos, e.raio * 0.6, 0xffd60a, 0.45);
+      tremer(11);
+      break;
+    case 'congelar':
+      audio.tocar('congelar');
+      for (let i = 0; i < 70; i++) emitirParticula({ x: rnd(0, 960), y: rnd(0, 540), vx: rnd(-20, 20), vy: rnd(10, 60), cor: i % 3 ? 0xcaf0f8 : 0xffffff, tam: rnd(2, 4), ttl: rnd(0.6, 1.4), atrito: 0.4 });
+      tremer(3);
       break;
     case 'vitoria':
       audio.tocar('vitoria');

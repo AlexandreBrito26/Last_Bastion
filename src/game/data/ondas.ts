@@ -29,3 +29,18 @@ export const ONDAS: DefOnda[] = [
   { bonus: 80, grupos: [{ inimigo: 'tanque', quantidade: 6, intervalo: 2 }, { inimigo: 'voador', quantidade: 8, intervalo: 0.9, atraso: 3 }, { inimigo: 'curandeiro', quantidade: 4, intervalo: 2.5 }] },
   { bonus: 0, grupos: [{ inimigo: 'chefe', quantidade: 1, intervalo: 0 }, { inimigo: 'basico', quantidade: 12, intervalo: 0.8, atraso: 3 }, { inimigo: 'rapido', quantidade: 10, intervalo: 0.5, atraso: 10 }] },
 ];
+
+const escalar = (w: DefOnda, q: number): DefOnda => ({
+  bonus: Math.round(w.bonus * (1 + (q - 1) * 0.6)),
+  grupos: w.grupos.map((g) => ({ ...g, quantidade: Math.max(1, Math.round(g.quantidade * q)) })),
+});
+
+/** Monta as ondas de uma fase: base escalada + ondas extras + onda final com chefe(s). */
+export function gerarOndas(cfg: { qtdMult: number; extras: DefOnda[]; chefes: number }): DefOnda[] {
+  const meio = ONDAS.slice(0, ONDAS.length - 1).map((w) => escalar(w, cfg.qtdMult));
+  const final = escalar(ONDAS[ONDAS.length - 1], cfg.qtdMult);
+  // o chefe não deve ter a quantidade escalada
+  final.grupos[0] = { ...ONDAS[ONDAS.length - 1].grupos[0] };
+  if (cfg.chefes > 1) final.grupos.push({ inimigo: 'chefe', quantidade: cfg.chefes - 1, intervalo: 14, atraso: 16 });
+  return [...meio, ...cfg.extras, final];
+}

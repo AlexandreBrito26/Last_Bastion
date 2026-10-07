@@ -12,6 +12,8 @@ export type EventoJogo =
   | { t: 'vender'; pos: Vec; ouro: number }
   | { t: 'onda'; numero: number; chefe: boolean }
   | { t: 'faseChefe'; pos: Vec }
+  | { t: 'meteoro'; pos: Vec; raio: number }
+  | { t: 'congelar' }
   | { t: 'vitoria' }
   | { t: 'derrota' }
   | { t: 'erro' }

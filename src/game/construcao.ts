@@ -26,6 +26,9 @@ export function posicaoValida(m: Mundo, mapa: Mapa, pos: Vec): boolean {
   for (let i = 0; i < wp.length - 1; i++) {
     if (distSegmento(pos, wp[i], wp[i + 1]) < mapa.larguraTrilha / 2 + RAIO_TORRE) return false;
   }
+  for (const o of mapa.obstaculos) {
+    if (Math.hypot(o.x - pos.x, o.y - pos.y) < o.r + RAIO_TORRE * 0.6) return false;
+  }
   for (const t of m.torres) {
     if (Math.hypot(t.pos.x - pos.x, t.pos.y - pos.y) < RAIO_TORRE * 2) return false;
   }

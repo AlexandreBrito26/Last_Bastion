@@ -141,6 +141,22 @@ class Audio {
         this.tom(180, 0.14, { tipo: 'sawtooth', para: 900 * v, vol: 0.07 });
         this.ruido(0.12, 'bandpass', 2200, 0.1);
         break;
+      case 'tiro_morteiro':
+        if (!this.livre(nome, 120)) return;
+        this.tom(110, 0.3, { para: 34, vol: 0.34 });
+        this.ruido(0.25, 'lowpass', 700, 0.2, 120);
+        this.tom(520, 0.18, { tipo: 'triangle', para: 160, vol: 0.06, atraso: 0.05 });
+        break;
+      case 'meteoro':
+        this.tom(900, 0.5, { tipo: 'sawtooth', para: 90, vol: 0.18 });
+        this.ruido(1.0, 'lowpass', 2600, 0.55, 70, 0.35);
+        this.tom(70, 0.9, { para: 26, vol: 0.5, atraso: 0.35 });
+        break;
+      case 'congelar':
+        this.tom(1400, 0.6, { para: 380, vol: 0.12, ataque: 0.05 });
+        this.tom(2100, 0.5, { para: 700, vol: 0.06, ataque: 0.05 });
+        this.ruido(0.5, 'highpass', 4000, 0.1, 1200);
+        break;
       case 'acerto':
         if (!this.livre(nome, 35)) return;
         this.tom(260 * v, 0.045, { tipo: 'square', vol: 0.04 });

@@ -86,6 +86,8 @@ export interface Mundo {
   temporizador: number; // contagem da pausa
   tempoOnda: number;
   fila: EventoSpawn[];
+  /** tempo de jogo em que cada habilidade fica pronta */
+  hab: { meteoro: number; congelar: number };
 }
 
 export function criarMundo(): Mundo {
@@ -101,5 +103,6 @@ export function criarMundo(): Mundo {
     temporizador: PAUSA_INICIAL,
     tempoOnda: 0,
     fila: [],
+    hab: { meteoro: 20, congelar: 30 },
   };
 }

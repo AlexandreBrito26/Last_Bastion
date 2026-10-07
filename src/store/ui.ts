@@ -5,6 +5,23 @@ import type { Fase } from '../game/estado';
 export const OURO_INICIAL = 180;
 export const VIDAS_INICIAIS = 20;
 
+const CHAVE_PROG = 'last-bastion:progresso';
+function lerProgresso(): Record<string, number> {
+  try {
+    const b = localStorage.getItem(CHAVE_PROG);
+    return b ? (JSON.parse(b) as Record<string, number>) : {};
+  } catch {
+    return {};
+  }
+}
+function gravarProgresso(p: Record<string, number>): void {
+  try {
+    localStorage.setItem(CHAVE_PROG, JSON.stringify(p));
+  } catch {
+    /* ignora */
+  }
+}
+
 export type Tela = 'menu' | 'jogo';
 
 export interface Aviso { id: number; texto: string; chefe: boolean }
@@ -45,6 +62,14 @@ interface EstadoUI {
   selecionadaId: number | null;
   velocidade: 1 | 2 | 3;
   pausado: boolean;
+  mapaId: string;
+  vidasIniciais: number;
+  progresso: Record<string, number>; // estrelas por fase
+  habilidade: 'meteoro' | null; // habilidade em modo de mira
+  definirHabilidade: (h: 'meteoro' | null) => void;
+  registrarVitoria: () => void;
+  previaToque: boolean; // prévia posicionada por toque, aguardando confirmar
+  definirPreviaToque: (v: boolean) => void;
   rev: number; // incrementa quando o mundo muda de um jeito que a UI deve refletir
   ganharOuro: (n: number) => void;
   gastarOuro: (n: number) => boolean;
@@ -61,7 +86,7 @@ interface EstadoUI {
   mostrarAviso: (texto: string, chefe: boolean) => void;
   registrarDano: () => void;
   bump: () => void;
-  reiniciar: () => void;
+  reiniciar: (mapaId: string, ouro: number, vidas: number) => void;
 }
 
 export const useUI = create<EstadoUI>((set, get) => ({
@@ -80,6 +105,21 @@ export const useUI = create<EstadoUI>((set, get) => ({
   selecionadaId: null,
   velocidade: 1,
   pausado: false,
+  mapaId: 'floresta',
+  vidasIniciais: VIDAS_INICIAIS,
+  progresso: lerProgresso(),
+  habilidade: null,
+  definirHabilidade: (h) => set({ habilidade: h, construirId: null, selecionadaId: null, previaToque: false }),
+  registrarVitoria: () => {
+    const st = get();
+    const f = st.vidas / st.vidasIniciais;
+    const estrelas = f >= 0.75 ? 3 : f >= 0.4 ? 2 : 1;
+    const progresso = { ...st.progresso, [st.mapaId]: Math.max(st.progresso[st.mapaId] ?? 0, estrelas) };
+    gravarProgresso(progresso);
+    set({ progresso });
+  },
+  previaToque: false,
+  definirPreviaToque: (v) => set({ previaToque: v }),
   rev: 0,
   ganharOuro: (n) => set((s) => ({ ouro: s.ouro + n })),
   gastarOuro: (n) => {
@@ -93,8 +133,8 @@ export const useUI = create<EstadoUI>((set, get) => ({
     const s = get();
     if (s.fase !== f || s.contagem !== contagem) set({ fase: f, contagem });
   },
-  definirConstruir: (id) => set({ construirId: id, selecionadaId: null }),
-  selecionarTorre: (id) => set({ selecionadaId: id, construirId: null }),
+  definirConstruir: (id) => set({ construirId: id, selecionadaId: null, previaToque: false, habilidade: null }),
+  selecionarTorre: (id) => set({ selecionadaId: id, construirId: null, habilidade: null }),
   definirVelocidade: (v) => set({ velocidade: v }),
   alternarPausa: () => set((s) => ({ pausado: !s.pausado })),
   definirTela: (t) => set((s) => ({ tela: t, jogoIniciado: s.jogoIniciado || t === 'jogo', construirId: null })),
@@ -109,16 +149,20 @@ export const useUI = create<EstadoUI>((set, get) => ({
   mostrarAviso: (texto, chefe) => set((s) => ({ aviso: { id: (s.aviso?.id ?? 0) + 1, texto, chefe } })),
   registrarDano: () => set((s) => ({ pulsoDano: s.pulsoDano + 1 })),
   bump: () => set((s) => ({ rev: s.rev + 1 })),
-  reiniciar: () =>
+  reiniciar: (mapaId, ouro, vidas) =>
     set({
-      ouro: OURO_INICIAL,
-      vidas: VIDAS_INICIAIS,
+      mapaId,
+      vidasIniciais: vidas,
+      habilidade: null,
+      ouro,
+      vidas,
       onda: 1,
       fase: 'pausa',
       contagem: 0,
       construirId: null,
       selecionadaId: null,
       pausado: false,
+      previaToque: false,
       aviso: null,
       pulsoDano: 0,
     }),

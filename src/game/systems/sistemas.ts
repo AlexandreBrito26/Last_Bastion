@@ -1,7 +1,8 @@
 import { dist, type Vec } from '../../core/vec';
 import { INIMIGOS } from '../data/inimigos';
 import { DECAIMENTO_SALTO, DUR_QUEBRA, DUR_QUEIMA, RAIO_SALTO, statsTorre, TORRES, type Stats } from '../data/torres';
-import { fatorVida, ONDAS, PAUSA_ENTRE_ONDAS } from '../data/ondas';
+import { fatorVida, PAUSA_ENTRE_ONDAS } from '../data/ondas';
+import { ref } from '../ref';
 import type { Mapa } from '../data/mapas';
 import type { EfeitoProj, Inimigo, Mundo, Projetil, Torre } from '../estado';
 import { useUI } from '../../store/ui';
@@ -9,7 +10,7 @@ import { emitir } from '../../core/eventos';
 import { COR } from '../../core/cores';
 
 function iniciarOnda(m: Mundo): void {
-  const def = ONDAS[m.ondaIdx];
+  const def = ref.ondas[m.ondaIdx];
   m.fila = [];
   for (const g of def.grupos) {
     for (let i = 0; i < g.quantidade; i++) {
@@ -19,7 +20,7 @@ function iniciarOnda(m: Mundo): void {
   m.fila.sort((x, y) => x.em - y.em);
   m.tempoOnda = 0;
   m.fase = 'onda';
-  useUI.getState().definirOnda(m.ondaIdx + 1, ONDAS.length);
+  useUI.getState().definirOnda(m.ondaIdx + 1, ref.ondas.length);
   useUI.getState().definirFase('onda');
   emitir({ t: 'onda', numero: m.ondaIdx + 1, chefe: def.grupos.some((g) => INIMIGOS[g.inimigo].chefe) });
 }
@@ -31,8 +32,8 @@ export function criarInimigo(m: Mundo, mapa: Mapa, defId: string, pos?: Vec, ind
     id: m.proximoId++,
     defId: def.id,
     pos: { x: p0.x, y: p0.y },
-    vida: def.vida * fatorVida(m.ondaIdx),
-    vidaMax: def.vida * fatorVida(m.ondaIdx),
+    vida: def.vida * fatorVida(m.ondaIdx) * mapa.vidaMult,
+    vidaMax: def.vida * fatorVida(m.ondaIdx) * mapa.vidaMult,
     // voador vai em linha reta até o último waypoint
     indiceWp: indiceWp ?? (def.voador ? mapa.waypoints.length - 1 : 1),
     vivo: true,
@@ -77,11 +78,12 @@ export function sistemaOndas(m: Mundo, mapa: Mapa, dt: number): void {
     criarInimigo(m, mapa, m.fila.shift()!.defId);
   }
   if (m.fila.length === 0 && !m.inimigos.some((e) => e.vivo)) {
-    ui.ganharOuro(ONDAS[m.ondaIdx].bonus);
+    ui.ganharOuro(ref.ondas[m.ondaIdx].bonus);
     m.ondaIdx++;
-    if (m.ondaIdx >= ONDAS.length) {
+    if (m.ondaIdx >= ref.ondas.length) {
       m.fase = 'vitoria';
       ui.definirFase('vitoria');
+      ui.registrarVitoria();
       emitir({ t: 'vitoria' });
     } else {
       m.fase = 'pausa';

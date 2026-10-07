@@ -34,15 +34,20 @@ export const ESTILOS = `
 @media (pointer: coarse) { .hud-btn:hover:not(:disabled), .lb-btn:hover:not(:disabled) { transform: none; filter: none; } }
 .compacto .hud-btn { padding: 5px 8px !important; font-size: 12px !important; min-height: 32px; }
 .compacto .hud-dica { display: none; }
+.compacto .hud-hab-txt { font-size: 11px; }
 .compacto .hud-painel { width: 190px !important; max-height: 78%; overflow-y: auto; padding: 8px !important; }
 .compacto .menu-titulo { font-size: 38px !important; letter-spacing: 4px !important; }
 .compacto .menu-sub { display: none; }
 .compacto .menu-col { gap: 10px !important; }
 .compacto .menu-btn { padding: 8px 14px !important; font-size: 15px !important; width: 240px !important; }
+.compacto .fase-desc { display: none; }
+.compacto .fase-card { padding: 5px !important; max-width: 200px !important; flex-basis: 150px !important; }
+.lb-btn.fase-card:hover:not(:disabled) { transform: translateY(-4px) scale(1.02); }
 .compacto .menu-rodape { display: none; }
 .compacto .menu-info { max-height: 80%; overflow-y: auto; }
 .compacto .hud-topo { gap: 8px !important; font-size: 13px; top: max(4px, env(safe-area-inset-top)) !important; left: max(6px, env(safe-area-inset-left)) !important; right: max(6px, env(safe-area-inset-right)) !important; }
 .compacto .hud-loja { gap: 5px !important; padding: 6px !important; left: max(6px, env(safe-area-inset-left)) !important; bottom: max(6px, env(safe-area-inset-bottom)) !important; }
+.compacto .hud-painel .hud-btn { min-height: 36px; }
 .compacto .hud-fim-titulo { font-size: 36px !important; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }

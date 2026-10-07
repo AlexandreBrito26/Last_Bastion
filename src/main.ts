@@ -2,10 +2,9 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { audio } from './core/audio';
 import { LoopFixo } from './core/loop';
-import { chamarOnda, construir } from './game/acoes';
+import { chamarOnda, construir, habPronta, usarCongelar, usarMeteoro } from './game/acoes';
 import { torreEm } from './game/construcao';
 import { MAPA_1 } from './game/data/mapas';
-import { ONDAS } from './game/data/ondas';
 import { TORRES } from './game/data/torres';
 import { atualizarFeedback, iniciarFeedback } from './game/feedback';
 import { novaPartida } from './game/partida';
@@ -64,14 +63,26 @@ async function main(): Promise<void> {
   ui.style.cssText = 'position:absolute;inset:0;pointer-events:none';
   host.appendChild(ui);
   createRoot(ui).render(createElement(App));
-  useUI.getState().definirOnda(1, ONDAS.length);
 
   const canvas = render.app.canvas;
+  // No toque, a prévia fica acima do dedo para não ser coberta por ele.
+  const DEDO = 44;
   const ponto = (e: PointerEvent) => {
     const r = canvas.getBoundingClientRect();
-    return { x: ((e.clientX - r.left) * ref.mapa.largura) / r.width, y: ((e.clientY - r.top) * ref.mapa.altura) / r.height };
+    const x = ((e.clientX - r.left) * ref.mapa.largura) / r.width;
+    let y = ((e.clientY - r.top) * ref.mapa.altura) / r.height;
+    const us = useUI.getState();
+    if (e.pointerType !== 'mouse' && (us.construirId || us.habilidade)) y -= DEDO;
+    return { x, y };
   };
-  canvas.addEventListener('pointermove', (e) => { entrada.mouse = ponto(e); });
+  const vibrar = (ms: number | number[]) => { try { navigator.vibrate?.(ms); } catch { /* sem suporte */ } };
+  let arrastando = false;
+  canvas.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse' && !arrastando) return;
+    entrada.mouse = ponto(e);
+  });
+  canvas.addEventListener('pointerup', () => { arrastando = false; });
+  canvas.addEventListener('pointercancel', () => { arrastando = false; });
   canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') entrada.mouse = null; });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   canvas.addEventListener('pointerdown', (e) => {
@@ -79,28 +90,42 @@ async function main(): Promise<void> {
     if (s.tela !== 'jogo') return;
     if (e.button === 2) { s.definirConstruir(null); return; }
     const p = ponto(e);
+    if (s.habilidade === 'meteoro' && !s.construirId) {
+      if (e.pointerType === 'mouse') { if (usarMeteoro(p)) vibrar(40); return; }
+      canvas.setPointerCapture(e.pointerId);
+      arrastando = true;
+      entrada.mouse = p;
+      s.definirPreviaToque(true);
+      return;
+    }
     if (s.construirId) {
-      if (e.pointerType === 'mouse') { construir(s.construirId, p); return; }
-      // Toque: 1º toque posiciona a prévia, tocar de novo perto dela confirma.
-      const prev = entrada.mouse;
-      if (prev && Math.hypot(prev.x - p.x, prev.y - p.y) < 36 && confirmar) {
-        construir(s.construirId, prev);
-        confirmar = false;
-        entrada.mouse = null;
-      } else {
-        entrada.mouse = p;
-        confirmar = true;
-      }
+      if (e.pointerType === 'mouse') { if (construir(s.construirId, p)) vibrar(0); return; }
+      // Toque: arraste para posicionar a prévia; confirme com o botão da tela.
+      canvas.setPointerCapture(e.pointerId);
+      arrastando = true;
+      entrada.mouse = p;
+      s.definirPreviaToque(true);
       return;
     }
     const alvo = torreEm(ref.mundo, p);
     if (alvo) audio.tocar('clique');
     s.selecionarTorre(alvo?.id ?? null);
   });
-  let confirmar = false;
   useUI.subscribe((st, ant) => {
-    if (st.construirId !== ant.construirId) { confirmar = false; entrada.mouse = null; }
+    if (st.construirId !== ant.construirId || st.habilidade !== ant.habilidade) entrada.mouse = null;
+    if (st.pulsoDano !== ant.pulsoDano) vibrar([60, 40, 60]);
+    if (st.tela === 'jogo' && ant.tela !== 'jogo') void travarTela();
   });
+
+  // Mantém a tela acesa durante o jogo.
+  let lock: { release: () => Promise<void> } | null = null;
+  async function travarTela(): Promise<void> {
+    try {
+      const wl = (navigator as unknown as { wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> } }).wakeLock;
+      if (wl && !lock) lock = await wl.request('screen');
+    } catch { lock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { lock = null; if (useUI.getState().tela === 'jogo') void travarTela(); } });
 
   window.addEventListener('keydown', (ev) => {
     const k = ev.key.toLowerCase();
@@ -112,6 +137,11 @@ async function main(): Promise<void> {
     if (s.tela !== 'jogo') return;
     if (k === 'r') {
       novaPartida();
+    } else if (k === 'q') {
+      if (s.habilidade) s.definirHabilidade(null);
+      else if (habPronta('meteoro')) s.definirHabilidade('meteoro');
+    } else if (k === 'w') {
+      if (usarCongelar()) vibrar(30);
     } else if (k === 'enter') {
       chamarOnda();
     } else if (k >= '1' && k <= '9') {
@@ -119,7 +149,8 @@ async function main(): Promise<void> {
       const id = ids[Number(k) - 1];
       if (id) s.definirConstruir(s.construirId === id ? null : id);
     } else if (k === 'escape') {
-      if (s.construirId || s.selecionadaId !== null) s.definirConstruir(null);
+      if (s.habilidade) s.definirHabilidade(null);
+      else if (s.construirId || s.selecionadaId !== null) s.definirConstruir(null);
       else s.definirTela('menu');
     } else if (k === ' ') {
       ev.preventDefault();

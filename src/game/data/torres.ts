@@ -96,6 +96,15 @@ export const TORRES: Record<string, DefTorre> = {
       B: { nome: 'Atordoa', desc: 'Atordoa 0,5s por golpe, +20% dano', custo: 110, mod: { atordoa: 0.5, dano: 1.2 } },
     },
   },
+  morteiro: {
+    ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
+    custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 75, velProjetil: 230, area: 70, cor: 0xf8961e,
+    nivel2: { nome: 'Cargas pesadas', desc: '+60% de dano', custo: 90, mod: { dano: 1.6 } },
+    nivel3: {
+      A: { nome: 'Salva dupla', desc: '+80% de cadência', custo: 130, mod: { cadencia: 1.8 } },
+      B: { nome: 'Napalm', desc: 'Queima 22 de dano/s, +25% de raio', custo: 130, mod: { queima: 22, area: 1.25 } },
+    },
+  },
 };
 
 export const PRIORIDADES = ['primeiro', 'ultimo', 'forte', 'perto'] as const;

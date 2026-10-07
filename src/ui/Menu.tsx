@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { audio } from '../core/audio';
 import { COR } from '../core/cores';
-import { MAPA_1 } from '../game/data/mapas';
-import { ONDAS } from '../game/data/ondas';
+import { MAPA_1, MAPAS, type Mapa } from '../game/data/mapas';
+import { gerarOndas } from '../game/data/ondas';
+import { TEMAS } from '../render/arte';
 import { TORRES } from '../game/data/torres';
 import { novaPartida } from '../game/partida';
 import { useUI } from '../store/ui';
@@ -24,7 +25,66 @@ const botaoMenu = (primario = false): CSSProperties => ({
   cursor: 'pointer',
 });
 
-type Painel = null | 'como' | 'sobre' | 'opcoes';
+type Painel = null | 'como' | 'sobre' | 'opcoes' | 'fases';
+
+const COR_OBST: Record<string, string> = { arvore: '#2f8a46', pinheiro: '#1f5d4a', rocha: '#8d949a', lago: '#2f8fb5', lava: '#ff6a10', cristal: '#6fd6f0' };
+
+function Previa({ mapa }: { mapa: Mapa }) {
+  const t = TEMAS[mapa.tema];
+  const pts = mapa.waypoints.map((p) => `${p.x},${p.y}`).join(' ');
+  const id = `lb-prev-${mapa.id}`;
+  return (
+    <svg viewBox={`0 0 ${mapa.largura} ${mapa.altura}`} style={{ width: '100%', display: 'block', borderRadius: 8 }}>
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor={t.base1} /><stop offset="1" stopColor={t.base2} /></linearGradient>
+      </defs>
+      <rect width="100%" height="100%" fill={`url(#${id})`} />
+      <polyline points={pts} fill="none" stroke={t.borda} strokeWidth={mapa.larguraTrilha + 10} strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={pts} fill="none" stroke={t.trilha} strokeWidth={mapa.larguraTrilha} strokeLinejoin="round" strokeLinecap="round" />
+      {mapa.obstaculos.map((o, i) => <circle key={i} cx={o.x} cy={o.y} r={o.r} fill={COR_OBST[o.tipo]} opacity=".9" />)}
+    </svg>
+  );
+}
+
+function Fases({ fechar }: { fechar: () => void }) {
+  const s = useUI();
+  const iniciar = (m: Mapa) => {
+    audio.destravar();
+    audio.tocar('clique');
+    novaPartida(m);
+    useUI.getState().definirTela('jogo');
+  };
+  return (
+    <div style={{ width: 'min(860px, 94%)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', animation: 'lb-entrar .25s both' }}>
+      <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Escolha a fase</div>
+      <div style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
+        {MAPAS.map((m, i) => {
+          const liberada = i === 0 || (s.progresso[MAPAS[i - 1].id] ?? 0) > 0;
+          const est = s.progresso[m.id] ?? 0;
+          return (
+            <button
+              key={m.id}
+              disabled={!liberada}
+              className="lb-btn fase-card"
+              onClick={() => iniciar(m)}
+              style={{ flex: '1 1 220px', maxWidth: 270, padding: 8, textAlign: 'left', border: '1px solid #2c4b57', borderRadius: 12, background: '#0f2027dd', color: hex(COR.ui), cursor: liberada ? 'pointer' : 'not-allowed', opacity: liberada ? 1 : 0.5, position: 'relative' }}
+            >
+              <Previa mapa={m} />
+              {!liberada && <div style={{ position: 'absolute', top: 8, left: 8, right: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000a', borderRadius: 8, font: '700 28px system-ui' }}>🔒</div>}
+              <div style={{ font: '700 15px system-ui, sans-serif', marginTop: 8 }}>{m.nome}</div>
+              <div className="fase-desc" style={{ font: '400 12px/1.4 system-ui, sans-serif', opacity: 0.75, minHeight: 34 }}>{m.desc}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', font: '600 12px system-ui, sans-serif', marginTop: 4 }}>
+                <span>{gerarOndas(m).length} ondas{m.chefes > 1 ? ` · ${m.chefes} chefes` : ''}</span>
+                <span style={{ color: hex(COR.ouro), letterSpacing: 2 }}>{[1, 2, 3].map((n) => (n <= est ? '★' : '☆')).join('')}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: 'auto', textAlign: 'center' }} onClick={() => { audio.tocar('clique'); fechar(); }}>Voltar</button>
+    </div>
+  );
+}
 
 /** Fundo animado: a trilha do mapa com inimigos andando e torres decorativas. */
 function Fundo() {
@@ -88,14 +148,14 @@ function Opcoes() {
   );
 }
 
-function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null>; fechar: () => void }) {
+function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null | 'fases'>; fechar: () => void }) {
   return (
     <div className="menu-info" style={{ width: 460, maxWidth: '90%', background: '#0f2027ee', border: `1px solid #2c4b57`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
       {tipo === 'como' ? (
         <>
           <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Como jogar</div>
           <div style={{ font: '400 14px/1.55 system-ui, sans-serif' }}>
-            Construa torres ao lado da trilha para impedir que os inimigos cheguem ao fim. Cada inimigo morto rende ouro; cada um que passa custa vidas. Sobreviva às {ONDAS.length} ondas.
+            Construa torres ao lado da trilha para impedir que os inimigos cheguem ao fim. Cada inimigo morto rende ouro; cada um que passa custa vidas. Sobreviva a todas as ondas de cada fase — vença para liberar a próxima e ganhar até 3 estrelas.
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, font: '400 13px system-ui, sans-serif' }}>
             {Object.values(TORRES).map((d, i) => (
@@ -105,7 +165,7 @@ function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null>; fechar: () 
             ))}
           </div>
           <div style={{ font: '400 13px/1.6 system-ui, sans-serif', opacity: 0.85 }}>
-            <b>Celular:</b> toque numa torre da loja, toque no mapa para posicionar e toque de novo para confirmar. Toque numa torre para melhorar ou vender.<br /><b>Teclado:</b> 1–4 escolhem torre · Esc cancela · Espaço pausa · Enter chama a onda · M som · R reinicia
+            <b>Habilidades:</b> ☄ <b>Meteoro</b> (Q) causa dano enorme numa área; ❄ <b>Congelar</b> (W) paralisa todos os inimigos por instantes. Ambas têm recarga.<br /><b>Celular:</b> toque numa torre da loja, toque no mapa para posicionar e toque de novo para confirmar. Toque numa torre para melhorar ou vender.<br /><b>Teclado:</b> 1–4 escolhem torre · Esc cancela · Espaço pausa · Enter chama a onda · M som · R reinicia
           </div>
         </>
       ) : tipo === 'opcoes' ? (
@@ -128,10 +188,7 @@ export function Menu() {
   const [painel, setPainel] = useState<Painel>(null);
   const emAndamento = s.jogoIniciado && s.fase !== 'vitoria' && s.fase !== 'derrota';
 
-  const novoJogo = () => {
-    novaPartida();
-    useUI.getState().definirTela('jogo');
-  };
+  const novoJogo = () => setPainel('fases');
   const continuar = () => useUI.getState().definirTela('jogo');
   const jogar = emAndamento ? continuar : novoJogo;
 
@@ -155,8 +212,10 @@ export function Menu() {
           <div className="menu-sub" style={{ font: '500 15px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 4 }}>DEFENDA O ÚLTIMO REDUTO</div>
         </div>
 
-        {painel ? (
-          <PainelInfo tipo={painel} fechar={() => setPainel(null)} />
+        {painel === 'fases' ? (
+          <Fases fechar={() => setPainel(null)} />
+        ) : painel ? (
+          <PainelInfo tipo={painel as Exclude<Painel, null | 'fases'>} fechar={() => setPainel(null)} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .3s both' }}>
             <button className="lb-btn menu-btn" style={botaoMenu(true)} onClick={() => { audio.destravar(); audio.tocar('clique'); jogar(); }}>

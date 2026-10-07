@@ -5,6 +5,7 @@ import { custoTorre, posicaoValida } from './construcao';
 import { ref } from './ref';
 import { useUI } from '../store/ui';
 import { emitir } from '../core/eventos';
+import { aplicarDano } from './systems/sistemas';
 
 export function construir(defId: string, pos: Vec): boolean {
   const def = TORRES[defId];
@@ -75,4 +76,45 @@ export function chamarOnda(): void {
   useUI.getState().ganharOuro(Math.floor(m.temporizador));
   m.temporizador = 0;
   emitir({ t: 'clique' });
+}
+
+// ---------- habilidades ativas ----------
+export const HAB = {
+  meteoro: { recarga: 40, dano: 180, raio: 78 },
+  congelar: { recarga: 55, atordoa: 2.5, lentDur: 4 },
+} as const;
+
+export const habPronta = (nome: 'meteoro' | 'congelar'): boolean => !!ref.mundo && ref.mundo.tempo >= ref.mundo.hab[nome];
+export const habRestante = (nome: 'meteoro' | 'congelar'): number => Math.max(0, ref.mundo.hab[nome] - ref.mundo.tempo);
+
+export function usarMeteoro(pos: Vec): boolean {
+  const m = ref.mundo;
+  if (!habPronta('meteoro') || m.fase === 'vitoria' || m.fase === 'derrota') { emitir({ t: 'erro' }); return false; }
+  m.hab.meteoro = m.tempo + HAB.meteoro.recarga;
+  for (const e of m.inimigos) {
+    if (e.vivo && Math.hypot(e.pos.x - pos.x, e.pos.y - pos.y) <= HAB.meteoro.raio) {
+      aplicarDano(e, HAB.meteoro.dano, true);
+      e.queimaDps = Math.max(e.queimaDps, 15);
+      e.queimaTempo = Math.max(e.queimaTempo, 3);
+    }
+  }
+  emitir({ t: 'meteoro', pos: { x: pos.x, y: pos.y }, raio: HAB.meteoro.raio });
+  useUI.getState().definirHabilidade(null);
+  return true;
+}
+
+export function usarCongelar(): boolean {
+  const m = ref.mundo;
+  if (!habPronta('congelar') || m.fase === 'vitoria' || m.fase === 'derrota') { emitir({ t: 'erro' }); return false; }
+  m.hab.congelar = m.tempo + HAB.congelar.recarga;
+  for (const e of m.inimigos) {
+    if (!e.vivo) continue;
+    const chefe = e.defId === 'chefe';
+    if (chefe) { e.lentFator = 0.4; e.lentTempo = Math.max(e.lentTempo, HAB.congelar.lentDur); }
+    else e.atordTempo = Math.max(e.atordTempo, HAB.congelar.atordoa);
+    e.lentFator = chefe ? 0.4 : Math.min(e.lentFator, 0.5);
+    e.lentTempo = Math.max(e.lentTempo, HAB.congelar.lentDur);
+  }
+  emitir({ t: 'congelar' });
+  return true;
 }
