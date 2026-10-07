@@ -21,11 +21,44 @@ async function main(): Promise<void> {
   host.style.position = 'relative';
   raiz.appendChild(host);
 
+  // Ajusta o jogo (16:9) à janela, sem distorcer.
+  const ajustar = () => {
+    const proporcao = MAPA_1.largura / MAPA_1.altura;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const largura = Math.min(w, h * proporcao);
+    host.style.width = `${Math.floor(largura)}px`;
+    host.style.height = `${Math.floor(largura / proporcao)}px`;
+    document.documentElement.classList.toggle('compacto', h < 520 || w < 760);
+    giro.style.display = h > w && w < 700 ? 'flex' : 'none';
+  };
+
+  // Aviso para girar o aparelho em modo retrato.
+  const giro = document.createElement('div');
+  giro.style.cssText = 'position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0f2027;color:#e8f1f2;font:700 18px system-ui,sans-serif;text-align:center;padding:24px';
+  giro.innerHTML = '<div style="font-size:56px">&#x21BB;</div><div>Gire o aparelho para jogar na horizontal</div>';
+  document.body.appendChild(giro);
+
+  // Tela cheia (onde houver suporte) no primeiro toque.
+  const telaCheia = () => {
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen && window.matchMedia('(pointer: coarse)').matches) {
+      el.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+    }
+  };
+  window.addEventListener('pointerdown', () => { audio.destravar(); telaCheia(); }, { once: true });
+  window.addEventListener('resize', ajustar);
+  window.addEventListener('orientationchange', ajustar);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && useUI.getState().tela === 'jogo' && !useUI.getState().pausado) useUI.getState().alternarPausa();
+  });
+
   ref.mapa = MAPA_1;
   novaPartida();
   iniciarFeedback();
   const render = new Renderizador();
   await render.iniciar(host, ref.mapa);
+  ajustar();
 
   const ui = document.createElement('div');
   ui.style.cssText = 'position:absolute;inset:0;pointer-events:none';
@@ -39,17 +72,34 @@ async function main(): Promise<void> {
     return { x: ((e.clientX - r.left) * ref.mapa.largura) / r.width, y: ((e.clientY - r.top) * ref.mapa.altura) / r.height };
   };
   canvas.addEventListener('pointermove', (e) => { entrada.mouse = ponto(e); });
-  canvas.addEventListener('pointerleave', () => { entrada.mouse = null; });
+  canvas.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') entrada.mouse = null; });
   canvas.addEventListener('contextmenu', (e) => e.preventDefault());
   canvas.addEventListener('pointerdown', (e) => {
     const s = useUI.getState();
     if (s.tela !== 'jogo') return;
     if (e.button === 2) { s.definirConstruir(null); return; }
     const p = ponto(e);
-    if (s.construirId) { construir(s.construirId, p); return; }
+    if (s.construirId) {
+      if (e.pointerType === 'mouse') { construir(s.construirId, p); return; }
+      // Toque: 1º toque posiciona a prévia, tocar de novo perto dela confirma.
+      const prev = entrada.mouse;
+      if (prev && Math.hypot(prev.x - p.x, prev.y - p.y) < 36 && confirmar) {
+        construir(s.construirId, prev);
+        confirmar = false;
+        entrada.mouse = null;
+      } else {
+        entrada.mouse = p;
+        confirmar = true;
+      }
+      return;
+    }
     const alvo = torreEm(ref.mundo, p);
     if (alvo) audio.tocar('clique');
     s.selecionarTorre(alvo?.id ?? null);
+  });
+  let confirmar = false;
+  useUI.subscribe((st, ant) => {
+    if (st.construirId !== ant.construirId) { confirmar = false; entrada.mouse = null; }
   });
 
   window.addEventListener('keydown', (ev) => {

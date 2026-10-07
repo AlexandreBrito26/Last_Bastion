@@ -77,7 +77,7 @@ export function App() {
       )}
 
       {/* Barra superior */}
-      <div style={{ position: 'absolute', top: 8, left: 8, right: 8, display: 'flex', gap: 16, alignItems: 'center', textShadow: '0 1px 2px #000', animation: 'lb-descer .4s both' }}>
+      <div className="hud-topo" style={{ position: 'absolute', top: 8, left: 8, right: 8, display: 'flex', gap: 16, alignItems: 'center', textShadow: '0 1px 2px #000', animation: 'lb-descer .4s both' }}>
         <Contador rotulo="Ouro" valor={s.ouro} cor={hex(COR.ouro)} />
         <Contador rotulo="Vidas" valor={s.vidas} cor={hex(COR.vida)} animacao="lb-tremer .4s" alerta={s.vidas > 0 && s.vidas <= 5} />
         <span>Onda {s.onda}/{s.totalOndas}</span>
@@ -121,7 +121,7 @@ export function App() {
       )}
 
       {/* Loja */}
-      <div style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
+      <div className="hud-loja" style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
         {Object.values(TORRES).map((d) => {
           const custo = custoTorre(ref.mundo, d.id);
           const semOuro = s.ouro < custo;
@@ -137,14 +137,14 @@ export function App() {
             </button>
           );
         })}
-        <span style={{ fontWeight: 400, fontSize: 12, opacity: 0.7 }}>
-          {s.construirId ? 'Clique no mapa · Esc/botão direito cancela' : 'Escolha uma torre para construir'}
+        <span className="hud-dica" style={{ fontWeight: 400, fontSize: 12, opacity: 0.7 }}>
+          {s.construirId ? 'Toque no mapa e toque de novo para confirmar' : 'Escolha uma torre para construir'}
         </span>
       </div>
 
       {/* Painel da torre selecionada */}
       {sel && (
-        <div key={sel.id} style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
+        <div key={sel.id} className="hud-painel" style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
           {(() => {
             const def = TORRES[sel.defId];
             const st = statsTorre(sel);
@@ -199,7 +199,7 @@ export function App() {
       {/* Fim de jogo */}
       {fim && (
         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#0f2027cc', pointerEvents: 'auto', animation: 'lb-fim .5s both' }}>
-          <div style={{ font: '800 54px system-ui, sans-serif', letterSpacing: 6, color: s.fase === 'vitoria' ? hex(COR.ouro) : hex(COR.dano), textShadow: '0 0 24px currentColor' }}>
+          <div className="hud-fim-titulo" style={{ font: '800 54px system-ui, sans-serif', letterSpacing: 6, color: s.fase === 'vitoria' ? hex(COR.ouro) : hex(COR.dano), textShadow: '0 0 24px currentColor' }}>
             {s.fase === 'vitoria' ? 'VITÓRIA!' : 'DERROTA'}
           </div>
           <div style={{ font: '500 18px system-ui, sans-serif', opacity: 0.85 }}>

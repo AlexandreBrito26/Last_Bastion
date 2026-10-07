@@ -31,7 +31,11 @@ export class Renderizador {
       height: mapa.altura,
       background: COR.ceu,
       antialias: true,
+      resolution: Math.min(window.devicePixelRatio || 1, 2),
+      autoDensity: true,
     });
+    this.app.canvas.style.width = '100%';
+    this.app.canvas.style.height = '100%';
     host.appendChild(this.app.canvas);
     this.app.stage.addChild(this.chao, this.entidades, this.particulas, this.camadaTexto);
     this.desenharChao(mapa);

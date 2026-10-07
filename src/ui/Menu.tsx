@@ -90,7 +90,7 @@ function Opcoes() {
 
 function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null>; fechar: () => void }) {
   return (
-    <div style={{ width: 460, maxWidth: '90%', background: '#0f2027ee', border: `1px solid #2c4b57`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
+    <div className="menu-info" style={{ width: 460, maxWidth: '90%', background: '#0f2027ee', border: `1px solid #2c4b57`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
       {tipo === 'como' ? (
         <>
           <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Como jogar</div>
@@ -105,7 +105,7 @@ function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null>; fechar: () 
             ))}
           </div>
           <div style={{ font: '400 13px/1.6 system-ui, sans-serif', opacity: 0.85 }}>
-            <b>1–4</b> escolhem torre · <b>Esc</b> cancela / volta ao menu · <b>Espaço</b> pausa · <b>Enter</b> chama a próxima onda · <b>M</b> som · <b>R</b> reinicia · <b>botão direito</b> cancela construção
+            <b>Celular:</b> toque numa torre da loja, toque no mapa para posicionar e toque de novo para confirmar. Toque numa torre para melhorar ou vender.<br /><b>Teclado:</b> 1–4 escolhem torre · Esc cancela · Espaço pausa · Enter chama a onda · M som · R reinicia
           </div>
         </>
       ) : tipo === 'opcoes' ? (
@@ -147,29 +147,29 @@ export function Menu() {
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', color: hex(COR.ui), overflow: 'hidden', font: '600 15px system-ui, sans-serif' }}>
       <Fundo />
-      <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }}>
+      <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }} className="menu-col">
         <div style={{ textAlign: 'center', animation: 'lb-flutuar 4s ease-in-out infinite' }}>
-          <div style={{ font: '800 64px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.torreFria)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.torreFria)}66)` }}>
+          <div className="menu-titulo" style={{ font: '800 64px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.torreFria)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.torreFria)}66)` }}>
             LAST BASTION
           </div>
-          <div style={{ font: '500 15px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 4 }}>DEFENDA O ÚLTIMO REDUTO</div>
+          <div className="menu-sub" style={{ font: '500 15px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 4 }}>DEFENDA O ÚLTIMO REDUTO</div>
         </div>
 
         {painel ? (
           <PainelInfo tipo={painel} fechar={() => setPainel(null)} />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .3s both' }}>
-            <button className="lb-btn" style={botaoMenu(true)} onClick={() => { audio.destravar(); audio.tocar('clique'); jogar(); }}>
+            <button className="lb-btn menu-btn" style={botaoMenu(true)} onClick={() => { audio.destravar(); audio.tocar('clique'); jogar(); }}>
               ▶  {emAndamento ? `Continuar (onda ${s.onda}/${s.totalOndas})` : 'Jogar'}
             </button>
-            {emAndamento && <button className="lb-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); novoJogo(); }}>↻  Novo jogo</button>}
-            <button className="lb-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('como'); }}>?  Como jogar</button>
-            <button className="lb-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('opcoes'); }}>♪  Opções</button>
-            <button className="lb-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
+            {emAndamento && <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); novoJogo(); }}>↻  Novo jogo</button>}
+            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('como'); }}>?  Como jogar</button>
+            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('opcoes'); }}>♪  Opções</button>
+            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
           </div>
         )}
 
-        <div style={{ position: 'absolute', bottom: 12, font: '400 12px system-ui, sans-serif', opacity: 0.55 }}>Enter para jogar · v0.1.0</div>
+        <div className="menu-rodape" style={{ position: 'absolute', bottom: 12, font: '400 12px system-ui, sans-serif', opacity: 0.55 }}>Enter para jogar · v0.1.0</div>
       </div>
     </div>
   );
