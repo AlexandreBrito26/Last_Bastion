@@ -1,0 +1,37 @@
+import { COR } from '../core/cores';
+
+const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
+
+/** Keyframes e classes compartilhadas por menu e HUD (CSS inline não faz :hover nem @keyframes). */
+export const ESTILOS = `
+@keyframes lb-flutuar { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
+@keyframes lb-entrar { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+@keyframes lb-brilho { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+@keyframes lb-pop { 0% { transform: scale(1.5); filter: brightness(1.8) } 100% { transform: scale(1); filter: none } }
+@keyframes lb-tremer { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-5px) } 40% { transform: translateX(5px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
+@keyframes lb-subir { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
+@keyframes lb-esq { from { opacity: 0; transform: translateX(28px) } to { opacity: 1; transform: none } }
+@keyframes lb-descer { from { opacity: 0; transform: translateY(-16px) } to { opacity: 1; transform: none } }
+@keyframes lb-banner {
+  0% { opacity: 0; transform: translateX(-60px) scale(.9) }
+  14% { opacity: 1; transform: none }
+  78% { opacity: 1; transform: none }
+  100% { opacity: 0; transform: translateX(60px) scale(.95) }
+}
+@keyframes lb-dano { 0% { opacity: .9 } 100% { opacity: 0 } }
+@keyframes lb-fim { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: none } }
+@keyframes lb-pulsar { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
+
+.lb-btn { transition: transform .12s, background .12s, color .12s, box-shadow .12s, opacity .12s; }
+.lb-btn:hover:not(:disabled), .lb-btn:focus-visible { transform: translateX(6px) scale(1.02); background: ${hex(COR.torreFria)} !important; color: ${hex(COR.ceu)} !important; box-shadow: 0 0 18px ${hex(COR.torreFria)}88; outline: none; }
+.lb-btn:active:not(:disabled) { transform: translateX(6px) scale(.98); }
+
+.hud-btn { transition: transform .1s, filter .1s, background .12s; }
+.hud-btn:hover:not(:disabled) { filter: brightness(1.25); transform: translateY(-1px); }
+.hud-btn:active:not(:disabled) { transform: translateY(1px) scale(.97); }
+
+.lb-range { accent-color: ${hex(COR.torreFria)}; width: 100%; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+`;
