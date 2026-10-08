@@ -30,6 +30,12 @@ export const INIMIGOS: Record<string, DefInimigo> = {
     ...base, id: 'curandeiro', nome: 'Curandeiro', vida: 90, velocidade: 60, raio: 11, recompensa: 12, cor: 0xff8fab,
     cura: { raio: 90, quantidade: 12, intervalo: 1 },
   },
+  espectro: { ...base, id: 'espectro', nome: 'Espectro', vida: 45, velocidade: 150, raio: 9, recompensa: 9, cor: 0x8e7dff, voador: true },
+  sapador: { ...base, id: 'sapador', nome: 'Sapador', vida: 130, velocidade: 55, raio: 13, recompensa: 14, cor: 0xc2185b, armadura: 3, danoBase: 2 },
+  dragao: {
+    ...base, id: 'dragao', nome: 'Dragão de Brasa', vida: 2600, velocidade: 40, raio: 28, recompensa: 220, cor: 0xff5e3a, armadura: 6, voador: true, danoBase: 9,
+    chefe: [{ em: 0.5, invoca: { defId: 'espectro', qtd: 8 } }],
+  },
   chefe: {
     ...base, id: 'chefe', nome: 'Chefe', vida: 1800, velocidade: 36, raio: 24, recompensa: 150, cor: 0xff9e00, armadura: 8, danoBase: 7,
     chefe: [

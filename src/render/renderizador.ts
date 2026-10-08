@@ -77,6 +77,10 @@ export class Renderizador {
   private ema = 16;
   private ultimo = performance.now();
   private quadros = 0;
+  /** Posições suavizadas por inimigo (interpolação visual entre ticks de 60 Hz). */
+  private suaves = new Map<number, { x: number; y: number }>();
+  private tQuadro = performance.now();
+  private dtQuadro = 1 / 60;
 
   async iniciar(host: HTMLElement, mapa: Mapa): Promise<void> {
     await this.app.init({
@@ -187,7 +191,7 @@ export class Renderizador {
     let a = this.angTorre.get(t.id) ?? -Math.PI / 2;
     if (melhor) {
       const alvo = Math.atan2(melhor.pos.y - t.pos.y, melhor.pos.x - t.pos.x);
-      a += difAngulo(a, alvo) * 0.25;
+      a += difAngulo(a, alvo) * (1 - Math.pow(0.75, this.dtQuadro * 60));
     }
     this.angTorre.set(t.id, a);
     return a;
@@ -280,6 +284,22 @@ export class Renderizador {
         g.circle(cx - 3 * s, cy - 6 * s, 2.6 * s).fill({ color: 0xffffff, alpha: 0.4 });
         break;
       }
+      case 'alquimista': {
+        const borb = 0.5 + 0.5 * Math.sin(tempo * 5 + t.id);
+        g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.45));
+        g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        g.circle(cx, cy - 3 * s, 5.5 * s).fill({ color: 0xdfffd0, alpha: 0.35 + 0.25 * borb });
+        const tubo = rot(cx, cy - 4 * s, a, [-3, -2, 12 - recuo, -2, 12 - recuo, 2, -3, 2].map((v) => v * s));
+        g.poly(tubo).fill(0x3d5a3a);
+        g.circle(cx + Math.cos(a) * (12 - recuo) * s, cy - 4 * s + Math.sin(a) * (12 - recuo) * s, 3.2 * s).fill(0x2a4a2a);
+        for (let i = 0; i < 3; i++) {
+          const o = tempo * 2 + i * 2.1 + t.id;
+          g.circle(cx - 4 * s + Math.cos(o) * 3 * s, cy - 12 * s - (((tempo * 6 + i * 5) % 10) * s * 0.6), 1.6 * s).fill({ color: 0xb6ff9a, alpha: 0.7 });
+        }
+        g.circle(cx - 2.5 * s, cy - 6 * s, 2.6 * s).fill({ color: 0xffffff, alpha: 0.45 });
+        this.luz(cx, cy - 5, 20 + borb * 6, 0x7cff6b, 0.35 + flash * 0.3);
+        break;
+      }
       default:
         g.rect(cx - 8 * s, cy - 8 * s, 16 * s, 16 * s).fill(cor);
     }
@@ -317,27 +337,44 @@ export class Renderizador {
     }
   }
 
+  /** Posição visual: segue a lógica com amortecimento exponencial (sem saltos a 60 Hz). Teleporte grande = snap. */
+  private posSuave(e: Inimigo): { x: number; y: number } {
+    let s = this.suaves.get(e.id);
+    const dx = e.pos.x - (s?.x ?? 0);
+    const dy = e.pos.y - (s?.y ?? 0);
+    if (!s || dx * dx + dy * dy > 90 * 90) {
+      s = { x: e.pos.x, y: e.pos.y };
+      this.suaves.set(e.id, s);
+      return s;
+    }
+    const k = 1 - Math.exp(-this.dtQuadro * 24);
+    s.x += (e.pos.x - s.x) * k;
+    s.y += (e.pos.y - s.y) * k;
+    return s;
+  }
+
   private inimigo(e: Inimigo, m: Mundo, tempo: number): void {
     const g = this.entidades;
     const def = INIMIGOS[e.defId];
     const r = def.raio;
+    const p = this.posSuave(e);
 
     // direção do movimento (suavizada)
     let d = this.dirInimigo.get(e.id);
     if (!d) {
-      d = { x: e.pos.x, y: e.pos.y, a: 0 };
+      d = { x: p.x, y: p.y, a: 0 };
       this.dirInimigo.set(e.id, d);
     }
-    const dx = e.pos.x - d.x;
-    const dy = e.pos.y - d.y;
-    if (dx * dx + dy * dy > 0.0004) d.a += difAngulo(d.a, Math.atan2(dy, dx)) * 0.2;
-    d.x = e.pos.x;
-    d.y = e.pos.y;
+    const dx = p.x - d.x;
+    const dy = p.y - d.y;
+    if (dx * dx + dy * dy > 0.0004) d.a += difAngulo(d.a, Math.atan2(dy, dx)) * (1 - Math.pow(0.8, this.dtQuadro * 60));
+    d.x = p.x;
+    d.y = p.y;
     const a = d.a;
 
     const bob = def.voador ? Math.sin(m.tempo * 7 + e.id) * 2.5 : 0;
-    const ex = e.pos.x;
-    const ey = e.pos.y + bob;
+    const ex = p.x;
+    const ey = p.y + bob;
     const c = def.chefe ? mix(def.cor, 0xff2a00, Math.min(1, e.fases * 0.28)) : def.cor;
     const esc = escurecer(c, 0.38);
     const cla = clarear(c, 0.45);
@@ -345,7 +382,7 @@ export class Renderizador {
     const perp = a + Math.PI / 2;
 
     // sombra no chão
-    g.ellipse(ex, e.pos.y + (def.voador ? r + 12 : r * 0.8), r * (def.voador ? 0.7 : 1.05), r * 0.38).fill({ color: 0x000000, alpha: def.voador ? 0.2 : 0.3 });
+    g.ellipse(ex, p.y + (def.voador ? r + 12 : r * 0.8), r * (def.voador ? 0.7 : 1.05), r * 0.38).fill({ color: 0x000000, alpha: def.voador ? 0.2 : 0.3 });
 
     if (def.voador) {
       const asa = Math.abs(Math.sin(m.tempo * 24 + e.id));
@@ -353,6 +390,12 @@ export class Renderizador {
         const base = [0, 0, -r * 0.9, sg * r * (0.9 + 1.1 * asa), r * 0.8, sg * r * 0.8];
         g.poly(rot(ex, ey, a, base)).fill({ color: c, alpha: 0.85 });
         g.poly(rot(ex, ey, a, [0, 0, -r * 0.5, sg * r * (0.5 + 0.8 * asa), r * 0.3, sg * r * 0.5])).fill({ color: cla, alpha: 0.5 });
+      }
+      if (def.chefe) {
+        const pulso = 0.5 + 0.5 * Math.sin(m.tempo * 4);
+        this.luz(ex, ey, r * 3 + pulso * 10, 0xff7a10, 0.5 + 0.2 * pulso);
+        g.star(ex, ey, 9, r * 1.45, r * 1.05, tempo * 0.35).fill(0x2a0d08);
+        g.star(ex, ey, 9, r * 1.3, r * 0.98, tempo * 0.35).fill(esc);
       }
       g.circle(ex, ey, r * 0.75).fill(esc);
       g.circle(ex, ey - 1, r * 0.68).fill(c);
@@ -375,6 +418,15 @@ export class Renderizador {
       g.poly(rot(ex, ey, a, [r * 0.15, -r * 0.35, r * 0.75, -r * 0.2, r * 0.75, r * 0.2, r * 0.15, r * 0.35])).fill(0x14060c);
       g.circle(ex + Math.cos(a) * r * 0.5, ey + Math.sin(a) * r * 0.5, r * 0.1).fill(0xff3040);
       if (e.quebraTempo > 0) for (let i = 0; i < 3; i++) g.moveTo(ex - r * 0.5 + i * r * 0.4, ey - r * 0.7).lineTo(ex - r * 0.3 + i * r * 0.4, ey + r * 0.5).stroke({ width: 1.5, color: 0xff6040, alpha: 0.8 });
+    } else if (def.id === 'sapador') {
+      g.poly(poligono(ex, ey + 2, r * 1.1, 6, a)).fill(esc);
+      g.poly(poligono(ex, ey, r * 1.04, 6, a)).fill(c);
+      g.poly(poligono(ex, ey - 1, r * 0.66, 6, a)).fill(clarear(c, 0.2));
+      const px = ex + Math.cos(a) * r * 1.5;
+      const py = ey + Math.sin(a) * r * 1.5;
+      g.moveTo(ex + Math.cos(a) * r * 0.2, ey + Math.sin(a) * r * 0.2).lineTo(px, py).stroke({ width: 2.5, color: 0x6b4a2a });
+      g.poly(poligono(px, py, r * 0.42, 3, a)).fill(0xc0c4cc);
+      this.olhos(g, ex, ey, r * 0.85, a, 0xffd0a0);
     } else if (def.chefe) {
       const pulso = 0.5 + 0.5 * Math.sin(m.tempo * 4);
       this.luz(ex, ey, r * 3.2 + pulso * 10, 0xff7a10, 0.55 + 0.2 * pulso);
@@ -456,6 +508,9 @@ export class Renderizador {
     lz.clear();
     const ui = useUI.getState();
     const tempo = performance.now() / 1000;
+    const agora = performance.now();
+    this.dtQuadro = Math.min(0.1, (agora - this.tQuadro) / 1000);
+    this.tQuadro = agora;
     const tema = TEMAS[mapa.tema];
 
     // tremor de tela
@@ -519,6 +574,7 @@ export class Renderizador {
     if (this.dirInimigo.size > 400) {
       const ids = new Set(m.inimigos.map((e) => e.id));
       for (const k of this.dirInimigo.keys()) if (!ids.has(k)) this.dirInimigo.delete(k);
+      for (const k of this.suaves.keys()) if (!ids.has(k)) this.suaves.delete(k);
     }
 
     // projéteis com rastro e halo

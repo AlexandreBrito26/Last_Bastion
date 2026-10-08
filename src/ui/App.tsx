@@ -8,17 +8,17 @@ import { opcoesUpgrade, PRIORIDADES, REEMBOLSO, statsTorre, TORRES } from '../ga
 import { MAPAS, mapaPorId } from '../game/data/mapas';
 import { novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
-import { useUI } from '../store/ui';
+import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
 import { Menu } from './Menu';
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 
 const painel: CSSProperties = {
-  background: 'linear-gradient(180deg,#14303bee,#0d1d24ee)',
+  background: 'linear-gradient(180deg,#2a1f4cee,#140f2bee)',
   backdropFilter: 'blur(6px)',
   WebkitBackdropFilter: 'blur(6px)',
-  border: '1px solid #2c4b57',
+  border: '1px solid #3d2f66',
   boxShadow: '0 4px 18px #0008, inset 0 1px 0 #ffffff14',
   borderRadius: 10,
   padding: 10,
@@ -27,9 +27,9 @@ const painel: CSSProperties = {
 };
 
 const botao = (ativo = false, desabilitado = false): CSSProperties => ({
-  background: ativo ? `linear-gradient(180deg, ${hex(COR.torreFria)}, #2a9cc4)` : 'linear-gradient(180deg,#2c4f5c,#1b323b)',
-  boxShadow: '0 2px 0 #0a1519, inset 0 1px 0 #ffffff22',
-  color: ativo ? '#0f2027' : hex(COR.ui),
+  background: ativo ? `linear-gradient(180deg, ${hex(COR.acento)}, #e07a2a)` : 'linear-gradient(180deg,#3d2f66,#221a3d)',
+  boxShadow: '0 2px 0 #07050f, inset 0 1px 0 #ffffff22',
+  color: ativo ? '#0c0a1d' : hex(COR.ui),
   border: 'none',
   borderRadius: 7,
   padding: '6px 10px',
@@ -78,7 +78,7 @@ function BotaoHab({ nome, ativo, onClick }: { nome: 'meteoro' | 'congelar'; ativ
         ...botao(ativo, false),
         minWidth: 40,
         opacity: pronta ? 1 : 0.55,
-        boxShadow: pronta ? `0 0 14px ${h.cor}99, 0 2px 0 #0a1519, inset 0 1px 0 #ffffff22` : undefined,
+        boxShadow: pronta ? `0 0 14px ${h.cor}99, 0 2px 0 #07050f, inset 0 1px 0 #ffffff22` : undefined,
         border: `1px solid ${pronta ? h.cor : 'transparent'}`,
       }}
     >
@@ -91,14 +91,21 @@ const clique = () => audio.tocar('clique');
 
 export function App() {
   const s = useUI();
+  const [hover, setHover] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<{ id: number; texto: string } | null>(null);
+  const avisar = (texto: string) => {
+    const id = Date.now();
+    setAviso({ id, texto });
+    setTimeout(() => setAviso((a) => (a?.id === id ? null : a)), 1100);
+  };
   const sel = ref.mundo?.torres.find((t) => t.id === s.selecionadaId) ?? null;
 
   if (s.tela === 'menu') {
     return (
-      <>
+      <div key="menu" style={{ position: 'absolute', inset: 0, animation: 'lb-entrar .45s both' }}>
         <style>{ESTILOS}</style>
         <Menu />
-      </>
+      </div>
     );
   }
 
@@ -106,7 +113,7 @@ export function App() {
   const sobra = Math.max(0, s.contagem - 1);
 
   return (
-    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', font: '600 15px system-ui, sans-serif', color: hex(COR.ui) }}>
+    <div key="jogo" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', font: '600 15px system-ui, sans-serif', color: hex(COR.ui), animation: 'lb-entrar .45s both' }}>
       <style>{ESTILOS}</style>
 
       {/* Clarão vermelho ao perder vida */}
@@ -145,7 +152,7 @@ export function App() {
             position: 'absolute', left: 0, right: 0, top: '22%', textAlign: 'center',
             font: `800 ${s.aviso.chefe ? 44 : 38}px system-ui, sans-serif`, letterSpacing: 6,
             color: s.aviso.chefe ? hex(COR.inimigoElite) : hex(COR.ui),
-            textShadow: `0 0 24px ${s.aviso.chefe ? hex(COR.inimigo) : hex(COR.torreFria)}, 0 2px 4px #000`,
+            textShadow: `0 0 24px ${s.aviso.chefe ? hex(COR.inimigo) : hex(COR.acento)}, 0 2px 4px #000`,
             animation: `lb-banner ${s.aviso.chefe ? 2.8 : 2}s both`,
           }}
         >
@@ -153,9 +160,16 @@ export function App() {
         </div>
       )}
 
+      {/* Confirmação de cancelamento */}
+      {aviso && (
+        <div key={aviso.id} style={{ position: 'absolute', left: '50%', top: '62%', transform: 'translateX(-50%)', padding: '6px 14px', borderRadius: 20, background: '#6b1d3add', border: `1px solid ${hex(COR.dano)}`, font: '700 13px system-ui, sans-serif', letterSpacing: 1, animation: 'lb-toast 1.1s both' }}>
+          {aviso.texto}
+        </div>
+      )}
+
       {/* Pausa */}
       {s.pausado && !fim && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f202755', font: '800 40px system-ui, sans-serif', letterSpacing: 8, animation: 'lb-pulsar 1.6s infinite' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0c0a1d55', font: '800 40px system-ui, sans-serif', letterSpacing: 8, animation: 'lb-pulsar 1.6s infinite' }}>
           PAUSADO
         </div>
       )}
@@ -168,21 +182,25 @@ export function App() {
             if (s.habilidade === 'meteoro') { if (usarMeteoro(entrada.mouse)) entrada.mouse = null; return; }
             if (s.construirId && construir(s.construirId, entrada.mouse)) { s.definirConstruir(null); entrada.mouse = null; try { navigator.vibrate?.(25); } catch { /* */ } }
           }}>{s.habilidade ? '☄ Lançar' : '✔ Construir'}</button>
-          <button className="hud-btn" style={{ ...botao(), padding: '14px 18px', fontSize: 16, minHeight: 52, background: '#5a1a2b' }} onClick={() => { clique(); s.definirConstruir(null); s.definirHabilidade(null); entrada.mouse = null; }}>✖ Cancelar</button>
+          <button className="hud-btn" style={{ ...botao(), padding: '14px 18px', fontSize: 16, minHeight: 52, background: '#6b1d3a' }} onClick={() => { clique(); avisar(s.habilidade ? 'Meteoro cancelado' : 'Construção cancelada'); s.definirConstruir(null); s.definirHabilidade(null); entrada.mouse = null; }}>✖ Cancelar</button>
         </div>
       )}
 
       {/* Loja */}
       <div className="hud-loja" style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
-        {Object.values(TORRES).map((d) => {
+        {Object.values(TORRES).map((d, i) => {
           const custo = custoTorre(ref.mundo, d.id);
           const semOuro = s.ouro < custo;
           return (
             <button
               key={d.id}
               className="hud-btn"
-              style={botao(s.construirId === d.id, semOuro)}
+              style={{ ...botao(s.construirId === d.id, semOuro), animation: `lb-subir .4s ${i * 0.06}s both` }}
               title={d.desc}
+              onPointerEnter={() => setHover(d.id)}
+              onPointerLeave={() => setHover(null)}
+              onFocus={() => setHover(d.id)}
+              onBlur={() => setHover(null)}
               onClick={() => { clique(); s.definirConstruir(s.construirId === d.id ? null : d.id); }}
             >
               <i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: hex(d.cor), marginRight: 6, boxShadow: `0 0 6px ${hex(d.cor)}` }} />
@@ -190,6 +208,26 @@ export function App() {
             </button>
           );
         })}
+          {/* Ficha da torre sob o ponteiro (loja) */}
+        {hover && TORRES[hover] && (() => {
+          const d = TORRES[hover];
+          const custo = custoTorre(ref.mundo, d.id);
+          return (
+            <div key={hover} className="hud-painel" style={{ ...painel, position: 'absolute', left: 0, bottom: 'calc(100% + 10px)', width: 240, fontSize: 13, lineHeight: 1.5, animation: 'lb-subir .2s both', pointerEvents: 'none' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, marginBottom: 4 }}>
+                <i style={{ width: 10, height: 10, borderRadius: 3, background: hex(d.cor), boxShadow: `0 0 8px ${hex(d.cor)}` }} />
+                {d.nome} <span style={{ opacity: 0.55, fontSize: 11 }}>[{Object.keys(TORRES).indexOf(d.id) + 1}]</span>
+                <span style={{ marginLeft: 'auto', color: s.ouro < custo ? hex(COR.dano) : hex(COR.ouro) }}>{custo}</span>
+              </div>
+              <div style={{ fontWeight: 400, opacity: 0.85, marginBottom: 6 }}>{d.desc}</div>
+              <div style={{ fontWeight: 400, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2px 10px', fontSize: 12 }}>
+                <span>Dano {d.dano}</span><span>Cadência {d.cadencia}/s</span>
+                <span>Alcance {d.alcance}</span><span>{d.antiAereo ? 'Ar e terra' : 'Só terra'}</span>
+              </div>
+            </div>
+          );
+        })()}
+
         <span className="hud-dica" style={{ fontWeight: 400, fontSize: 12, opacity: 0.7 }}>
           {s.habilidade ? 'Mire o meteoro no mapa' : s.construirId ? 'Toque e arraste no mapa · confirme no botão' : 'Escolha uma torre para construir'}
         </span>
@@ -240,7 +278,7 @@ export function App() {
                     <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
                   </button>
                 ))}
-                <button className="hud-btn" style={{ ...botao(), background: '#5a1a2b' }} onClick={() => vender(sel.id)}>
+                <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => vender(sel.id)}>
                   Vender · +{Math.floor(sel.investido * REEMBOLSO)}
                 </button>
               </>
@@ -251,16 +289,23 @@ export function App() {
 
       {/* Fim de jogo */}
       {fim && (
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#0f2027cc', pointerEvents: 'auto', animation: 'lb-fim .5s both' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, background: '#0c0a1dcc', pointerEvents: 'auto', animation: 'lb-fim .5s both' }}>
+          {s.fase === 'vitoria' && <div style={{ position: 'absolute', width: 520, height: 520, borderRadius: '50%', background: `radial-gradient(circle, ${hex(COR.ouro)}55 0%, transparent 62%)`, animation: 'lb-raio 1.4s ease-out both', pointerEvents: 'none' }} />}
           <div className="hud-fim-titulo" style={{ font: '800 54px system-ui, sans-serif', letterSpacing: 6, color: s.fase === 'vitoria' ? hex(COR.ouro) : hex(COR.dano), textShadow: '0 0 24px currentColor' }}>
             {s.fase === 'vitoria' ? 'VITÓRIA!' : 'DERROTA'}
           </div>
+          {s.desafio && <div style={{ font: '800 13px system-ui, sans-serif', letterSpacing: 4, color: hex(COR.dano) }}>MODO DESAFIO</div>}
           <div style={{ font: '500 18px system-ui, sans-serif', opacity: 0.85 }}>
             {s.fase === 'vitoria' ? `O bastião resistiu com ${s.vidas} vidas.` : `O bastião caiu na onda ${s.onda}/${s.totalOndas}.`}
           </div>
+          <div style={{ display: 'flex', gap: 18, font: '600 13px system-ui, sans-serif', opacity: 0.7, animation: 'lb-subir .4s .3s both' }}>
+            <span>Torres: {ref.mundo?.torres.length ?? 0}</span>
+            <span>Ouro restante: {s.ouro}</span>
+            <span>Ondas: {s.onda}/{s.totalOndas}</span>
+          </div>
           {s.fase === 'vitoria' && (
             <div style={{ fontSize: 40, letterSpacing: 8, color: hex(COR.ouro), textShadow: '0 0 18px currentColor' }}>
-              {[1, 2, 3].map((n) => <span key={n} style={{ opacity: (s.progresso[s.mapaId] ?? 0) >= n ? 1 : 0.18, display: 'inline-block', animation: `lb-pop .5s ${n * 0.18}s both` }}>★</span>)}
+              {[1, 2, 3].map((n) => <span key={n} style={{ opacity: (s.progresso[chaveFase(s.mapaId, s.desafio)] ?? 0) >= n ? 1 : 0.18, display: 'inline-block', animation: `lb-pop .5s ${n * 0.18}s both` }}>★</span>)}
             </div>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center' }}>

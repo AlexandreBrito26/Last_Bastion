@@ -96,6 +96,15 @@ export const TORRES: Record<string, DefTorre> = {
       B: { nome: 'Atordoa', desc: 'Atordoa 0,5s por golpe, +20% dano', custo: 110, mod: { atordoa: 0.5, dano: 1.2 } },
     },
   },
+  alquimista: {
+    ...z, id: 'alquimista', nome: 'Alquimista', desc: 'Frasco de veneno que queima por tempo. Acerta voadores.',
+    custo: 85, antiAereo: true, alcance: 135, cadencia: 0.9, dano: 10, velProjetil: 340, queima: 6, cor: 0x7cff6b,
+    nivel2: { nome: 'Destilação', desc: '+60% de dano', custo: 60, mod: { dano: 1.6 } },
+    nivel3: {
+      A: { nome: 'Peste', desc: 'Queima 9 de dano/s', custo: 90, mod: { queima: 9 } },
+      B: { nome: 'Vapor', desc: '+30% de alcance, +40% de cadência', custo: 90, mod: { alcance: 1.3, cadencia: 1.4 } },
+    },
+  },
   morteiro: {
     ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
     custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 75, velProjetil: 230, area: 70, cor: 0xf8961e,

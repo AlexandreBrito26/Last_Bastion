@@ -1,3 +1,4 @@
+import { INIMIGOS } from './data/inimigos';
 import type { Vec } from '../core/vec';
 import { opcoesUpgrade, REEMBOLSO, TORRES, type Prioridade } from './data/torres';
 import type { Torre } from './estado';
@@ -109,7 +110,7 @@ export function usarCongelar(): boolean {
   m.hab.congelar = m.tempo + HAB.congelar.recarga;
   for (const e of m.inimigos) {
     if (!e.vivo) continue;
-    const chefe = e.defId === 'chefe';
+    const chefe = !!INIMIGOS[e.defId].chefe;
     if (chefe) { e.lentFator = 0.4; e.lentTempo = Math.max(e.lentTempo, HAB.congelar.lentDur); }
     else e.atordTempo = Math.max(e.atordTempo, HAB.congelar.atordoa);
     e.lentFator = chefe ? 0.4 : Math.min(e.lentFator, 0.5);

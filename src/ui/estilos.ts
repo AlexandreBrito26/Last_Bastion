@@ -20,17 +20,26 @@ export const ESTILOS = `
 }
 @keyframes lb-dano { 0% { opacity: .9 } 100% { opacity: 0 } }
 @keyframes lb-fim { from { opacity: 0; transform: scale(.85) } to { opacity: 1; transform: none } }
+@keyframes lb-toast { 0% { opacity: 0; transform: translateY(10px) scale(.95) } 12%,78% { opacity: 1; transform: none } 100% { opacity: 0; transform: translateY(-6px) } }
+@keyframes lb-raio { 0% { opacity: 0; transform: scale(.4) } 40% { opacity: 1 } 100% { opacity: .35; transform: scale(1.15) } }
 @keyframes lb-pulsar { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 
-.lb-btn { transition: transform .12s, background .12s, color .12s, box-shadow .12s, opacity .12s; }
-.lb-btn:hover:not(:disabled), .lb-btn:focus-visible { transform: translateX(6px) scale(1.02); background: ${hex(COR.torreFria)} !important; color: ${hex(COR.ceu)} !important; box-shadow: 0 0 18px ${hex(COR.torreFria)}88; outline: none; }
+.lb-btn { position: relative; overflow: hidden; transition: transform .12s, background .12s, color .12s, box-shadow .12s, opacity .12s; }
+/* Reflexo de luz que varre o botão ao passar o ponteiro */
+.lb-btn::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 35%, #fff6e066 50%, transparent 65%); transform: translateX(-120%); transition: transform .7s ease; }
+.lb-btn:hover:not(:disabled)::after { transform: translateX(120%); }
+.lb-btn:hover:not(:disabled), .lb-btn:focus-visible { transform: translateX(6px) scale(1.02); background: ${hex(COR.acento)} !important; color: ${hex(COR.ceu)} !important; box-shadow: 0 0 18px ${hex(COR.acento)}88; outline: none; }
 .lb-btn:active:not(:disabled) { transform: translateX(6px) scale(.98); }
 
-.hud-btn { transition: transform .1s, filter .1s, background .12s; }
+.hud-btn { transition: transform .1s, filter .1s, background .12s, box-shadow .2s; }
+.hud-btn:focus-visible, .lb-btn:focus-visible { outline: 2px solid ${hex(COR.acento)}; outline-offset: 3px; }
+/* Painel de vidro com filete de brasa no topo */
+.hud-painel::before { content: ''; position: absolute; left: 12px; right: 12px; top: 0; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, ${hex(COR.acento)}aa, transparent); pointer-events: none; }
+
 .hud-btn:hover:not(:disabled) { filter: brightness(1.25); transform: translateY(-1px); }
 .hud-btn:active:not(:disabled) { transform: translateY(1px) scale(.97); }
 
-.lb-range { accent-color: ${hex(COR.torreFria)}; width: 100%; cursor: pointer; }
+.lb-range { accent-color: ${hex(COR.acento)}; width: 100%; cursor: pointer; }
 @media (pointer: coarse) { .hud-btn:hover:not(:disabled), .lb-btn:hover:not(:disabled) { transform: none; filter: none; } }
 .compacto .hud-btn { padding: 5px 8px !important; font-size: 12px !important; min-height: 32px; }
 .compacto .hud-dica { display: none; }

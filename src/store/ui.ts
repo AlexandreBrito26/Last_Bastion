@@ -6,6 +6,9 @@ export const OURO_INICIAL = 180;
 export const VIDAS_INICIAIS = 20;
 
 const CHAVE_PROG = 'last-bastion:progresso';
+
+/** Chave de progresso: o modo desafio tem estrelas separadas do normal. */
+export const chaveFase = (id: string, desafio: boolean): string => (desafio ? `${id}#desafio` : id);
 function lerProgresso(): Record<string, number> {
   try {
     const b = localStorage.getItem(CHAVE_PROG);
@@ -64,7 +67,9 @@ interface EstadoUI {
   pausado: boolean;
   mapaId: string;
   vidasIniciais: number;
-  progresso: Record<string, number>; // estrelas por fase
+  progresso: Record<string, number>; // estrelas por fase (modo normal e desafio)
+  desafio: boolean;
+  definirDesafio: (v: boolean) => void;
   habilidade: 'meteoro' | null; // habilidade em modo de mira
   definirHabilidade: (h: 'meteoro' | null) => void;
   registrarVitoria: () => void;
@@ -108,13 +113,16 @@ export const useUI = create<EstadoUI>((set, get) => ({
   mapaId: 'floresta',
   vidasIniciais: VIDAS_INICIAIS,
   progresso: lerProgresso(),
+  desafio: false,
+  definirDesafio: (v) => set({ desafio: v }),
   habilidade: null,
   definirHabilidade: (h) => set({ habilidade: h, construirId: null, selecionadaId: null, previaToque: false }),
   registrarVitoria: () => {
     const st = get();
     const f = st.vidas / st.vidasIniciais;
     const estrelas = f >= 0.75 ? 3 : f >= 0.4 ? 2 : 1;
-    const progresso = { ...st.progresso, [st.mapaId]: Math.max(st.progresso[st.mapaId] ?? 0, estrelas) };
+    const k = chaveFase(st.mapaId, st.desafio);
+    const progresso = { ...st.progresso, [k]: Math.max(st.progresso[k] ?? 0, estrelas) };
     gravarProgresso(progresso);
     set({ progresso });
   },

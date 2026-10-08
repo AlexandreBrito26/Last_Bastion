@@ -7,7 +7,7 @@ import { gerarOndas } from '../game/data/ondas';
 import { TEMAS } from '../render/arte';
 import { TORRES } from '../game/data/torres';
 import { novaPartida } from '../game/partida';
-import { useUI } from '../store/ui';
+import { chaveFase, useUI } from '../store/ui';
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 
@@ -18,9 +18,9 @@ const botaoMenu = (primario = false): CSSProperties => ({
   textAlign: 'left',
   font: '700 17px system-ui, sans-serif',
   letterSpacing: 1,
-  border: `1px solid ${primario ? hex(COR.torreFria) : '#2c4b57'}`,
+  border: `1px solid ${primario ? hex(COR.acento) : '#3d2f66'}`,
   borderRadius: 8,
-  background: primario ? '#4cc9f033' : '#203a43cc',
+  background: primario ? '#ffb34733' : '#221a3dcc',
   color: hex(COR.ui),
   cursor: 'pointer',
 });
@@ -56,18 +56,25 @@ function Fases({ fechar }: { fechar: () => void }) {
   };
   return (
     <div style={{ width: 'min(860px, 94%)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', animation: 'lb-entrar .25s both' }}>
-      <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Escolha a fase</div>
+      <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Escolha a fase</div>
+      <button className="lb-btn" onClick={() => { audio.tocar('clique'); s.definirDesafio(!s.desafio); }} title="Inimigos +35%, vida +30%, ouro -15%, 5 vidas a menos" style={{ ...botaoMenu(s.desafio), width: 'auto', textAlign: 'center', padding: '6px 16px', fontSize: 14 }}>
+        {s.desafio ? '⚔ Modo Desafio: ligado' : 'Modo Desafio: desligado'}
+      </button>
+      <div className="fase-desc" style={{ font: '400 12px system-ui, sans-serif', opacity: 0.7, marginTop: -6 }}>
+        {s.desafio ? 'Inimigos +35% · vida +30% · ouro -15% · 5 vidas a menos. Progresso separado.' : 'Ative para um desafio com progresso próprio.'}
+      </div>
       <div style={{ display: 'flex', gap: 12, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
         {MAPAS.map((m, i) => {
-          const liberada = i === 0 || (s.progresso[MAPAS[i - 1].id] ?? 0) > 0;
-          const est = s.progresso[m.id] ?? 0;
+          const prog = (id: string) => s.progresso[chaveFase(id, s.desafio)] ?? 0;
+          const liberada = (i === 0 || prog(MAPAS[i - 1].id) > 0) && (!s.desafio || (s.progresso[m.id] ?? 0) > 0);
+          const est = prog(m.id);
           return (
             <button
               key={m.id}
               disabled={!liberada}
               className="lb-btn fase-card"
               onClick={() => iniciar(m)}
-              style={{ flex: '1 1 220px', maxWidth: 270, padding: 8, textAlign: 'left', border: '1px solid #2c4b57', borderRadius: 12, background: '#0f2027dd', color: hex(COR.ui), cursor: liberada ? 'pointer' : 'not-allowed', opacity: liberada ? 1 : 0.5, position: 'relative' }}
+              style={{ flex: '1 1 220px', maxWidth: 270, padding: 8, textAlign: 'left', border: '1px solid #3d2f66', borderRadius: 12, background: '#0c0a1ddd', color: hex(COR.ui), cursor: liberada ? 'pointer' : 'not-allowed', opacity: liberada ? 1 : 0.5, position: 'relative' }}
             >
               <Previa mapa={m} />
               {!liberada && <div style={{ position: 'absolute', top: 8, left: 8, right: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000a', borderRadius: 8, font: '700 28px system-ui' }}>🔒</div>}
@@ -91,10 +98,10 @@ function Fundo() {
   const pts = MAPA_1.waypoints.map((p) => `${p.x},${p.y}`).join(' ');
   const caminho = 'M ' + MAPA_1.waypoints.map((p) => `${p.x} ${p.y}`).join(' L ');
   const torres = [
-    { x: 150, y: 230, c: COR.torreFria },
+    { x: 150, y: 230, c: COR.acento },
     { x: 330, y: 300, c: COR.ouro },
     { x: 600, y: 270, c: COR.torreArcana },
-    { x: 650, y: 80, c: COR.torreFria },
+    { x: 650, y: 80, c: COR.acento },
     { x: 850, y: 300, c: COR.ouro },
     { x: 560, y: 480, c: COR.torreArcana },
   ];
@@ -120,7 +127,7 @@ function Fundo() {
           <animateMotion dur="26s" begin={`${-i * 3.7}s`} repeatCount="indefinite" path={caminho} />
         </circle>
       ))}
-      <rect width="100%" height="100%" fill="#0f2027" opacity=".35" />
+      <rect width="100%" height="100%" fill="#0c0a1d" opacity=".35" />
     </svg>
   );
 }
@@ -138,11 +145,11 @@ function Opcoes() {
   const s = useUI();
   return (
     <>
-      <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Opções</div>
+      <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Opções</div>
       <Controle rotulo="Efeitos sonoros" valor={s.volSfx} onChange={(v) => s.definirVolumes(v, s.volMusica)} />
       <Controle rotulo="Música" valor={s.volMusica} onChange={(v) => s.definirVolumes(s.volSfx, v)} />
       <label style={{ display: 'flex', gap: 8, alignItems: 'center', font: '600 13px system-ui, sans-serif', cursor: 'pointer' }}>
-        <input type="checkbox" checked={s.mudo} onChange={s.alternarMudo} style={{ accentColor: hex(COR.torreFria) }} /> Mudo (tecla M)
+        <input type="checkbox" checked={s.mudo} onChange={s.alternarMudo} style={{ accentColor: hex(COR.acento) }} /> Mudo (tecla M)
       </label>
     </>
   );
@@ -150,10 +157,10 @@ function Opcoes() {
 
 function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null | 'fases'>; fechar: () => void }) {
   return (
-    <div className="menu-info" style={{ width: 460, maxWidth: '90%', background: '#0f2027ee', border: `1px solid #2c4b57`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
+    <div className="menu-info" style={{ width: 460, maxWidth: '90%', background: '#0c0a1dee', border: `1px solid #3d2f66`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
       {tipo === 'como' ? (
         <>
-          <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Como jogar</div>
+          <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Como jogar</div>
           <div style={{ font: '400 14px/1.55 system-ui, sans-serif' }}>
             Construa torres ao lado da trilha para impedir que os inimigos cheguem ao fim. Cada inimigo morto rende ouro; cada um que passa custa vidas. Sobreviva a todas as ondas de cada fase — vença para liberar a próxima e ganhar até 3 estrelas.
           </div>
@@ -172,7 +179,7 @@ function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null | 'fases'>; f
         <Opcoes />
       ) : (
         <>
-          <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.torreFria) }}>Sobre</div>
+          <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Sobre</div>
           <div style={{ font: '400 14px/1.55 system-ui, sans-serif' }}>
             Last Bastion — um tower defense 2D feito com PixiJS, React e Zustand. Torres com caminhos de evolução, inimigos voadores, curandeiros, blindados e chefes com fases.
           </div>
@@ -206,7 +213,7 @@ export function Menu() {
       <Fundo />
       <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }} className="menu-col">
         <div style={{ textAlign: 'center', animation: 'lb-flutuar 4s ease-in-out infinite' }}>
-          <div className="menu-titulo" style={{ font: '800 64px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.torreFria)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.torreFria)}66)` }}>
+          <div className="menu-titulo" style={{ font: '800 64px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.acento)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.acento)}66)` }}>
             LAST BASTION
           </div>
           <div className="menu-sub" style={{ font: '500 15px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 4 }}>DEFENDA O ÚLTIMO REDUTO</div>

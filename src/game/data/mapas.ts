@@ -1,7 +1,7 @@
 import type { Vec } from '../../core/vec';
 import type { DefOnda } from './ondas';
 
-export type TemaId = 'floresta' | 'cinzas' | 'gelo';
+export type TemaId = 'floresta' | 'cinzas' | 'gelo' | 'pantano' | 'ruinas';
 export type TipoObstaculo = 'arvore' | 'rocha' | 'lago' | 'lava' | 'cristal' | 'pinheiro';
 
 export interface Obstaculo {
@@ -136,6 +136,66 @@ export const MAPAS: Mapa[] = [
       { x: 500, y: 215, r: 18, tipo: 'cristal' },
       { x: 660, y: 270, r: 22, tipo: 'rocha' },
       { x: 930, y: 30, r: 16, tipo: 'pinheiro' },
+    ],
+  },
+  {
+    id: 'pantano',
+    nome: 'Pântano Sussurrante',
+    desc: 'Águas paradas e névoa. Voadores atacam em bando e os sapadores abrem caminho.',
+    tema: 'pantano',
+    largura: L,
+    altura: A,
+    larguraTrilha: 44,
+    ouroInicial: 200,
+    vidas: 20,
+    vidaMult: 1.1,
+    qtdMult: 1.1,
+    chefes: 1,
+    extras: [
+      { bonus: 45, grupos: [{ inimigo: 'espectro', quantidade: 8, intervalo: 0.7 }, { inimigo: 'sapador', quantidade: 3, intervalo: 2.2, atraso: 4 }] },
+      { bonus: 60, grupos: [{ inimigo: 'sapador', quantidade: 5, intervalo: 1.6 }, { inimigo: 'espectro', quantidade: 12, intervalo: 0.45, atraso: 5 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 300 }, { x: 200, y: 300 }, { x: 200, y: 90 }, { x: 420, y: 90 },
+      { x: 420, y: 330 }, { x: 660, y: 330 }, { x: 660, y: 150 }, { x: 980, y: 150 },
+    ],
+    obstaculos: [
+      { x: 320, y: 200, r: 34, tipo: 'lago' },
+      { x: 560, y: 250, r: 30, tipo: 'lago' },
+      { x: 860, y: 60, r: 26, tipo: 'lago' },
+      { x: 110, y: 160, r: 20, tipo: 'arvore' },
+      { x: 800, y: 300, r: 24, tipo: 'pinheiro' },
+      { x: 500, y: 470, r: 22, tipo: 'rocha' },
+    ],
+  },
+  {
+    id: 'ruinas',
+    nome: 'Ruínas do Sol',
+    desc: 'Colunas antigas e brasas eternas. Um dragão guarda o último corredor.',
+    tema: 'ruinas',
+    largura: L,
+    altura: A,
+    larguraTrilha: 44,
+    ouroInicial: 230,
+    vidas: 18,
+    vidaMult: 1.15,
+    qtdMult: 1.15,
+    chefes: 1,
+    extras: [
+      { bonus: 55, grupos: [{ inimigo: 'sapador', quantidade: 5, intervalo: 2 }, { inimigo: 'rapido', quantidade: 10, intervalo: 0.5, atraso: 4 }] },
+      { bonus: 70, grupos: [{ inimigo: 'espectro', quantidade: 10, intervalo: 0.5 }, { inimigo: 'curandeiro', quantidade: 3, intervalo: 2.5 }] },
+      { bonus: 120, grupos: [{ inimigo: 'dragao', quantidade: 1, intervalo: 0 }, { inimigo: 'sapador', quantidade: 6, intervalo: 1.8, atraso: 6 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 460 }, { x: 300, y: 460 }, { x: 300, y: 260 }, { x: 120, y: 260 },
+      { x: 120, y: 70 }, { x: 600, y: 70 }, { x: 600, y: 300 }, { x: 840, y: 300 }, { x: 980, y: 300 },
+    ],
+    obstaculos: [
+      { x: 200, y: 400, r: 30, tipo: 'lava' },
+      { x: 450, y: 180, r: 24, tipo: 'cristal' },
+      { x: 720, y: 200, r: 24, tipo: 'rocha' },
+      { x: 420, y: 430, r: 26, tipo: 'lava' },
+      { x: 880, y: 110, r: 20, tipo: 'cristal' },
     ],
   },
 ];

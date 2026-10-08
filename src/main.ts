@@ -34,7 +34,7 @@ async function main(): Promise<void> {
 
   // Aviso para girar o aparelho em modo retrato.
   const giro = document.createElement('div');
-  giro.style.cssText = 'position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0f2027;color:#e8f1f2;font:700 18px system-ui,sans-serif;text-align:center;padding:24px';
+  giro.style.cssText = 'position:fixed;inset:0;z-index:10;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:#0c0a1d;color:#f6ecd9;font:700 18px system-ui,sans-serif;text-align:center;padding:24px';
   giro.innerHTML = '<div style="font-size:56px">&#x21BB;</div><div>Gire o aparelho para jogar na horizontal</div>';
   document.body.appendChild(giro);
 

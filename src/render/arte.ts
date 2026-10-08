@@ -29,6 +29,14 @@ export const TEMAS: Record<TemaId, Tema> = {
     base1: '#d6e8f2', base2: '#8fb4cc', trilha: '#617892', borda: '#2b394d', seixo: '#a7bdd4',
     detalhe: 'neve', ambiente: 'neve', luz: 0x9fe8ff, grade: { sat: 1.05, con: 1.08, tint: 0xe6f2ff }, vinheta: '6,16,36',
   },
+  pantano: {
+    base1: '#2f4a44', base2: '#16262a', trilha: '#6e6a4e', borda: '#26301f', seixo: '#8fa08a',
+    detalhe: 'grama', ambiente: 'vagalume', luz: 0x9dffc4, grade: { sat: 0.95, con: 1.1, tint: 0xe2fff0 }, vinheta: '6,20,24',
+  },
+  ruinas: {
+    base1: '#8a6a45', base2: '#4a2f22', trilha: '#d8b77a', borda: '#5a3b26', seixo: '#e6d2a0',
+    detalhe: 'cinza', ambiente: 'brasa', luz: 0xffb347, grade: { sat: 1.1, con: 1.1, tint: 0xfff0d0 }, vinheta: '30,16,6',
+  },
 };
 
 // ---------- utilidades ----------
