@@ -49,6 +49,8 @@ export interface DefTorre {
   nivel2: Upgrade;
   /** Nível 2 -> 3: escolha exclusiva A ou B. */
   nivel3: { A: Upgrade; B: Upgrade };
+  /** Nível 3 -> 4: evolução final do caminho escolhido. Opcional (o Totem não tem). */
+  nivel4?: { A: Upgrade; B: Upgrade };
   /** Torre de suporte: não atira; dá bônus na aura. `dano` = % de dano e `cadencia` = % de cadência para as torres vizinhas. */
   suporte?: boolean;
 }
@@ -69,6 +71,10 @@ export const TORRES: Record<string, DefTorre> = {
       A: { nome: 'Cadência', desc: '+70% de cadência', custo: 70, mod: { cadencia: 1.7 } },
       B: { nome: 'Besta pesada', desc: '2x dano, +25% alcance', custo: 70, mod: { dano: 2, alcance: 1.25 } },
     },
+    nivel4: {
+      A: { nome: 'Chuva de flechas', desc: '+40% de cadência e +30% de dano', custo: 160, mod: { cadencia: 1.4, dano: 1.3 } },
+      B: { nome: 'Flecha perfurante', desc: '+80% de dano e +20% de alcance', custo: 170, mod: { dano: 1.8, alcance: 1.2 } },
+    },
   },
   canhao: {
     ...z, id: 'canhao', nome: 'Canhão', desc: 'Dano em área. Só atinge terrestres.',
@@ -77,6 +83,10 @@ export const TORRES: Record<string, DefTorre> = {
     nivel3: {
       A: { nome: 'Raio', desc: '+50% de raio da explosão', custo: 100, mod: { area: 1.5 } },
       B: { nome: 'Incendiário', desc: 'Queima 12 de dano/s por 3s', custo: 100, mod: { queima: 12 } },
+    },
+    nivel4: {
+      A: { nome: 'Bombardeio', desc: '+50% de raio e +40% de dano', custo: 160, mod: { area: 1.5, dano: 1.4 } },
+      B: { nome: 'Fogo infernal', desc: 'Queima 30 de dano/s e +20% de dano', custo: 170, mod: { queima: 30, dano: 1.2 } },
     },
   },
   gelo: {
@@ -88,6 +98,10 @@ export const TORRES: Record<string, DefTorre> = {
       A: { nome: 'Congelar', desc: 'Atordoa 0,35s por golpe, lentidão 70%', custo: 80, mod: { atordoa: 0.35, lentFator: 0.3 } },
       B: { nome: 'Quebra-armadura', desc: 'Remove 60% da armadura por 4s', custo: 80, mod: { quebra: 0.6 } },
     },
+    nivel4: {
+      A: { nome: 'Zero absoluto', desc: 'Atordoa 0,6s e lentidão 80%', custo: 160, mod: { atordoa: 0.6, lentFator: 0.2 } },
+      B: { nome: 'Armadura destruída', desc: 'Remove 80% da armadura e +50% de dano', custo: 170, mod: { quebra: 0.8, dano: 1.5 } },
+    },
   },
   tesla: {
     ...z, id: 'tesla', nome: 'Tesla', desc: 'Raio em cadeia. Acerta voadores.',
@@ -97,6 +111,10 @@ export const TORRES: Record<string, DefTorre> = {
       A: { nome: 'Mais saltos', desc: '+3 saltos na cadeia', custo: 110, mod: { saltos: 3 } },
       B: { nome: 'Atordoa', desc: 'Atordoa 0,5s por golpe, +20% dano', custo: 110, mod: { atordoa: 0.5, dano: 1.2 } },
     },
+    nivel4: {
+      A: { nome: 'Tempestade', desc: '+3 saltos e +30% de dano', custo: 170, mod: { saltos: 3, dano: 1.3 } },
+      B: { nome: 'Choque paralisante', desc: 'Atordoa 0,8s e +30% de cadência', custo: 170, mod: { atordoa: 0.8, cadencia: 1.3 } },
+    },
   },
   alquimista: {
     ...z, id: 'alquimista', nome: 'Alquimista', desc: 'Frasco de veneno que queima por tempo. Acerta voadores.',
@@ -105,6 +123,10 @@ export const TORRES: Record<string, DefTorre> = {
     nivel3: {
       A: { nome: 'Peste', desc: 'Queima 9 de dano/s', custo: 90, mod: { queima: 9 } },
       B: { nome: 'Vapor', desc: '+30% de alcance, +40% de cadência', custo: 90, mod: { alcance: 1.3, cadencia: 1.4 } },
+    },
+    nivel4: {
+      A: { nome: 'Epidemia', desc: 'Queima 18 de dano/s e +20% de alcance', custo: 160, mod: { queima: 18, alcance: 1.2 } },
+      B: { nome: 'Névoa tóxica', desc: '+50% de cadência e +20% de alcance', custo: 170, mod: { cadencia: 1.5, alcance: 1.2 } },
     },
   },
   totem: {
@@ -124,6 +146,10 @@ export const TORRES: Record<string, DefTorre> = {
       A: { nome: 'Salva dupla', desc: '+80% de cadência', custo: 130, mod: { cadencia: 1.8 } },
       B: { nome: 'Napalm', desc: 'Queima 22 de dano/s, +25% de raio', custo: 130, mod: { queima: 22, area: 1.25 } },
     },
+    nivel4: {
+      A: { nome: 'Barragem', desc: '+50% de cadência e +30% de raio', custo: 170, mod: { cadencia: 1.5, area: 1.3 } },
+      B: { nome: 'Inferno', desc: 'Queima 40 de dano/s e +20% de raio', custo: 170, mod: { queima: 40, area: 1.2 } },
+    },
   },
   ballista: {
     ...z, id: 'ballista', nome: 'Balista', desc: 'Um virote pesado e lento, com muito dano por tiro. Só terrestres.',
@@ -132,6 +158,10 @@ export const TORRES: Record<string, DefTorre> = {
     nivel3: {
       A: { nome: 'Perfuração', desc: '+40% de alcance e +40% de dano', custo: 120, mod: { alcance: 1.4, dano: 1.4 } },
       B: { nome: 'Rajada', desc: '+60% de cadência', custo: 120, mod: { cadencia: 1.6 } },
+    },
+    nivel4: {
+      A: { nome: 'Virote mortal', desc: '+60% de dano e +20% de alcance', custo: 170, mod: { dano: 1.6, alcance: 1.2 } },
+      B: { nome: 'Chuva de virotes', desc: '+50% de cadência e +20% de dano', custo: 170, mod: { cadencia: 1.5, dano: 1.2 } },
     },
   },
 };
@@ -160,6 +190,7 @@ export function modsAplicados(t: Torre): Mod[] {
   const mods: Mod[] = [];
   if (t.nivel >= 2) mods.push(def.nivel2.mod);
   if (t.nivel >= 3 && t.caminho) mods.push(def.nivel3[t.caminho].mod);
+  if (t.nivel >= 4 && t.caminho && def.nivel4) mods.push(def.nivel4[t.caminho].mod);
   return mods;
 }
 
@@ -227,5 +258,6 @@ export function opcoesUpgrade(t: Torre): OpcaoUpgrade[] {
   const def = TORRES[t.defId];
   if (t.nivel === 1) return [{ chave: 'N', up: def.nivel2 }];
   if (t.nivel === 2) return [{ chave: 'A', up: def.nivel3.A }, { chave: 'B', up: def.nivel3.B }];
+  if (t.nivel === 3 && t.caminho && def.nivel4) return [{ chave: t.caminho, up: def.nivel4[t.caminho] }];
   return [];
 }
