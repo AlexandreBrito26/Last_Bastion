@@ -1,7 +1,7 @@
 import { Application, BlurFilter, ColorMatrixFilter, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { COR } from '../core/cores';
 import { INIMIGOS } from '../game/data/inimigos';
-import { formaTorre, ramoPrincipal, statsTorre, TORRES } from '../game/data/torres';
+import { formaTorre, ramoPrincipal, statsTorre, TORRES, type Ornamento } from '../game/data/torres';
 import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '../game/data/skins';
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
@@ -234,7 +234,8 @@ export class Renderizador {
     const cx = t.pos.x;
     const cy = t.pos.y;
     const a = this.anguloTorre(t, m);
-    const cor = corTorre(def.id, def.cor, useUI.getState().skin);
+    const forma = formaTorre(t);
+    const cor = forma > 1 ? def.formas[forma - 2].cor : corTorre(def.id, def.cor, useUI.getState().skin);
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
     const ramo = ramoPrincipal(t);
@@ -248,7 +249,6 @@ export class Renderizador {
     g.poly(poligono(cx, cy, 16 * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: clarear(0x41555f, 0.35), alpha: 0.8 });
     brilhoBorda(g, cx, cy - 1.5 * esc, 13.5 * esc, 0xffffff, 0.14);
     if (t.nivel > 1) g.poly(poligono(cx, cy, 17.5 * esc, 8, Math.PI / 8)).stroke({ width: 2, color: corCaminho, alpha: 0.9 });
-    const forma = formaTorre(t);
     if (forma > 1) {
       // anel dourado a partir da 2ª forma; a 4ª forma ganha um segundo anel mais externo
       g.poly(poligono(cx, cy, (20 + forma) * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: COR.ouro, alpha: 0.35 + forma * 0.1 });
@@ -346,6 +346,7 @@ export class Renderizador {
     }
 
     // brilho do disparo na boca
+    if (forma > 1) this.desenharOrnamento(g, cx, cy, esc, def.formas[forma - 2].ornamento, cor);
     if (flash > 0 && def.id !== 'tesla' && def.id !== 'gelo') this.luz(cx + Math.cos(a) * 18, cy - 3 + Math.sin(a) * 18, 18, cor, 0.9 * flash);
 
     // marcações de nível
@@ -555,6 +556,26 @@ export class Renderizador {
   }
 
   // ---------- quadro ----------
+
+  /** Ornamentos das formas 2 a 4: pontas, asas e coroa, desenhados sobre o corpo da torre. */
+  private desenharOrnamento(g: Graphics, cx: number, cy: number, esc: number, tipo: Ornamento, cor: number): void {
+    const cl = clarear(cor, 0.3);
+    if (tipo === 'pontas') {
+      for (const dx of [-1, 1]) {
+        g.poly([cx + dx * 11 * esc, cy - 6 * esc, cx + dx * 16 * esc, cy - 14 * esc, cx + dx * 15 * esc, cy - 2 * esc]).fill(cl);
+      }
+    } else if (tipo === 'asas') {
+      for (const dx of [-1, 1]) {
+        g.poly([cx + dx * 15 * esc, cy - 4 * esc, cx + dx * 27 * esc, cy - 12 * esc, cx + dx * 18 * esc, cy + 6 * esc]).fill({ color: cl, alpha: 0.9 });
+      }
+    } else {
+      // coroa: três pontas no topo
+      for (const dx of [-7, 0, 7]) {
+        g.poly([cx + (dx - 3) * esc, cy - 14 * esc, cx + dx * esc, cy - 24 * esc, cx + (dx + 3) * esc, cy - 14 * esc]).fill(cl);
+      }
+      g.circle(cx, cy - 26 * esc, 2 * esc).fill(COR.ouro);
+    }
+  }
 
   /** Mapa de calor: células em tons de amarelo a vermelho conforme o tempo que os inimigos passaram ali. */
   private desenharCalor(): void {

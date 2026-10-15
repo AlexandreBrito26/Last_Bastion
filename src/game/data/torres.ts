@@ -24,6 +24,14 @@ export interface Upgrade {
   mod: Mod;
 }
 
+export type Ornamento = 'pontas' | 'asas' | 'coroa';
+
+export interface Forma {
+  nome: string;
+  cor: number;
+  ornamento: Ornamento;
+}
+
 export interface Ramo {
   nome: string;
   nos: Upgrade[];
@@ -52,6 +60,8 @@ export interface DefTorre {
   cor: number;
   /** Árvore de evolução: cada ramo tem nós que precisam ser comprados em ordem. */
   arvore: Ramo[];
+  /** Formas 2 a 4: nome próprio, cor base e ornamento visual. */
+  formas: Forma[];
   /** Torre de suporte: não atira; dá bônus na aura. `dano` = % de dano e `cadencia` = % de cadência para as torres vizinhas. */
   suporte?: boolean;
 }
@@ -67,6 +77,11 @@ export const TORRES: Record<string, DefTorre> = {
   arqueiro: {
     ...z, id: 'arqueiro', nome: 'Arqueiro', desc: 'Dano único, barato. Acerta voadores.',
     custo: 50, antiAereo: true, alcance: 150, cadencia: 1.5, dano: 19, velProjetil: 420, cor: 0x4cc9f0,
+    formas: [
+      { nome: 'Batedor', cor: 0x2ec4b6, ornamento: 'pontas' },
+      { nome: 'Franco-atirador', cor: 0x9b5de5, ornamento: 'asas' },
+      { nome: 'Sentinela Celeste', cor: 0xffd166, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Precisão', nos: [
         { nome: 'Treino', desc: '+60% de dano', custo: 50, mod: { dano: 1.6 } },
@@ -88,6 +103,11 @@ export const TORRES: Record<string, DefTorre> = {
   canhao: {
     ...z, id: 'canhao', nome: 'Canhão', desc: 'Dano em área. Só atinge terrestres.',
     custo: 90, antiAereo: false, alcance: 130, cadencia: 0.6, dano: 48, velProjetil: 300, area: 55, cor: 0x4361ee,
+    formas: [
+      { nome: 'Artilheiro', cor: 0xff7b00, ornamento: 'pontas' },
+      { nome: 'Bombardeiro', cor: 0xd00000, ornamento: 'asas' },
+      { nome: 'Titã de Ferro', cor: 0xffba08, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Potência', nos: [
         { nome: 'Pólvora', desc: '+60% de dano', custo: 65, mod: { dano: 1.6 } },
@@ -110,6 +130,11 @@ export const TORRES: Record<string, DefTorre> = {
     ...z, id: 'gelo', nome: 'Gelo', desc: 'Lentidão. Só atinge terrestres.',
     custo: 70, antiAereo: false, alcance: 120, cadencia: 1.2, dano: 7, velProjetil: 380,
     lentFator: 0.5, lentDur: 2, cor: 0xcaf0f8,
+    formas: [
+      { nome: 'Geomante', cor: 0x48cae4, ornamento: 'pontas' },
+      { nome: 'Tecelão de Gelo', cor: 0x0096c7, ornamento: 'asas' },
+      { nome: 'Rainha do Inverno', cor: 0xcaf0f8, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Frio', nos: [
         { nome: 'Frio intenso', desc: 'Lentidão maior e mais longa', custo: 50, mod: { lentFator: 0.4, lentDur: 1.3 } },
@@ -131,6 +156,11 @@ export const TORRES: Record<string, DefTorre> = {
   tesla: {
     ...z, id: 'tesla', nome: 'Tesla', desc: 'Raio em cadeia. Acerta voadores.',
     tipo: 'cadeia', custo: 110, antiAereo: true, alcance: 125, cadencia: 1.1, dano: 17, velProjetil: 0, saltos: 2, cor: 0x9d4edd,
+    formas: [
+      { nome: 'Condutor', cor: 0xc77dff, ornamento: 'pontas' },
+      { nome: 'Tempestade Viva', cor: 0x7b2cbf, ornamento: 'asas' },
+      { nome: 'Deus do Raio', cor: 0xfffb8f, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Corrente', nos: [
         { nome: 'Mais saltos', desc: '+3 saltos na cadeia', custo: 110, mod: { saltos: 3 } },
@@ -152,6 +182,11 @@ export const TORRES: Record<string, DefTorre> = {
   alquimista: {
     ...z, id: 'alquimista', nome: 'Alquimista', desc: 'Frasco de veneno que queima por tempo. Acerta voadores.',
     custo: 85, antiAereo: true, alcance: 135, cadencia: 0.9, dano: 12, velProjetil: 340, queima: 6, cor: 0x7cff6b,
+    formas: [
+      { nome: 'Boticário', cor: 0x52b788, ornamento: 'pontas' },
+      { nome: 'Mestre Alquimista', cor: 0x2d6a4f, ornamento: 'asas' },
+      { nome: 'Arquiteto da Peste', cor: 0xb7ff5a, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Destilação', nos: [
         { nome: 'Destilação', desc: '+60% de dano', custo: 60, mod: { dano: 1.6 } },
@@ -173,6 +208,11 @@ export const TORRES: Record<string, DefTorre> = {
   totem: {
     ...z, id: 'totem', nome: 'Totem', desc: 'Não ataca. Dá +15% de dano e +10% de cadência às torres próximas (não acumula).',
     custo: 80, antiAereo: false, alcance: 120, cadencia: 10, dano: 15, velProjetil: 0, cor: 0xffd166, suporte: true,
+    formas: [
+      { nome: 'Estandarte', cor: 0xffb703, ornamento: 'pontas' },
+      { nome: 'Totem Sagrado', cor: 0xfb8500, ornamento: 'asas' },
+      { nome: 'Pilar Divino', cor: 0xfff3b0, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Fúria', nos: [
         { nome: 'Fúria', desc: 'Aura de dano +50%', custo: 90, mod: { dano: 1.5 } },
@@ -194,6 +234,11 @@ export const TORRES: Record<string, DefTorre> = {
   morteiro: {
     ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
     custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 90, velProjetil: 230, area: 70, cor: 0xf8961e,
+    formas: [
+      { nome: 'Canhoneiro', cor: 0xf4a261, ornamento: 'pontas' },
+      { nome: 'Mortal Pesado', cor: 0xe76f51, ornamento: 'asas' },
+      { nome: 'Juízo Final', cor: 0x9d0208, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Cargas', nos: [
         { nome: 'Cargas pesadas', desc: '+60% de dano', custo: 90, mod: { dano: 1.6 } },
@@ -215,6 +260,11 @@ export const TORRES: Record<string, DefTorre> = {
   ballista: {
     ...z, id: 'ballista', nome: 'Balista', desc: 'Um virote pesado e lento, com muito dano por tiro. Só terrestres.',
     custo: 110, antiAereo: false, alcance: 200, cadencia: 0.5, dano: 84, velProjetil: 520, cor: 0x8d6e63,
+    formas: [
+      { nome: 'Escorpião', cor: 0xa98467, ornamento: 'pontas' },
+      { nome: 'Balista Pesada', cor: 0x6f4e37, ornamento: 'asas' },
+      { nome: 'Caçador de Dragões', cor: 0xc0c0c0, ornamento: 'coroa' },
+    ],
     arvore: [
       { nome: 'Ponta de ferro', nos: [
         { nome: 'Ponta de ferro', desc: '+50% de dano', custo: 75, mod: { dano: 1.5 } },
@@ -254,8 +304,6 @@ export interface Stats {
   atordoa: number;
 }
 
-/** Nomes das formas 2 a 4 (a forma 1 usa o nome base da torre). */
-export const NOMES_FORMA = ['', 'Veterano', 'Elite', 'Lendário'] as const;
 /** Multiplicador de dano por forma. A cadência sobe pela metade desse ganho. */
 export const BONUS_FORMA = [1, 1.15, 1.35, 1.6] as const;
 
@@ -265,10 +313,10 @@ export function formaTorre(t: Torre): number {
   return Math.min(4, 1 + Math.floor(total / 3));
 }
 
+/** Nome da forma atual. A forma 1 usa o nome base da torre. */
 export function nomeTorre(t: Torre): string {
   const f = formaTorre(t);
-  const nome = TORRES[t.defId].nome;
-  return f > 1 ? `${NOMES_FORMA[f - 1]} ${nome}` : nome;
+  return f > 1 ? TORRES[t.defId].formas[f - 2].nome : TORRES[t.defId].nome;
 }
 
 export function modsAplicados(t: Torre): Mod[] {

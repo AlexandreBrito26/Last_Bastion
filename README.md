@@ -10,7 +10,7 @@ M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 ## Novidades
 - **Tutorial**: dicas na primeira partida, fechadas com "Entendi" (salvo no navegador).
 - **Prévia de upgrade**: cada melhoria mostra o efeito em dano, cadência, alcance e outros atributos.
-- **Formas da torre**: a cada 3 nós comprados a torre evolui. Forma 2 (Veterano), forma 3 (Elite) e forma 4 (Lendário), com mais dano e cadência e um anel dourado no desenho.
+- **Formas da torre**: a cada 3 nós comprados a torre evolui. Cada forma tem nome próprio, cor base e ornamento (pontas, asas e coroa), com mais dano e cadência. Por exemplo, o Arqueiro vai de Batedor a Franco-atirador e Sentinela Celeste.
 - **Árvore de evolução**: cada torre tem três ramos com três nós. Um nó só fica disponível depois do anterior do mesmo ramo, então dá para escolher um foco ou combinar ramos. A cor da torre segue o ramo com mais nós.
 - **Venda em lote**: com várias torres do mesmo tipo, o painel da torre selecionada oferece vender todas de uma vez, com confirmação.
 - **Mapa de calor (H)**: mostra em amarelo a vermelho por onde os inimigos passam mais, para planejar onde posicionar as torres.
