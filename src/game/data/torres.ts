@@ -125,6 +125,15 @@ export const TORRES: Record<string, DefTorre> = {
       B: { nome: 'Napalm', desc: 'Queima 22 de dano/s, +25% de raio', custo: 130, mod: { queima: 22, area: 1.25 } },
     },
   },
+  ballista: {
+    ...z, id: 'ballista', nome: 'Balista', desc: 'Um virote pesado e lento, com muito dano por tiro. Só terrestres.',
+    custo: 110, antiAereo: false, alcance: 200, cadencia: 0.5, dano: 70, velProjetil: 520, cor: 0x8d6e63,
+    nivel2: { nome: 'Ponta de ferro', desc: '+50% de dano', custo: 75, mod: { dano: 1.5 } },
+    nivel3: {
+      A: { nome: 'Perfuração', desc: '+40% de alcance e +40% de dano', custo: 120, mod: { alcance: 1.4, dano: 1.4 } },
+      B: { nome: 'Rajada', desc: '+60% de cadência', custo: 120, mod: { cadencia: 1.6 } },
+    },
+  },
 };
 
 export const PRIORIDADES = ['primeiro', 'ultimo', 'forte', 'perto'] as const;

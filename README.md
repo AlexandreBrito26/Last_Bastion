@@ -1,10 +1,10 @@
 # Last Bastion
 `npm install && npm run dev`
 
-Tower defense 2D (PixiJS + React + Zustand). 4 torres (Arqueiro, Canhão, Gelo, Tesla), 9 tipos de inimigo
+Tower defense 2D (PixiJS + React + Zustand). 5 torres de ataque (Arqueiro, Canhão, Gelo, Tesla, Balista), 9 tipos de inimigo
 (voador, curandeiro, blindado, espectro, sapador, chefe com fases e dragão), 10 ondas por fase.
 
-**Atalhos:** 1-7 escolhem torre · Q meteoro · W congelar · E escudo · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
+**Atalhos:** 1-8 escolhem torre · Q meteoro · W congelar · E escudo · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
 M liga/desliga o som · F tela cheia · R reinicia.
 
 ## Novidades
