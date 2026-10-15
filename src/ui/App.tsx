@@ -4,7 +4,7 @@ import { audio } from '../core/audio';
 import { COR } from '../core/cores';
 import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
 import { custoTorre } from '../game/construcao';
-import { opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
+import { nomeTorre, opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
 import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
@@ -341,7 +341,7 @@ export function App() {
             return (
               <>
                 <div style={{ fontSize: 16 }}>
-                  {def.nome} · nível {sel.nivel}
+                  {nomeTorre(sel)} · nível {sel.nivel}
                   <div style={{ fontWeight: 400, fontSize: 11, opacity: 0.8 }}>{def.arvore.map((r, i) => `${r.nome} ${sel.ramos[i] ?? 0}`).join(' · ')}</div>
                 </div>
                 <div style={{ fontWeight: 400, fontSize: 13, lineHeight: 1.5 }}>

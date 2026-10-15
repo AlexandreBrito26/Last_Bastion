@@ -254,6 +254,23 @@ export interface Stats {
   atordoa: number;
 }
 
+/** Nomes das formas 2 a 4 (a forma 1 usa o nome base da torre). */
+export const NOMES_FORMA = ['', 'Veterano', 'Elite', 'Lendário'] as const;
+/** Multiplicador de dano por forma. A cadência sobe pela metade desse ganho. */
+export const BONUS_FORMA = [1, 1.15, 1.35, 1.6] as const;
+
+/** Forma atual da torre: 1 até 2 nós, 2 com 3 nós, 3 com 6, 4 com 9. */
+export function formaTorre(t: Torre): number {
+  const total = t.ramos.reduce((a, b) => a + b, 0);
+  return Math.min(4, 1 + Math.floor(total / 3));
+}
+
+export function nomeTorre(t: Torre): string {
+  const f = formaTorre(t);
+  const nome = TORRES[t.defId].nome;
+  return f > 1 ? `${NOMES_FORMA[f - 1]} ${nome}` : nome;
+}
+
 export function modsAplicados(t: Torre): Mod[] {
   const def = TORRES[t.defId];
   const mods: Mod[] = [];
@@ -297,6 +314,9 @@ export function statsTorre(t: Torre): Stats {
     dano: d.dano, cadencia: d.cadencia, alcance: d.alcance, velProjetil: d.velProjetil, area: d.area,
     saltos: d.saltos, lentFator: d.lentFator, lentDur: d.lentDur, quebra: d.quebra, queima: d.queima, atordoa: d.atordoa,
   };
+  const bonus = BONUS_FORMA[formaTorre(t) - 1];
+  s.dano *= bonus;
+  s.cadencia *= 1 + (bonus - 1) / 2;
   for (const m of modsAplicados(t)) {
     s.dano *= m.dano ?? 1;
     s.cadencia *= m.cadencia ?? 1;

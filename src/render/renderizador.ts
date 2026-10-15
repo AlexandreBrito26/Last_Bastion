@@ -1,7 +1,7 @@
 import { Application, BlurFilter, ColorMatrixFilter, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { COR } from '../core/cores';
 import { INIMIGOS } from '../game/data/inimigos';
-import { ramoPrincipal, statsTorre, TORRES } from '../game/data/torres';
+import { formaTorre, ramoPrincipal, statsTorre, TORRES } from '../game/data/torres';
 import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '../game/data/skins';
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
@@ -248,6 +248,12 @@ export class Renderizador {
     g.poly(poligono(cx, cy, 16 * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: clarear(0x41555f, 0.35), alpha: 0.8 });
     brilhoBorda(g, cx, cy - 1.5 * esc, 13.5 * esc, 0xffffff, 0.14);
     if (t.nivel > 1) g.poly(poligono(cx, cy, 17.5 * esc, 8, Math.PI / 8)).stroke({ width: 2, color: corCaminho, alpha: 0.9 });
+    const forma = formaTorre(t);
+    if (forma > 1) {
+      // anel dourado a partir da 2ª forma; a 4ª forma ganha um segundo anel mais externo
+      g.poly(poligono(cx, cy, (20 + forma) * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: COR.ouro, alpha: 0.35 + forma * 0.1 });
+      if (forma === 4) g.poly(poligono(cx, cy, 24 * esc, 8, Math.PI / 8)).stroke({ width: 1, color: COR.ouro, alpha: 0.5 });
+    }
 
     const s = esc;
     switch (def.id) {
