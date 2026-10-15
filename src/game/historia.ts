@@ -40,6 +40,11 @@ export const HISTORIA: Record<string, string[]> = {
     'Os cristais fortalecem as ondas inimigas, que resistem a armaduras e a quebras.',
     'Use o poder do vale a seu favor. O Bastião conta com você.',
   ],
+  cemiterio: [
+    'Sob a névoa do Cemitério Sombrio, as lápides guardam nomes que ninguém mais lembra.',
+    'Ceifadores cortam o céu, e golems de cristal avançam como sentinelas que nunca dormem.',
+    'Honre os mortos mantendo a trilha fechada. O Bastião não pode cair aqui.',
+  ],
   bastiao: [
     'Chegou o Coração do Bastião. Aqui, a última muralha se ergue sobre lava e cristal.',
     'Dois chefes marcham até o portão final, cada um mais forte que o anterior.',
