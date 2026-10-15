@@ -6,6 +6,7 @@ import { chamarOnda, construir, habPronta, melhorar, usarCongelar, usarEscudo, u
 import { torreEm } from './game/construcao';
 import { MAPA_1 } from './game/data/mapas';
 import { opcoesUpgrade, TORRES } from './game/data/torres';
+import { alternarCalor } from './game/calor';
 import { atualizarFeedback, iniciarFeedback } from './game/feedback';
 import { novaPartida } from './game/partida';
 import { entrada, ref } from './game/ref';
@@ -137,6 +138,10 @@ async function main(): Promise<void> {
     }
     if (k === 'f') {
       alternarTelaCheia();
+      return;
+    }
+    if (k === 'h') {
+      alternarCalor();
       return;
     }
     if (s.tela !== 'jogo') return;

@@ -1,3 +1,4 @@
+import { registrarCalor } from '../calor';
 import { dist, type Vec } from '../../core/vec';
 import { INIMIGOS } from '../data/inimigos';
 import { auraDe, DECAIMENTO_SALTO, DUR_QUEBRA, DUR_QUEIMA, RAIO_SALTO, statsTorre, TORRES, type Stats } from '../data/torres';
@@ -189,6 +190,7 @@ export function sistemaMovimento(m: Mundo, mapa: Mapa, dt: number): void {
       }
     }
     e.progresso += total - resta;
+    registrarCalor(e.pos.x, e.pos.y, dt);
     if (e.indiceWp >= mapa.waypoints.length) {
       e.vivo = false;
       e.chegou = true;

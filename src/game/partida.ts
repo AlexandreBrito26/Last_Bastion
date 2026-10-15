@@ -1,3 +1,4 @@
+import { iniciarCalor } from './calor';
 import { gerarOndas, ondaInfinita, PAUSA_ENTRE_ONDAS } from './data/ondas';
 import { mapaPorId, type Mapa } from './data/mapas';
 import { criarMundo } from './estado';
@@ -22,6 +23,7 @@ export function novaPartida(mapa?: Mapa): void {
   const base = mapa ?? mapaPorId(ref.mapa ? ref.mapa.id : ui.mapaId);
   const m = ui.desafio ? aplicarDesafio(base) : base;
   ref.mapa = m;
+  iniciarCalor(m.largura, m.altura);
   ref.ondas = gerarOndas(m);
   ref.endless = false;
   ui.reiniciar(m.id, m.ouroInicial, m.vidas);

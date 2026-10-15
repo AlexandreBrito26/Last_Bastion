@@ -12,6 +12,7 @@ import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
 import { Menu } from './Menu';
 import { alternarTelaCheia } from './telaCheia';
+import { alternarCalor, calorLigado } from '../game/calor';
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 
@@ -102,6 +103,22 @@ function Tutorial() {
       </ol>
       <button className="hud-btn" style={botao(true)} onClick={fechar}>Entendi</button>
     </div>
+  );
+}
+
+/** Liga e desliga o mapa de calor (tecla H). */
+function BotaoCalor() {
+  const [ligado, setLigado] = useState(calorLigado);
+  return (
+    <button
+      className="hud-btn"
+      style={botao(ligado)}
+      onClick={() => { clique(); alternarCalor(); setLigado(calorLigado()); }}
+      title={ligado ? 'Esconder mapa de calor (H)' : 'Mostrar mapa de calor (H)'}
+      aria-label="Mapa de calor"
+    >
+      🔥
+    </button>
   );
 }
 
@@ -207,6 +224,7 @@ export function App() {
             <button key={v} className="hud-btn" style={botao(s.velocidade === v)} onClick={() => { clique(); s.definirVelocidade(v); }}>{v}x</button>
           ))}
           <button className="hud-btn" style={botao(s.pausado)} onClick={() => { clique(); s.alternarPausa(); }}>{s.pausado ? 'Continuar' : 'Pausar'}</button>
+          <BotaoCalor />
           <BotaoTelaCheia />
           <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
           <button className="hud-btn" style={botao()} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>

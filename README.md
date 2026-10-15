@@ -5,11 +5,12 @@ Tower defense 2D (PixiJS + React + Zustand). 5 torres de ataque (Arqueiro, Canh�
 (voador, curandeiro, blindado, espectro, sapador, chefe com fases e dragão), 10 ondas por fase.
 
 **Atalhos:** 1-8 escolhem torre · Q meteoro · W congelar · E escudo · U melhora e V vende a torre selecionada · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
-M liga/desliga o som · F tela cheia · R reinicia.
+M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 
 ## Novidades
 - **Tutorial**: dicas na primeira partida, fechadas com "Entendi" (salvo no navegador).
 - **Prévia de upgrade**: cada melhoria mostra o efeito em dano, cadência, alcance e outros atributos.
+- **Mapa de calor (H)**: mostra em amarelo a vermelho por onde os inimigos passam mais, para planejar onde posicionar as torres.
 - **Atalhos U e V**: melhora e vende a torre selecionada.
 - **Balista** e a fase **Pântano Profundo**.
 - **Modo sem fim (∞):** depois de vencer uma fase, o botão *Modo sem fim* gera ondas infinitas. A composição gira

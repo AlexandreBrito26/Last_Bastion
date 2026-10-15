@@ -6,6 +6,7 @@ import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '..
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
 import { fx } from '../game/feedback';
+import { calorLigado, CELULA_CALOR, gradeCalor } from '../game/calor';
 import { brilhoBorda, contorno, corpoRespirando } from './sprites';
 import { entrada, ref } from '../game/ref';
 import { useUI } from '../store/ui';
@@ -66,6 +67,7 @@ export class Renderizador {
   private entidades = new Graphics();
   private particulas = new Graphics();
   private brilho = new Graphics();
+  private calor = new Graphics();
   private camadaTexto = new Container();
   private camadaVinheta = new Container();
   private textos: Text[] = [];
@@ -127,7 +129,7 @@ export class Renderizador {
     } catch {
       this.blur = null;
     }
-    this.mundo.addChild(this.camadaChao, this.entidades, this.particulas, this.brilho, this.camadaTexto, this.camadaVinheta);
+    this.mundo.addChild(this.camadaChao, this.calor, this.entidades, this.particulas, this.brilho, this.camadaTexto, this.camadaVinheta);
     this.montarMapa(mapa);
   }
 
@@ -547,7 +549,25 @@ export class Renderizador {
 
   // ---------- quadro ----------
 
+  /** Mapa de calor: células em tons de amarelo a vermelho conforme o tempo que os inimigos passaram ali. */
+  private desenharCalor(): void {
+    const c = this.calor;
+    c.clear();
+    if (!calorLigado()) return;
+    const { cols, rows, grade, maximo } = gradeCalor();
+    if (maximo <= 0) return;
+    for (let r = 0; r < rows; r++) {
+      for (let k = 0; k < cols; k++) {
+        const v = grade[r * cols + k] / maximo;
+        if (v <= 0.02) continue;
+        const cor = v > 0.6 ? 0xff3b2f : v > 0.3 ? 0xff9f1c : 0xffe066;
+        c.rect(k * CELULA_CALOR, r * CELULA_CALOR, CELULA_CALOR, CELULA_CALOR).fill({ color: cor, alpha: 0.12 + v * 0.4 });
+      }
+    }
+  }
+
   desenhar(m: Mundo): void {
+    this.desenharCalor();
     if (!this.mapaAtual || ref.mapa !== this.mapaAtual) {
       if (ref.mapa) this.montarMapa(ref.mapa);
       else return;
