@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { audio } from '../core/audio';
 import { COR } from '../core/cores';
-import { MAPA_1, MAPAS, type Mapa } from '../game/data/mapas';
+import { MAPAS, type Mapa } from '../game/data/mapas';
 import { gerarOndas } from '../game/data/ondas';
 import { TEMAS } from '../render/arte';
 import { TORRES } from '../game/data/torres';
+import { SKINS, type Skin } from '../game/data/skins';
+import { desenharPrevia } from './previa';
+import { Logo } from './Logo';
+import { FundoMenu } from './FundoMenu';
+import { NIVEIS } from '../core/qualidade';
 import { novaPartida } from '../game/partida';
 import { chaveFase, useUI } from '../store/ui';
 
@@ -25,7 +30,7 @@ const botaoMenu = (primario = false): CSSProperties => ({
   cursor: 'pointer',
 });
 
-type Painel = null | 'como' | 'sobre' | 'opcoes' | 'fases';
+type Painel = null | 'como' | 'sobre' | 'opcoes' | 'fases' | 'loja';
 
 const COR_OBST: Record<string, string> = { arvore: '#2f8a46', pinheiro: '#1f5d4a', rocha: '#8d949a', lago: '#2f8fb5', lava: '#ff6a10', cristal: '#6fd6f0' };
 
@@ -94,50 +99,68 @@ function Fases({ fechar }: { fechar: () => void }) {
 }
 
 /** Fundo animado: a trilha do mapa com inimigos andando e torres decorativas. */
-function Fundo() {
-  const pts = MAPA_1.waypoints.map((p) => `${p.x},${p.y}`).join(' ');
-  const caminho = 'M ' + MAPA_1.waypoints.map((p) => `${p.x} ${p.y}`).join(' L ');
-  const torres = [
-    { x: 150, y: 230, c: COR.acento },
-    { x: 330, y: 300, c: COR.ouro },
-    { x: 600, y: 270, c: COR.torreArcana },
-    { x: 650, y: 80, c: COR.acento },
-    { x: 850, y: 300, c: COR.ouro },
-    { x: 560, y: 480, c: COR.torreArcana },
-  ];
-  return (
-    <svg viewBox={`0 0 ${MAPA_1.largura} ${MAPA_1.altura}`} preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-      <defs>
-        <radialGradient id="lb-fundo" cx="50%" cy="45%" r="75%">
-          <stop offset="0%" stopColor={hex(COR.ceuClaro)} />
-          <stop offset="100%" stopColor={hex(COR.ceu)} />
-        </radialGradient>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#lb-fundo)" />
-      <polyline points={pts} fill="none" stroke={hex(COR.trilhaBorda)} strokeWidth={MAPA_1.larguraTrilha + 6} strokeLinejoin="round" opacity=".35" />
-      <polyline points={pts} fill="none" stroke={hex(COR.trilha)} strokeWidth={MAPA_1.larguraTrilha} strokeLinejoin="round" opacity=".28" />
-      {torres.map((t, i) => (
-        <g key={i} opacity=".5">
-          <circle cx={t.x} cy={t.y} r="16" fill={hex(t.c)} />
-          <circle cx={t.x} cy={t.y} r="70" fill="none" stroke={hex(t.c)} strokeDasharray="4 6" opacity=".4" style={{ animation: `lb-brilho ${3 + i * 0.4}s infinite` }} />
-        </g>
-      ))}
-      {Array.from({ length: 7 }, (_, i) => (
-        <circle key={i} r={i % 3 === 0 ? 11 : 8} fill={hex(i % 3 === 0 ? COR.inimigoElite : COR.inimigo)} opacity=".85">
-          <animateMotion dur="26s" begin={`${-i * 3.7}s`} repeatCount="indefinite" path={caminho} />
-        </circle>
-      ))}
-      <rect width="100%" height="100%" fill="#0c0a1d" opacity=".35" />
-    </svg>
-  );
-}
-
 function Controle({ rotulo, valor, onChange }: { rotulo: string; valor: number; onChange: (v: number) => void }) {
   return (
     <label style={{ display: 'flex', flexDirection: 'column', gap: 4, font: '600 13px system-ui, sans-serif' }}>
       <span style={{ display: 'flex', justifyContent: 'space-between' }}>{rotulo}<span style={{ opacity: 0.7 }}>{Math.round(valor * 100)}%</span></span>
       <input className="lb-range" type="range" min={0} max={1} step={0.05} value={valor} onChange={(e) => onChange(Number(e.target.value))} onPointerUp={() => audio.tocar('clique')} />
     </label>
+  );
+}
+
+function PreviaSkin({ id }: { id: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const skin = SKINS.find((k) => k.id === id);
+    if (ref.current && skin) desenharPrevia(ref.current, skin);
+  }, [id]);
+  return <canvas ref={ref} style={{ width: '100%', maxWidth: 360, height: 64, borderRadius: 6, background: '#120e26' }} />;
+}
+
+function Loja({ fechar }: { fechar: () => void }) {
+  const s = useUI();
+  const [aviso, setAviso] = useState<string | null>(null);
+  const comprar = (k: Skin) => {
+    if (s.comprarSkin(k.id)) {
+      audio.tocar('clique');
+      s.definirSkin(k.id);
+      setAviso(`${k.nome} comprada e equipada!`);
+    } else {
+      audio.tocar('erro');
+      setAviso(s.skinsCompradas.includes(k.id) ? null : `Faltam ${k.preco - s.moedas} moedas.`);
+    }
+  };
+  return (
+    <div className="menu-info" style={{ width: 480, maxWidth: '92%', background: '#0c0a1dee', border: '1px solid #3d2f66', borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 12, animation: 'lb-entrar .25s both' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+        <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Loja de skins</div>
+        <div style={{ font: '700 16px system-ui, sans-serif', color: hex(COR.ouro) }}>🪙 {s.moedas}</div>
+      </div>
+      <div style={{ font: '400 13px system-ui, sans-serif', opacity: 0.8 }}>Ganhe moedas vencendo fases (mais estrelas rendem mais; o desafio rende o dobro).</div>
+      {SKINS.map((k) => {
+        const tem = s.skinsCompradas.includes(k.id);
+        const equipada = s.skin === k.id;
+        return (
+          <div key={k.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, borderRadius: 8, background: '#120e26', border: `1px solid ${equipada ? hex(COR.acento) : '#3d2f66'}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', font: '600 14px system-ui, sans-serif' }}>
+              <span>{k.nome} <span style={{ opacity: 0.6, fontWeight: 400 }}>— {k.desc}</span></span>
+            </div>
+            <PreviaSkin id={k.id} />
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              {equipada ? (
+                <span style={{ font: '600 13px system-ui, sans-serif', color: hex(COR.acento) }}>Equipada</span>
+              ) : tem ? (
+                <button className="lb-btn" style={{ ...botaoMenu(), padding: '6px 14px', fontSize: 13 }} onClick={() => { audio.tocar('clique'); s.definirSkin(k.id); setAviso(null); }}>Equipar</button>
+              ) : (
+                <button className="lb-btn" disabled={s.moedas < k.preco} style={{ ...botaoMenu(s.moedas >= k.preco), padding: '6px 14px', fontSize: 13, opacity: s.moedas >= k.preco ? 1 : 0.5 }} onClick={() => comprar(k)}>Comprar · 🪙 {k.preco}</button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {aviso && <div style={{ font: '600 13px system-ui, sans-serif', color: hex(COR.ouro), textAlign: 'center' }}>{aviso}</div>}
+      <button className="lb-btn" style={{ ...botaoMenu(), alignSelf: 'center' }} onClick={fechar}>Voltar</button>
+    </div>
   );
 }
 
@@ -151,6 +174,27 @@ function Opcoes() {
       <label style={{ display: 'flex', gap: 8, alignItems: 'center', font: '600 13px system-ui, sans-serif', cursor: 'pointer' }}>
         <input type="checkbox" checked={s.mudo} onChange={s.alternarMudo} style={{ accentColor: hex(COR.acento) }} /> Mudo (tecla M)
       </label>
+      <div style={{ font: '600 13px system-ui, sans-serif', opacity: 0.85 }}>Efeitos visuais</div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        {NIVEIS.map((n) => (
+          <button key={n.id} className="lb-btn menu-btn" onClick={() => { audio.tocar('clique'); s.definirEfeitos(n.id); }}
+            style={{ ...botaoMenu(), padding: '8px 14px', opacity: s.efeitos === n.id ? 1 : 0.6, outline: s.efeitos === n.id ? `2px solid ${hex(COR.acento)}` : 'none' }}>
+            {n.rotulo}
+          </button>
+        ))}
+      </div>
+      <div style={{ font: '400 12px system-ui, sans-serif', opacity: 0.7 }}>Use Baixo em aparelhos mais fracos ou para economizar bateria.</div>
+      <div style={{ font: '600 13px system-ui, sans-serif', opacity: 0.85 }}>Skin</div>
+      <PreviaSkin id={s.skin} />
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {SKINS.filter((k) => s.skinsCompradas.includes(k.id)).map((k) => (
+          <button key={k.id} className="lb-btn" title={k.desc} onClick={() => { audio.tocar('clique'); s.definirSkin(k.id); }}
+            style={{ padding: '6px 12px', borderRadius: 6, cursor: 'pointer', font: '600 13px system-ui, sans-serif', color: '#fff',
+              background: s.skin === k.id ? '#3d2f66' : '#1a1433', border: `1px solid ${s.skin === k.id ? hex(COR.acento) : '#3d2f66'}` }}>
+            {k.nome}
+          </button>
+        ))}
+      </div>
     </>
   );
 }
@@ -210,28 +254,39 @@ export function Menu() {
 
   return (
     <div style={{ position: 'absolute', inset: 0, pointerEvents: 'auto', color: hex(COR.ui), overflow: 'hidden', font: '600 15px system-ui, sans-serif' }}>
-      <Fundo />
+      <FundoMenu />
       <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28 }} className="menu-col">
         <div style={{ textAlign: 'center', animation: 'lb-flutuar 4s ease-in-out infinite' }}>
-          <div className="menu-titulo" style={{ font: '800 64px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.acento)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.acento)}66)` }}>
+          <div className="menu-logo"><Logo tamanho={96} /></div>
+          <div className="menu-titulo" style={{ font: '800 58px system-ui, sans-serif', letterSpacing: 8, background: `linear-gradient(180deg, ${hex(COR.ui)}, ${hex(COR.acento)})`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: `drop-shadow(0 0 18px ${hex(COR.acento)}66)`, marginTop: 6 }}>
             LAST BASTION
           </div>
-          <div className="menu-sub" style={{ font: '500 15px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 4 }}>DEFENDA O ÚLTIMO REDUTO</div>
+          <div style={{ width: 120, height: 2, margin: '6px auto 0', background: `linear-gradient(90deg, transparent, ${hex(COR.acento)}, transparent)` }} />
+          <div className="menu-sub" style={{ font: '500 14px system-ui, sans-serif', letterSpacing: 6, opacity: 0.75, marginTop: 6 }}>DEFENDA O ÚLTIMO REDUTO</div>
         </div>
 
         {painel === 'fases' ? (
           <Fases fechar={() => setPainel(null)} />
+        ) : painel === 'loja' ? (
+          <Loja fechar={() => setPainel(null)} />
         ) : painel ? (
           <PainelInfo tipo={painel as Exclude<Painel, null | 'fases'>} fechar={() => setPainel(null)} />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .3s both' }}>
-            <button className="lb-btn menu-btn" style={botaoMenu(true)} onClick={() => { audio.destravar(); audio.tocar('clique'); jogar(); }}>
+          <div className="menu-col" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, animation: 'lb-entrar .3s both' }}>
+            <button className="lb-btn menu-btn" style={{ ...botaoMenu(true), width: 280, textAlign: 'center', fontSize: 19 }} onClick={() => { audio.destravar(); audio.tocar('clique'); jogar(); }}>
               ▶  {emAndamento ? `Continuar (onda ${s.onda}/${s.totalOndas})` : 'Jogar'}
             </button>
-            {emAndamento && <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); novoJogo(); }}>↻  Novo jogo</button>}
-            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('como'); }}>?  Como jogar</button>
-            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('opcoes'); }}>♪  Opções</button>
-            <button className="lb-btn menu-btn" style={botaoMenu()} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
+            {emAndamento && (
+              <button className="lb-btn menu-btn" style={{ background: 'none', border: 'none', color: hex(COR.ui), opacity: 0.7, font: '600 13px system-ui, sans-serif', cursor: 'pointer', padding: 2 }} onClick={() => { audio.tocar('clique'); novoJogo(); }}>
+                ↻ começar um jogo novo
+              </button>
+            )}
+            <div className="menu-grade" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, width: 280, marginTop: 4 }}>
+              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('loja'); }}>🛒  Loja <span style={{ opacity: 0.7, fontSize: 13 }}>· 🪙 {s.moedas}</span></button>
+              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('opcoes'); }}>♪  Opções</button>
+              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('como'); }}>?  Como jogar</button>
+              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
+            </div>
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import { gerarOndas } from './data/ondas';
+import { gerarOndas, ondaInfinita, PAUSA_ENTRE_ONDAS } from './data/ondas';
 import { mapaPorId, type Mapa } from './data/mapas';
 import { criarMundo } from './estado';
 import { limparFeedback } from './feedback';
@@ -23,8 +23,20 @@ export function novaPartida(mapa?: Mapa): void {
   const m = ui.desafio ? aplicarDesafio(base) : base;
   ref.mapa = m;
   ref.ondas = gerarOndas(m);
+  ref.endless = false;
   ui.reiniciar(m.id, m.ouroInicial, m.vidas);
   ui.definirOnda(1, ref.ondas.length);
   ref.mundo = criarMundo();
   limparFeedback();
+}
+
+/** Continua a partida depois da vitória, no modo sem fim: as próximas ondas são geradas sob demanda. */
+export function continuarSemFim(): void {
+  const ui = useUI.getState();
+  ref.endless = true;
+  ref.ondas.push(ondaInfinita(ref.ondas.length));
+  ref.mundo.fase = 'pausa';
+  ref.mundo.temporizador = PAUSA_ENTRE_ONDAS;
+  ui.definirFase('pausa', PAUSA_ENTRE_ONDAS);
+  ui.definirOnda(ref.mundo.ondaIdx + 1, ref.ondas.length);
 }

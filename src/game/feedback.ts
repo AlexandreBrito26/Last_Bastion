@@ -2,6 +2,7 @@ import { audio } from '../core/audio';
 import { COR } from '../core/cores';
 import { ouvir, type EventoJogo } from '../core/eventos';
 import type { Vec } from '../core/vec';
+import { limitesDe } from '../core/qualidade';
 import { useUI } from '../store/ui';
 
 export interface Particula {
@@ -28,7 +29,6 @@ export interface Flutuante {
   cor: number;
 }
 
-const MAX_PARTICULAS = 700;
 const MAX_FLUTUANTES = 20;
 
 /** Estado de feedback visual: partículas, textos flutuantes e tremor de tela. */
@@ -41,7 +41,7 @@ export const fx = {
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
 function emitirParticula(p: Partial<Particula> & Pick<Particula, 'x' | 'y' | 'cor'>): void {
-  if (fx.particulas.length >= MAX_PARTICULAS) return;
+  if (fx.particulas.length >= limitesDe(useUI.getState().efeitos).particulas) return;
   const ttl = p.ttl ?? 0.5;
   fx.particulas.push({ vx: 0, vy: 0, tam: 3, atrito: 0.05, grav: 0, forma: 'quad', fim: 0, ...p, ttl, ttlMax: ttl });
 }
@@ -63,7 +63,13 @@ function flutuante(pos: Vec, texto: string, cor: number): void {
   fx.flutuantes.push({ x: pos.x + rnd(-6, 6), y: pos.y - 10, ttl: 0.9, ttlMax: 0.9, texto, cor });
 }
 
-const tremer = (n: number) => { fx.tremor = Math.min(14, Math.max(fx.tremor, n)); };
+/** Efeitos extras (anéis e faíscas) só nos níveis médio e alto. */
+const extras = () => limitesDe(useUI.getState().efeitos).luz;
+
+const tremer = (n: number) => {
+  if (!limitesDe(useUI.getState().efeitos).tremor) return;
+  fx.tremor = Math.min(14, Math.max(fx.tremor, n));
+};
 
 function tratar(e: EventoJogo): void {
   const ui = useUI.getState();
@@ -98,6 +104,17 @@ function tratar(e: EventoJogo): void {
       audio.tocar(grande ? 'morte_chefe' : 'morte', rnd(-0.1, 0.1) + (11 - e.raio) * 0.03);
       explodir(e.pos, grande ? 70 : 10 + Math.round(e.raio / 2), e.cor, grande ? 280 : 130, grande ? 5 : 3, grande ? 1 : 0.55);
       explodir(e.pos, grande ? 20 : 3, 0xffffff, grande ? 200 : 90, 2, 0.3, 0);
+      if (extras()) {
+        // anel de choque: inimigos grandes e chefes
+        if (grande) anel(e.pos, 110, COR.ouro, 0.7);
+        else if (e.raio >= 13) anel(e.pos, e.raio * 2.4, e.cor, 0.35);
+        // faíscas douradas reforçam o ouro ganho
+        for (let i = 0; i < (grande ? 14 : 5); i++) {
+          const a = rnd(0, Math.PI * 2);
+          const v = rnd(40, 110);
+          emitirParticula({ x: e.pos.x, y: e.pos.y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 30, cor: COR.ouro, tam: rnd(1.5, 2.8), ttl: rnd(0.35, 0.6), grav: 90, forma: 'circ' });
+        }
+      }
       flutuante(e.pos, '+' + e.ouro, COR.ouro);
       if (grande) {
         anel(e.pos, 100, COR.inimigoElite, 0.7);

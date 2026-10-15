@@ -37,6 +37,10 @@ export const TEMAS: Record<TemaId, Tema> = {
     base1: '#8a6a45', base2: '#4a2f22', trilha: '#d8b77a', borda: '#5a3b26', seixo: '#e6d2a0',
     detalhe: 'cinza', ambiente: 'brasa', luz: 0xffb347, grade: { sat: 1.1, con: 1.1, tint: 0xfff0d0 }, vinheta: '30,16,6',
   },
+  deserto: {
+    base1: '#e9c46a', base2: '#b07d3a', trilha: '#f4e1a1', borda: '#7a5224', seixo: '#f2d7a0',
+    detalhe: 'cinza', ambiente: 'brasa', luz: 0xffd27a, grade: { sat: 1.08, con: 1.04, tint: 0xfff6dc }, vinheta: '40,24,8',
+  },
 };
 
 // ---------- utilidades ----------

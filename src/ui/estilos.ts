@@ -47,6 +47,9 @@ export const ESTILOS = `
 .compacto .hud-painel { width: 190px !important; max-height: 78%; overflow-y: auto; padding: 8px !important; }
 .compacto .menu-titulo { font-size: 38px !important; letter-spacing: 4px !important; }
 .compacto .menu-sub { display: none; }
+.compacto .menu-grade { width: 260px !important; }
+.compacto .menu-grade .menu-btn { width: 100% !important; font-size: 14px !important; padding: 8px 10px !important; }
+.compacto .menu-logo svg { width: 64px; height: auto; }
 .compacto .menu-col { gap: 10px !important; }
 .compacto .menu-btn { padding: 8px 14px !important; font-size: 15px !important; width: 240px !important; }
 .compacto .fase-desc { display: none; }

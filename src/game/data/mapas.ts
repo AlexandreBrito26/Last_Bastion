@@ -1,7 +1,7 @@
 import type { Vec } from '../../core/vec';
 import type { DefOnda } from './ondas';
 
-export type TemaId = 'floresta' | 'cinzas' | 'gelo' | 'pantano' | 'ruinas';
+export type TemaId = 'floresta' | 'cinzas' | 'gelo' | 'pantano' | 'ruinas' | 'deserto';
 export type TipoObstaculo = 'arvore' | 'rocha' | 'lago' | 'lava' | 'cristal' | 'pinheiro';
 
 export interface Obstaculo {
@@ -196,6 +196,66 @@ export const MAPAS: Mapa[] = [
       { x: 720, y: 200, r: 24, tipo: 'rocha' },
       { x: 420, y: 430, r: 26, tipo: 'lava' },
       { x: 880, y: 110, r: 20, tipo: 'cristal' },
+    ],
+  },
+  {
+    id: 'deserto',
+    nome: 'Dunas Douradas',
+    desc: 'Areia quente e ventos fortes. As dunas escondem rochas e os inimigos vêm em grandes levas.',
+    tema: 'deserto',
+    largura: L,
+    altura: A,
+    larguraTrilha: 42,
+    ouroInicial: 240,
+    vidas: 18,
+    vidaMult: 1.2,
+    qtdMult: 1.2,
+    chefes: 1,
+    extras: [
+      { bonus: 60, grupos: [{ inimigo: 'enxame', quantidade: 18, intervalo: 0.3 }, { inimigo: 'voador', quantidade: 6, intervalo: 1, atraso: 4 }] },
+      { bonus: 75, grupos: [{ inimigo: 'tanque', quantidade: 4, intervalo: 2.2 }, { inimigo: 'curandeiro', quantidade: 4, intervalo: 2 }, { inimigo: 'rapido', quantidade: 8, intervalo: 0.5, atraso: 6 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 120 }, { x: 250, y: 120 }, { x: 250, y: 380 }, { x: 560, y: 380 },
+      { x: 560, y: 120 }, { x: 800, y: 120 }, { x: 800, y: 420 }, { x: 980, y: 420 },
+    ],
+    obstaculos: [
+      { x: 400, y: 200, r: 26, tipo: 'rocha' },
+      { x: 680, y: 260, r: 24, tipo: 'rocha' },
+      { x: 150, y: 300, r: 20, tipo: 'cristal' },
+      { x: 880, y: 260, r: 20, tipo: 'cristal' },
+      { x: 420, y: 470, r: 22, tipo: 'rocha' },
+    ],
+  },
+  {
+    id: 'bastiao',
+    nome: 'Coração do Bastião',
+    desc: 'A última muralha, cercada de lava e cristal. Dois chefes defendem o portão final.',
+    tema: 'cinzas',
+    largura: L,
+    altura: A,
+    larguraTrilha: 44,
+    ouroInicial: 260,
+    vidas: 20,
+    vidaMult: 1.4,
+    qtdMult: 1.3,
+    chefes: 2,
+    extras: [
+      { bonus: 80, grupos: [{ inimigo: 'tanque', quantidade: 6, intervalo: 1.8 }, { inimigo: 'rapido', quantidade: 14, intervalo: 0.45, atraso: 5 }] },
+      { bonus: 95, grupos: [{ inimigo: 'voador', quantidade: 16, intervalo: 0.5 }, { inimigo: 'curandeiro', quantidade: 4, intervalo: 2, atraso: 4 }, { inimigo: 'espectro', quantidade: 8, intervalo: 0.6, atraso: 8 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 470 }, { x: 200, y: 470 }, { x: 200, y: 250 }, { x: 440, y: 250 },
+      { x: 440, y: 80 }, { x: 720, y: 80 }, { x: 720, y: 420 }, { x: 980, y: 420 },
+    ],
+    obstaculos: [
+      { x: 330, y: 380, r: 24, tipo: 'lava' },
+      { x: 600, y: 250, r: 26, tipo: 'rocha' },
+      { x: 820, y: 220, r: 28, tipo: 'lava' },
+      { x: 330, y: 150, r: 26, tipo: 'cristal' },
+      { x: 100, y: 330, r: 30, tipo: 'lava' },
+      { x: 860, y: 80, r: 24, tipo: 'rocha' },
+      { x: 600, y: 500, r: 22, tipo: 'cristal' },
     ],
   },
 ];

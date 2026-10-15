@@ -1,5 +1,8 @@
 import { create } from 'zustand';
 import type { Fase } from '../game/estado';
+import { gravarSkin, gravarCompradas, lerCompradas, lerSkin, SKINS } from '../game/data/skins';
+import { estrelasPorVidas, gravarMoedas, lerMoedas, recompensaVitoria } from '../game/data/economia';
+import { gravarNivel, lerNivel, type NivelEfeitos } from '../core/qualidade';
 
 /** Só estado que a UI precisa. Posições a 60fps ficam fora daqui. */
 export const OURO_INICIAL = 180;
@@ -52,6 +55,16 @@ interface EstadoUI {
   jogoIniciado: boolean;
   volSfx: number;
   volMusica: number;
+  /** skin das torres (id em SKINS) */
+  skin: string;
+  /** ids das skins liberadas */
+  skinsCompradas: string[];
+  definirSkin: (id: string) => boolean;
+  comprarSkin: (id: string) => boolean;
+  /** moedas da conta (persistentes) */
+  moedas: number;
+  /** moedas ganhas na última vitória (para mostrar na tela de fim) */
+  ultimaRecompensa: number;
   mudo: boolean;
   aviso: Aviso | null;
   pulsoDano: number; // incrementa a cada vida perdida (dispara a animação de dano)
@@ -87,6 +100,9 @@ interface EstadoUI {
   alternarPausa: () => void;
   definirTela: (t: Tela) => void;
   definirVolumes: (sfx: number, musica: number) => void;
+  /** nível de efeitos visuais (salvo no aparelho) */
+  efeitos: NivelEfeitos;
+  definirEfeitos: (n: NivelEfeitos) => void;
   alternarMudo: () => void;
   mostrarAviso: (texto: string, chefe: boolean) => void;
   registrarDano: () => void;
@@ -98,6 +114,27 @@ export const useUI = create<EstadoUI>((set, get) => ({
   tela: 'menu',
   jogoIniciado: false,
   ...lerConfig(),
+  skin: lerSkin(),
+  skinsCompradas: lerCompradas(),
+  definirSkin: (id) => {
+    if (!get().skinsCompradas.includes(id)) return false;
+    gravarSkin(id);
+    set({ skin: id });
+    return true;
+  },
+  comprarSkin: (id) => {
+    const st = get();
+    const skin = SKINS.find((k) => k.id === id);
+    if (!skin || st.skinsCompradas.includes(id) || st.moedas < skin.preco) return false;
+    const moedas = st.moedas - skin.preco;
+    const compradas = [...st.skinsCompradas, id];
+    gravarMoedas(moedas);
+    gravarCompradas(compradas);
+    set({ moedas, skinsCompradas: compradas });
+    return true;
+  },
+  moedas: lerMoedas(),
+  ultimaRecompensa: 0,
   aviso: null,
   pulsoDano: 0,
   ouro: OURO_INICIAL,
@@ -119,12 +156,14 @@ export const useUI = create<EstadoUI>((set, get) => ({
   definirHabilidade: (h) => set({ habilidade: h, construirId: null, selecionadaId: null, previaToque: false }),
   registrarVitoria: () => {
     const st = get();
-    const f = st.vidas / st.vidasIniciais;
-    const estrelas = f >= 0.75 ? 3 : f >= 0.4 ? 2 : 1;
+    const estrelas = estrelasPorVidas(st.vidas, st.vidasIniciais);
     const k = chaveFase(st.mapaId, st.desafio);
     const progresso = { ...st.progresso, [k]: Math.max(st.progresso[k] ?? 0, estrelas) };
     gravarProgresso(progresso);
-    set({ progresso });
+    const ganho = recompensaVitoria(estrelas, st.desafio);
+    const moedas = st.moedas + ganho;
+    gravarMoedas(moedas);
+    set({ progresso, moedas, ultimaRecompensa: ganho });
   },
   previaToque: false,
   definirPreviaToque: (v) => set({ previaToque: v }),
@@ -146,6 +185,11 @@ export const useUI = create<EstadoUI>((set, get) => ({
   definirVelocidade: (v) => set({ velocidade: v }),
   alternarPausa: () => set((s) => ({ pausado: !s.pausado })),
   definirTela: (t) => set((s) => ({ tela: t, jogoIniciado: s.jogoIniciado || t === 'jogo', construirId: null })),
+  efeitos: lerNivel(),
+  definirEfeitos: (n) => {
+    gravarNivel(n);
+    set({ efeitos: n });
+  },
   definirVolumes: (sfx, musica) => {
     set({ volSfx: sfx, volMusica: musica });
     gravarConfig({ volSfx: sfx, volMusica: musica, mudo: get().mudo });

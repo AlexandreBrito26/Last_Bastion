@@ -83,10 +83,12 @@ export function chamarOnda(): void {
 export const HAB = {
   meteoro: { recarga: 40, dano: 180, raio: 78 },
   congelar: { recarga: 55, atordoa: 2.5, lentDur: 4 },
+  escudo: { recarga: 30, duracao: 6 },
 } as const;
 
-export const habPronta = (nome: 'meteoro' | 'congelar'): boolean => !!ref.mundo && ref.mundo.tempo >= ref.mundo.hab[nome];
-export const habRestante = (nome: 'meteoro' | 'congelar'): number => Math.max(0, ref.mundo.hab[nome] - ref.mundo.tempo);
+export type NomeHab = 'meteoro' | 'congelar' | 'escudo';
+export const habPronta = (nome: NomeHab): boolean => !!ref.mundo && ref.mundo.tempo >= ref.mundo.hab[nome];
+export const habRestante = (nome: NomeHab): number => Math.max(0, ref.mundo.hab[nome] - ref.mundo.tempo);
 
 export function usarMeteoro(pos: Vec): boolean {
   const m = ref.mundo;
@@ -101,6 +103,14 @@ export function usarMeteoro(pos: Vec): boolean {
   }
   emitir({ t: 'meteoro', pos: { x: pos.x, y: pos.y }, raio: HAB.meteoro.raio });
   useUI.getState().definirHabilidade(null);
+  return true;
+}
+
+export function usarEscudo(): boolean {
+  const m = ref.mundo;
+  if (!habPronta('escudo') || m.fase === 'vitoria' || m.fase === 'derrota') { emitir({ t: 'erro' }); return false; }
+  m.hab.escudo = m.tempo + HAB.escudo.recarga;
+  m.escudoTempo = HAB.escudo.duracao;
   return true;
 }
 
