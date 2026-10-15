@@ -2,11 +2,14 @@ import { Application, BlurFilter, ColorMatrixFilter, Container, Graphics, Sprite
 import { COR } from '../core/cores';
 import { INIMIGOS } from '../game/data/inimigos';
 import { statsTorre, TORRES } from '../game/data/torres';
+import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '../game/data/skins';
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
 import { fx } from '../game/feedback';
+import { brilhoBorda, contorno, corpoRespirando } from './sprites';
 import { entrada, ref } from '../game/ref';
 import { useUI } from '../store/ui';
+import { limitesDe, type NivelEfeitos } from '../core/qualidade';
 import type { Mapa } from '../game/data/mapas';
 import type { Inimigo, Mundo, Torre } from '../game/estado';
 import { gerarChao, gerarVinheta, TEMAS } from './arte';
@@ -74,6 +77,27 @@ export class Renderizador {
   private dirInimigo = new Map<number, { x: number; y: number; a: number }>();
   private blur: BlurFilter | null = null;
   private baixa = false;
+  private nivelAplicado: string | null = null;
+  private luzOn = true;
+  private filtroCor: ColorMatrixFilter | null = null;
+
+  /** Nível efetivo: se o aparelho precisou de ajuda automática, 'alto' cai para 'médio'. */
+  private nivelEfetivo(): NivelEfeitos {
+    const n = useUI.getState().efeitos;
+    return this.baixa && n === 'alto' ? 'medio' : n;
+  }
+
+  /** Reaplica os filtros quando o nível muda (sem custo por quadro). */
+  private aplicarNivel(): void {
+    const nivel = this.nivelEfetivo();
+    if (nivel === this.nivelAplicado) return;
+    this.nivelAplicado = nivel;
+    const lim = limitesDe(nivel);
+    this.luzOn = lim.luz;
+    this.brilho.filters = lim.desfoque && this.blur ? [this.blur] : [];
+    this.brilho.visible = lim.luz;
+    this.mundo.filters = lim.corMundo && !this.baixa && this.filtroCor ? [this.filtroCor] : [];
+  }
   private ema = 16;
   private ultimo = performance.now();
   private quadros = 0;
@@ -123,12 +147,14 @@ export class Renderizador {
     vig.height = mapa.altura;
     this.camadaVinheta.addChild(vig);
 
-    if (!this.baixa) {
+    this.filtroCor = null;
+    if (limitesDe(this.nivelEfetivo()).corMundo && !this.baixa) {
       try {
         const f = new ColorMatrixFilter();
         f.saturate(tema.grade.sat - 1, true);
         f.contrast(tema.grade.con - 1, true);
         f.tint(tema.grade.tint, true);
+        this.filtroCor = f;
         this.mundo.filters = [f];
       } catch {
         this.mundo.filters = [];
@@ -159,6 +185,7 @@ export class Renderizador {
   // ---------- luz ----------
 
   private luz(x: number, y: number, r: number, cor: number, a: number): void {
+    if (!this.luzOn) return;
     this.brilho.circle(x, y, r).fill({ color: cor, alpha: a * 0.35 });
     this.brilho.circle(x, y, r * 0.55).fill({ color: cor, alpha: a * 0.55 });
   }
@@ -205,7 +232,7 @@ export class Renderizador {
     const cx = t.pos.x;
     const cy = t.pos.y;
     const a = this.anguloTorre(t, m);
-    const cor = def.cor;
+    const cor = corTorre(def.id, def.cor, useUI.getState().skin);
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
     const corCaminho = t.caminho === 'A' ? COR.torreArcana : t.caminho === 'B' ? COR.inimigoElite : cor;
@@ -216,6 +243,7 @@ export class Renderizador {
     g.poly(poligono(cx, cy, 16 * esc, 8, Math.PI / 8)).fill(0x41555f);
     g.poly(poligono(cx, cy - 1.5 * esc, 13.5 * esc, 8, Math.PI / 8)).fill(0x566c77);
     g.poly(poligono(cx, cy, 16 * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: clarear(0x41555f, 0.35), alpha: 0.8 });
+    brilhoBorda(g, cx, cy - 1.5 * esc, 13.5 * esc, 0xffffff, 0.14);
     if (t.nivel > 1) g.poly(poligono(cx, cy, 17.5 * esc, 8, Math.PI / 8)).stroke({ width: 2, color: corCaminho, alpha: 0.9 });
 
     const s = esc;
@@ -223,6 +251,8 @@ export class Renderizador {
       case 'arqueiro': {
         g.circle(cx, cy - 2 * s, 8 * s).fill(escurecer(cor, 0.45));
         g.circle(cx, cy - 3 * s, 7 * s).fill(cor);
+        contorno(g, cx, cy - 3 * s, 7 * s, 7 * s, 0.5);
+        brilhoBorda(g, cx, cy - 3 * s, 7 * s, 0xffffff, 0.3);
         g.circle(cx - 2 * s, cy - 5 * s, 2.4 * s).fill({ color: 0xffffff, alpha: 0.55 });
         const pts = (p: number[]) => rot(cx, cy - 3 * s, a, p.map((v) => v * s));
         const haste = pts([-3, 0, 12 - recuo, 0]);
@@ -244,6 +274,8 @@ export class Renderizador {
         g.poly(rot(cx, cy - 2 * s, a, [11 - recuo, -6.5, 17 - recuo, -6.5, 17 - recuo, 6.5, 11 - recuo, 6.5].map((v) => v * s))).fill(cor);
         g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.4));
         g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        contorno(g, cx, cy - 3 * s, 8 * s, 8 * s, 0.5);
+        brilhoBorda(g, cx, cy - 3 * s, 8 * s, 0xffffff, 0.3);
         g.circle(cx - 2.5 * s, cy - 6 * s, 2.8 * s).fill({ color: 0xffffff, alpha: 0.5 });
         break;
       }
@@ -353,6 +385,19 @@ export class Renderizador {
     return s;
   }
 
+  /** Desenho do bastião no fim da trilha: torre de pedra com merlões e bandeira na cor da skin. */
+  private bastiao(g: Graphics, x: number, y: number, cor: number, tempo: number): void {
+    const pedra = 0x3a3350;
+    const s = 1;
+    g.circle(x, y + 6 * s, 24 * s).fill({ color: 0x000000, alpha: 0.25 });
+    g.rect(x - 13 * s, y - 10 * s, 26 * s, 24 * s).fill(pedra).stroke({ width: 2, color: escurecer(pedra, 0.5) });
+    for (const dx of [-13, -4, 5]) g.rect((x + dx) * s, (y - 16) * s, 8 * s, 6 * s).fill(pedra).stroke({ width: 1.5, color: escurecer(pedra, 0.5) });
+    g.rect(x - 4 * s, y - 2 * s, 8 * s, 10 * s).fill({ color: 0x0b0a14 });
+    g.moveTo(x, y - 10 * s).lineTo(x, y - 34 * s).stroke({ width: 2, color: 0x5a3a22 });
+    const onda = Math.sin(tempo * 4) * 3;
+    g.poly([x, y - 34 * s, x + 16 * s, y - 30 * s + onda, x, y - 26 * s]).fill({ color: cor, alpha: 0.95 });
+  }
+
   private inimigo(e: Inimigo, m: Mundo, tempo: number): void {
     const g = this.entidades;
     const def = INIMIGOS[e.defId];
@@ -375,7 +420,8 @@ export class Renderizador {
     const bob = def.voador ? Math.sin(m.tempo * 7 + e.id) * 2.5 : 0;
     const ex = p.x;
     const ey = p.y + bob;
-    const c = def.chefe ? mix(def.cor, 0xff2a00, Math.min(1, e.fases * 0.28)) : def.cor;
+    const corBase = corInimigo(def.id, def.cor, useUI.getState().skin);
+    const c = def.chefe ? mix(corBase, 0xff2a00, Math.min(1, e.fases * 0.28)) : corBase;
     const esc = escurecer(c, 0.38);
     const cla = clarear(c, 0.45);
     const passo = Math.sin(m.tempo * (def.velocidade / 8) + e.id);
@@ -399,6 +445,8 @@ export class Renderizador {
       }
       g.circle(ex, ey, r * 0.75).fill(esc);
       g.circle(ex, ey - 1, r * 0.68).fill(c);
+      contorno(g, ex, ey - 1, r * 0.68, r * 0.68);
+      brilhoBorda(g, ex, ey - 1, r * 0.68, cla, 0.4);
       this.olhos(g, ex, ey, r * 0.95, a, 0xfff2a8);
       this.luz(ex, ey, r * 2.4, c, 0.4);
     } else if (def.id === 'rapido') {
@@ -434,6 +482,8 @@ export class Renderizador {
       g.star(ex, ey, 9, r * 1.3, r * 0.98, tempo * 0.35).fill(esc);
       g.circle(ex, ey + 2, r).fill(esc);
       g.circle(ex, ey, r * 0.96).fill(c);
+      contorno(g, ex, ey, r * 0.96, r * 0.96, 0.7);
+      brilhoBorda(g, ex, ey, r * 0.96, cla, 0.5);
       g.circle(ex - r * 0.25, ey - r * 0.3, r * 0.5).fill({ color: cla, alpha: 0.4 });
       g.circle(ex, ey, r * 0.62).stroke({ width: 2, color: 0x2a0d08, alpha: 0.7 });
       for (const sg of [-1, 1]) g.poly(rot(ex, ey, a, [r * 0.3, sg * r * 0.55, r * 0.95, sg * r * 1.25, r * 0.7, sg * r * 0.45])).fill(0xf3e2c0);
@@ -450,7 +500,8 @@ export class Renderizador {
         g.ellipse(ex + Math.cos(perp) * r, ey + Math.sin(perp) * r, r * 0.9, r * (0.35 - 0.15 * bat)).fill({ color: 0xffffff, alpha: 0.35 });
       }
       g.circle(ex, ey + 1.6, r).fill(esc);
-      g.circle(ex, ey - 0.6, r * 0.96).fill(c);
+      corpoRespirando(g, ex, ey - 0.6, r * 0.96, passo, c);
+      brilhoBorda(g, ex, ey - 0.6, r * 0.96, cla, 0.45);
       g.ellipse(ex - r * 0.28, ey - r * 0.42, r * 0.38, r * 0.2).fill({ color: 0xffffff, alpha: 0.42 });
       this.olhos(g, ex, ey, r, a);
       if (def.cura) {
@@ -513,6 +564,8 @@ export class Renderizador {
     this.tQuadro = agora;
     const tema = TEMAS[mapa.tema];
 
+    this.aplicarNivel();
+
     // tremor de tela
     const tr = fx.tremor;
     this.mundo.position.set(tr > 0 ? (Math.random() - 0.5) * tr : 0, tr > 0 ? (Math.random() - 0.5) * tr : 0);
@@ -527,7 +580,9 @@ export class Renderizador {
     const fim = mapa.waypoints[mapa.waypoints.length - 1];
     const fx0 = Math.min(Math.max(fim.x, 8), mapa.largura - 8);
     const fy0 = Math.min(Math.max(fim.y, 8), mapa.altura - 8);
-    this.luz(fx0, fy0, 40 + 6 * Math.sin(tempo * 3), COR.dano, 0.4);
+    const corB = corBastiao(COR.dano, useUI.getState().skin);
+    this.luz(fx0, fy0, 40 + 6 * Math.sin(tempo * 3), corB, 0.4);
+    this.bastiao(g, fx0, fy0, corB, tempo);
 
     // torres
     for (const t of [...m.torres].sort((a, b) => a.pos.y - b.pos.y)) this.torre(t, m, tempo);
@@ -547,7 +602,7 @@ export class Renderizador {
       if (ui.construirId) {
         const def = TORRES[ui.construirId];
         const ok = posicaoValida(m, ref.mapa, mp) && ui.ouro >= custoTorre(m, def.id);
-        const cor = ok ? def.cor : COR.dano;
+        const cor = ok ? corTorre(def.id, def.cor, useUI.getState().skin) : COR.dano;
         const s = 1 + 0.05 * Math.sin(tempo * 8);
         g.circle(mp.x, mp.y, def.alcance).fill({ color: cor, alpha: 0.1 });
         this.tracejado(g, mp.x, mp.y, def.alcance, cor, 0.6, tempo * 0.5);
@@ -586,14 +641,23 @@ export class Renderizador {
       const uy = dy / d;
       const gelo = p.efeito.lentFator < 1;
       const area = p.efeito.area > 0;
-      const cor = gelo ? 0xcaf0f8 : area ? 0xf8961e : COR.ouro;
+      const cor = gelo ? 0xcaf0f8 : area ? 0xf8961e : corProjetil(COR.ouro, useUI.getState().skin);
       for (let i = 3; i >= 1; i--) {
         g.moveTo(p.pos.x, p.pos.y).lineTo(p.pos.x - ux * i * 7, p.pos.y - uy * i * 7).stroke({ width: 4 - i * 0.9, color: cor, alpha: 0.18 + (4 - i) * 0.1 });
       }
       if (area) {
         g.circle(p.pos.x, p.pos.y, 5.5).fill(0x2a2a30);
         g.circle(p.pos.x - 1.2, p.pos.y - 1.2, 2).fill({ color: 0xffffff, alpha: 0.5 });
-      } else g.circle(p.pos.x, p.pos.y, 3.6).fill(cor);
+      } else {
+        const forma = formaProjetil(useUI.getState().skin);
+        if (forma === 'losango') {
+          g.poly([p.pos.x, p.pos.y - 5, p.pos.x + 3.5, p.pos.y, p.pos.x, p.pos.y + 5, p.pos.x - 3.5, p.pos.y]).fill(cor);
+        } else if (forma === 'estrela') {
+          g.poly(poligono(p.pos.x, p.pos.y, 5.5, 5, -Math.PI / 2)).fill(cor);
+        } else {
+          g.circle(p.pos.x, p.pos.y, 3.6).fill(cor);
+        }
+      }
       g.circle(p.pos.x, p.pos.y, 1.6).fill(0xffffff);
       this.luz(p.pos.x, p.pos.y, area ? 16 : 12, cor, 0.8);
     }

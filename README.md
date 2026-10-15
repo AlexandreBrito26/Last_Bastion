@@ -1,11 +1,25 @@
 # Last Bastion
 `npm install && npm run dev`
 
-Tower defense 2D (PixiJS + React + Zustand). 4 torres (Arqueiro, Canhão, Gelo, Tesla), 7 tipos de inimigo
-(voador, curandeiro, blindado, chefe com fases), 10 ondas.
+Tower defense 2D (PixiJS + React + Zustand). 4 torres (Arqueiro, Canhão, Gelo, Tesla), 9 tipos de inimigo
+(voador, curandeiro, blindado, espectro, sapador, chefe com fases e dragão), 10 ondas por fase.
 
-**Atalhos:** 1-5 escolhem torre · Q meteoro · W congelar · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
+**Atalhos:** 1-7 escolhem torre · Q meteoro · W congelar · E escudo · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
 M liga/desliga o som · R reinicia.
+
+## Novidades
+- **Modo sem fim (∞):** depois de vencer uma fase, o botão *Modo sem fim* gera ondas infinitas. A composição gira
+  pelos inimigos, a quantidade cresce devagar e a cada 5 ondas aparece um grupo extra de tanques ou sapadores.
+  Ondas sem fim não contam para as estrelas.
+- **Modo desafio:** versão mais difícil da fase, com estrelas separadas.
+- **Torre de suporte (Totem):** não ataca, mas dá +15% de dano e +10% de cadência às torres próximas. A aura não acumula entre totens.
+- **Skins:** em *Opções* escolha entre Padrão, Ouro, Sombra e Neon (com prévia desenhada em canvas). Cada skin também muda a cor e o formato dos projéteis (bola, losango ou estrela). A skin muda as cores das torres, dos inimigos (chefes mantêm o efeito de dano) e o bastião no fim da trilha (torre de pedra com bandeira na cor da skin). A escolha é salva no navegador.
+- **Nova fase — Dunas Douradas:** areia quente com tema próprio, obstáculos de rocha e cristal e levas grandes de inimigos.
+- **Escudo (E):** por 6 s, inimigos que chegam ao fim não tiram vidas. Recarga de 30 s.
+
+- **Moedas e loja:** vencer uma fase rende moedas (10 + 10 por estrela; o modo desafio dobra). As moedas são
+  guardadas no navegador e gastas na **Loja**, no menu, para desbloquear skins: Ouro (150), Sombra (200) e Neon (250).
+  Só skins compradas podem ser equipadas.
 
 ## Etapa 7 — fases, gameplay e arte
 - **3 fases** (Trilha Inicial, Cânion de Cinzas, Fortaleza Gelada) com tema, obstáculos que bloqueiam construção,

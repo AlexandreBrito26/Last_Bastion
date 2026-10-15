@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { audio } from '../core/audio';
 import { COR } from '../core/cores';
-import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, usarCongelar, usarMeteoro, vender } from '../game/acoes';
+import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
 import { custoTorre } from '../game/construcao';
 import { opcoesUpgrade, PRIORIDADES, REEMBOLSO, statsTorre, TORRES } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
-import { novaPartida } from '../game/partida';
+import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
 import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
@@ -58,9 +58,10 @@ function Contador({ rotulo, valor, cor, animacao = 'lb-pop .3s ease-out', alerta
 const HABS = {
   meteoro: { icone: '☄', nome: 'Meteoro', tecla: 'Q', cor: '#ff7a30' },
   congelar: { icone: '❄', nome: 'Congelar', tecla: 'W', cor: '#8fe3ff' },
+  escudo: { icone: '🛡', nome: 'Escudo', tecla: 'E', cor: '#ffd166' },
 } as const;
 
-function BotaoHab({ nome, ativo, onClick }: { nome: 'meteoro' | 'congelar'; ativo: boolean; onClick: () => void }) {
+function BotaoHab({ nome, ativo, onClick }: { nome: NomeHab; ativo: boolean; onClick: () => void }) {
   const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((n) => n + 1), 150);
@@ -99,6 +100,8 @@ export function App() {
     setTimeout(() => setAviso((a) => (a?.id === id ? null : a)), 1100);
   };
   const sel = ref.mundo?.torres.find((t) => t.id === s.selecionadaId) ?? null;
+  // ficha: sob o ponteiro (desktop) ou da torre escolhida para construir (toque)
+  const idFicha = hover ?? s.construirId;
 
   if (s.tela === 'menu') {
     return (
@@ -122,7 +125,7 @@ export function App() {
       )}
 
       {/* Barra superior */}
-      <div className="hud-topo" style={{ position: 'absolute', top: 8, left: 8, right: 8, display: 'flex', gap: 16, alignItems: 'center', textShadow: '0 1px 2px #000', animation: 'lb-descer .4s both' }}>
+      <div className="hud-topo" style={{ position: 'absolute', top: 8, left: 8, right: 8, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', textShadow: '0 1px 2px #000', animation: 'lb-descer .4s both' }}>
         <Contador rotulo="Ouro" valor={s.ouro} cor={hex(COR.ouro)} />
         <Contador rotulo="Vidas" valor={s.vidas} cor={hex(COR.vida)} animacao="lb-tremer .4s" alerta={s.vidas > 0 && s.vidas <= 5} />
         <span>Onda {s.onda}/{s.totalOndas}<span className="hud-dica" style={{ opacity: 0.55, fontWeight: 400 }}> · {mapaPorId(s.mapaId).nome}</span></span>
@@ -132,14 +135,15 @@ export function App() {
           </button>
         )}
         <span style={{ flex: 1 }} />
-        <div style={{ display: 'flex', gap: 6, pointerEvents: 'auto' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6, pointerEvents: 'auto', maxWidth: '100%' }}>
           <BotaoHab nome="meteoro" ativo={s.habilidade === 'meteoro'} onClick={() => { if (s.habilidade) s.definirHabilidade(null); else if (habPronta('meteoro')) { clique(); s.definirHabilidade('meteoro'); } else audio.tocar('erro'); }} />
           <BotaoHab nome="congelar" ativo={false} onClick={() => usarCongelar()} />
+          <BotaoHab nome="escudo" ativo={false} onClick={() => usarEscudo()} />
           {([1, 2, 3] as const).map((v) => (
             <button key={v} className="hud-btn" style={botao(s.velocidade === v)} onClick={() => { clique(); s.definirVelocidade(v); }}>{v}x</button>
           ))}
           <button className="hud-btn" style={botao(s.pausado)} onClick={() => { clique(); s.alternarPausa(); }}>{s.pausado ? 'Continuar' : 'Pausar'}</button>
-          <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title="Atalho: M">{s.mudo ? 'Som: off' : 'Som: on'}</button>
+          <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
           <button className="hud-btn" style={botao()} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>
         </div>
       </div>
@@ -201,7 +205,16 @@ export function App() {
               onPointerLeave={() => setHover(null)}
               onFocus={() => setHover(d.id)}
               onBlur={() => setHover(null)}
-              onClick={() => { clique(); s.definirConstruir(s.construirId === d.id ? null : d.id); }}
+              onClick={() => {
+                if (semOuro && s.construirId !== d.id) {
+                  audio.tocar('erro');
+                  avisar(`Faltam ${custo - s.ouro} de ouro`);
+                  setHover(d.id);
+                  return;
+                }
+                clique();
+                s.definirConstruir(s.construirId === d.id ? null : d.id);
+              }}
             >
               <i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: hex(d.cor), marginRight: 6, boxShadow: `0 0 6px ${hex(d.cor)}` }} />
               {Object.keys(TORRES).indexOf(d.id) + 1}. {d.nome} · {custo}
@@ -209,11 +222,11 @@ export function App() {
           );
         })}
           {/* Ficha da torre sob o ponteiro (loja) */}
-        {hover && TORRES[hover] && (() => {
-          const d = TORRES[hover];
+        {idFicha && TORRES[idFicha] && (() => {
+          const d = TORRES[idFicha];
           const custo = custoTorre(ref.mundo, d.id);
           return (
-            <div key={hover} className="hud-painel" style={{ ...painel, position: 'absolute', left: 0, bottom: 'calc(100% + 10px)', width: 240, fontSize: 13, lineHeight: 1.5, animation: 'lb-subir .2s both', pointerEvents: 'none' }}>
+            <div key={idFicha} className="hud-painel" style={{ ...painel, position: 'absolute', left: 0, bottom: 'calc(100% + 10px)', width: 240, fontSize: 13, lineHeight: 1.5, animation: 'lb-subir .2s both', pointerEvents: 'none' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 15, marginBottom: 4 }}>
                 <i style={{ width: 10, height: 10, borderRadius: 3, background: hex(d.cor), boxShadow: `0 0 8px ${hex(d.cor)}` }} />
                 {d.nome} <span style={{ opacity: 0.55, fontSize: 11 }}>[{Object.keys(TORRES).indexOf(d.id) + 1}]</span>
@@ -308,9 +321,17 @@ export function App() {
               {[1, 2, 3].map((n) => <span key={n} style={{ opacity: (s.progresso[chaveFase(s.mapaId, s.desafio)] ?? 0) >= n ? 1 : 0.18, display: 'inline-block', animation: `lb-pop .5s ${n * 0.18}s both` }}>★</span>)}
             </div>
           )}
+          {s.fase === 'vitoria' && (
+            <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.ouro), animation: 'lb-subir .4s .5s both' }}>
+              +{s.ultimaRecompensa} moedas
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             {s.fase === 'vitoria' && MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1] && (
               <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); novaPartida(MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1]); }}>Próxima fase ▶</button>
+            )}
+            {s.fase === 'vitoria' && (
+              <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); continuarSemFim(); }}>Modo sem fim ∞</button>
             )}
             <button className="hud-btn" style={{ ...botao(s.fase !== 'vitoria'), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); novaPartida(); }}>Jogar de novo (R)</button>
             <button className="hud-btn" style={{ ...botao(), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>

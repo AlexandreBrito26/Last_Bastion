@@ -1,7 +1,7 @@
 import { dist, type Vec } from '../../core/vec';
 import { INIMIGOS } from '../data/inimigos';
-import { DECAIMENTO_SALTO, DUR_QUEBRA, DUR_QUEIMA, RAIO_SALTO, statsTorre, TORRES, type Stats } from '../data/torres';
-import { fatorVida, PAUSA_ENTRE_ONDAS } from '../data/ondas';
+import { auraDe, DECAIMENTO_SALTO, DUR_QUEBRA, DUR_QUEIMA, RAIO_SALTO, statsTorre, TORRES, type Stats } from '../data/torres';
+import { fatorVida, ondaInfinita, PAUSA_ENTRE_ONDAS } from '../data/ondas';
 import { ref } from '../ref';
 import type { Mapa } from '../data/mapas';
 import type { EfeitoProj, Inimigo, Mundo, Projetil, Torre } from '../estado';
@@ -80,6 +80,8 @@ export function sistemaOndas(m: Mundo, mapa: Mapa, dt: number): void {
   if (m.fila.length === 0 && !m.inimigos.some((e) => e.vivo)) {
     ui.ganharOuro(ref.ondas[m.ondaIdx].bonus);
     m.ondaIdx++;
+    // modo sem fim: gera a próxima onda infinita em vez de vencer
+    if (ref.endless && m.ondaIdx >= ref.ondas.length) ref.ondas.push(ondaInfinita(ref.ondas.length));
     if (m.ondaIdx >= ref.ondas.length) {
       m.fase = 'vitoria';
       ui.definirFase('vitoria');
@@ -135,6 +137,7 @@ const efeitoDe = (st: Stats): EfeitoProj => ({
 
 /** Tempo dos status, queimadura, cura de curandeiros e efeitos visuais. */
 export function sistemaStatus(m: Mundo, dt: number): void {
+  m.escudoTempo = Math.max(0, m.escudoTempo - dt);
   for (const e of m.inimigos) {
     if (!e.vivo) continue;
     const def = INIMIGOS[e.defId];
@@ -189,6 +192,8 @@ export function sistemaMovimento(m: Mundo, mapa: Mapa, dt: number): void {
     if (e.indiceWp >= mapa.waypoints.length) {
       e.vivo = false;
       e.chegou = true;
+      // escudo ativo: o inimigo chega, mas o bastião não perde vida
+      if (m.escudoTempo > 0) continue;
       useUI.getState().perderVida(def.danoBase);
       emitir({ t: 'vazou', pos: { x: e.pos.x, y: e.pos.y }, dano: def.danoBase });
     }
@@ -258,6 +263,10 @@ export function sistemaTorres(m: Mundo, dt: number): void {
     t.idade += dt;
     t.flash = Math.max(0, t.flash - dt);
     t.melhoria = Math.max(0, t.melhoria - dt);
+    if (def.suporte) continue; // torres de suporte só dão aura
+    const aura = auraDe(m, t);
+    st.dano *= aura.dano;
+    st.cadencia *= aura.cadencia;
     t.recarga -= dt;
     if (t.recarga > 0) continue;
     let melhor: Inimigo | null = null;

@@ -44,3 +44,27 @@ export function gerarOndas(cfg: { qtdMult: number; extras: DefOnda[]; chefes: nu
   if (cfg.chefes > 1) final.grupos.push({ inimigo: 'chefe', quantidade: cfg.chefes - 1, intervalo: 14, atraso: 16 });
   return [...meio, ...cfg.extras, final];
 }
+
+// ---------- modo sem fim (endless) ----------
+
+/** Ciclo de inimigos usado nas ondas infinitas (sem chefes). */
+const CICLO_INFINITO = ['basico', 'rapido', 'voador', 'tanque', 'enxame', 'curandeiro', 'espectro', 'sapador'];
+
+/**
+ * Onda gerada depois da última onda da fase, no modo sem fim.
+ * `n` é o índice global da onda (a primeira infinita tem o índice igual ao número de ondas da fase).
+ * A composição gira pelo ciclo de inimigos e a quantidade cresce devagar, para o desafio subir sem saltos.
+ */
+export function ondaInfinita(n: number): DefOnda {
+  const principal = CICLO_INFINITO[n % CICLO_INFINITO.length];
+  const secundario = CICLO_INFINITO[(n + 3) % CICLO_INFINITO.length];
+  const grupos: GrupoOnda[] = [
+    { inimigo: principal, quantidade: Math.round(8 + n * 0.8), intervalo: Math.max(0.25, 1 - n * 0.02) },
+    { inimigo: secundario, quantidade: Math.round(4 + n * 0.4), intervalo: 0.8, atraso: 5 },
+  ];
+  // a cada 5 ondas, um grupo extra de tanques ou sapadores (mais resistentes)
+  if (n % 5 === 4) {
+    grupos.push({ inimigo: n % 10 === 9 ? 'sapador' : 'tanque', quantidade: 2 + Math.floor(n / 5), intervalo: 2.5, atraso: 8 });
+  }
+  return { bonus: 80 + 15 * Math.max(0, n - ONDAS.length + 1), grupos };
+}

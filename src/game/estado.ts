@@ -87,7 +87,9 @@ export interface Mundo {
   tempoOnda: number;
   fila: EventoSpawn[];
   /** tempo de jogo em que cada habilidade fica pronta */
-  hab: { meteoro: number; congelar: number };
+  hab: { meteoro: number; congelar: number; escudo: number };
+  /** s restantes do escudo do bastião (vazamentos não custam vida) */
+  escudoTempo: number;
 }
 
 export function criarMundo(): Mundo {
@@ -103,6 +105,7 @@ export function criarMundo(): Mundo {
     temporizador: PAUSA_INICIAL,
     tempoOnda: 0,
     fila: [],
-    hab: { meteoro: 20, congelar: 30 },
+    hab: { meteoro: 20, congelar: 30, escudo: 20 },
+    escudoTempo: 0,
   };
 }

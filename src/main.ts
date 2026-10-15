@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { audio } from './core/audio';
 import { LoopFixo } from './core/loop';
-import { chamarOnda, construir, habPronta, usarCongelar, usarMeteoro } from './game/acoes';
+import { chamarOnda, construir, habPronta, usarCongelar, usarEscudo, usarMeteoro } from './game/acoes';
 import { torreEm } from './game/construcao';
 import { MAPA_1 } from './game/data/mapas';
 import { TORRES } from './game/data/torres';
@@ -142,6 +142,8 @@ async function main(): Promise<void> {
       else if (habPronta('meteoro')) s.definirHabilidade('meteoro');
     } else if (k === 'w') {
       if (usarCongelar()) vibrar(30);
+    } else if (k === 'e') {
+      if (usarEscudo()) vibrar(30);
     } else if (k === 'enter') {
       chamarOnda();
     } else if (k >= '1' && k <= '9') {

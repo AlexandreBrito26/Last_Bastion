@@ -1,4 +1,4 @@
-import type { Torre } from '../estado';
+import type { Mundo, Torre } from '../estado';
 
 /** Modificadores de upgrade. */
 export interface Mod {
@@ -49,6 +49,8 @@ export interface DefTorre {
   nivel2: Upgrade;
   /** Nível 2 -> 3: escolha exclusiva A ou B. */
   nivel3: { A: Upgrade; B: Upgrade };
+  /** Torre de suporte: não atira; dá bônus na aura. `dano` = % de dano e `cadencia` = % de cadência para as torres vizinhas. */
+  suporte?: boolean;
 }
 
 export const DUR_QUEIMA = 3;
@@ -105,6 +107,15 @@ export const TORRES: Record<string, DefTorre> = {
       B: { nome: 'Vapor', desc: '+30% de alcance, +40% de cadência', custo: 90, mod: { alcance: 1.3, cadencia: 1.4 } },
     },
   },
+  totem: {
+    ...z, id: 'totem', nome: 'Totem', desc: 'Não ataca. Dá +15% de dano e +10% de cadência às torres próximas (não acumula).',
+    custo: 80, antiAereo: false, alcance: 120, cadencia: 10, dano: 15, velProjetil: 0, cor: 0xffd166, suporte: true,
+    nivel2: { nome: 'Bênção', desc: 'Aura maior: +25% de alcance', custo: 60, mod: { alcance: 1.25 } },
+    nivel3: {
+      A: { nome: 'Fúria', desc: 'Aura de dano +50%', custo: 90, mod: { dano: 1.5 } },
+      B: { nome: 'Ritmo', desc: 'Aura de cadência +60%', custo: 90, mod: { cadencia: 1.6 } },
+    },
+  },
   morteiro: {
     ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
     custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 75, velProjetil: 230, area: 70, cor: 0xf8961e,
@@ -141,6 +152,24 @@ export function modsAplicados(t: Torre): Mod[] {
   if (t.nivel >= 2) mods.push(def.nivel2.mod);
   if (t.nivel >= 3 && t.caminho) mods.push(def.nivel3[t.caminho].mod);
   return mods;
+}
+
+/**
+ * Bônus de aura recebido por uma torre: multiplicadores de dano e cadência vindos das torres de suporte
+ * dentro do alcance. Não acumula entre suportes (vale o maior) e as próprias torres de suporte não recebem aura.
+ */
+export function auraDe(m: Mundo, t: Torre): { dano: number; cadencia: number } {
+  if (TORRES[t.defId].suporte) return { dano: 1, cadencia: 1 };
+  let dano = 0;
+  let cadencia = 0;
+  for (const s of m.torres) {
+    if (!TORRES[s.defId].suporte) continue;
+    const ss = statsTorre(s);
+    if (Math.hypot(s.pos.x - t.pos.x, s.pos.y - t.pos.y) > ss.alcance) continue;
+    dano = Math.max(dano, ss.dano);
+    cadencia = Math.max(cadencia, ss.cadencia);
+  }
+  return { dano: 1 + dano / 100, cadencia: 1 + cadencia / 100 };
 }
 
 export function statsTorre(t: Torre): Stats {
