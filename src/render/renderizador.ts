@@ -235,9 +235,9 @@ export class Renderizador {
     const cy = t.pos.y;
     const a = this.anguloTorre(t, m);
     const forma = formaTorre(t);
-    // a skin escolhida é a base; cada forma puxa essa cor para a cor própria da forma (25%, 45%, 65%)
+    // a skin escolhida é a base; cada forma puxa essa cor para a cor própria da forma (40%, 60%, 80%)
     const corSkin = corTorre(def.id, def.cor, useUI.getState().skin);
-    const cor = forma > 1 ? mix(corSkin, def.formas[forma - 2].cor, 0.25 + 0.2 * (forma - 2)) : corSkin;
+    const cor = forma > 1 ? mix(corSkin, def.formas[forma - 2].cor, 0.4 + 0.2 * (forma - 2)) : corSkin;
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
     const ramo = ramoPrincipal(t);
@@ -349,6 +349,7 @@ export class Renderizador {
 
     // brilho do disparo na boca
     if (forma > 1) this.desenharOrnamento(g, cx, cy, esc, def.formas[forma - 2].ornamento, cor);
+    if (forma > 1) this.desenharEfeitosForma(g, cx, cy, esc, forma, cor);
     if (flash > 0 && def.id !== 'tesla' && def.id !== 'gelo') this.luz(cx + Math.cos(a) * 18, cy - 3 + Math.sin(a) * 18, 18, cor, 0.9 * flash);
 
     // marcações de nível
@@ -558,6 +559,30 @@ export class Renderizador {
   }
 
   // ---------- quadro ----------
+
+  /** Efeitos animados das formas: brilho pulsante (2), faíscas orbitando (3) e aura dourada com luz (4). */
+  private desenharEfeitosForma(g: Graphics, cx: number, cy: number, esc: number, forma: number, cor: number): void {
+    const t = performance.now() / 1000;
+    const pulso = 0.5 + 0.5 * Math.sin(t * 3);
+    // forma 2+: núcleo que pulsa no centro da torre
+    g.circle(cx, cy - 8 * esc, (3 + pulso * 2) * esc).fill({ color: cor, alpha: 0.25 + pulso * 0.25 });
+    if (forma >= 3) {
+      // forma 3+: três faíscas orbitando
+      for (let i = 0; i < 3; i++) {
+        const a = t * 2 + (i * TAU) / 3;
+        g.circle(cx + Math.cos(a) * 18 * esc, cy - 4 * esc + Math.sin(a) * 8 * esc, 1.8 * esc).fill({ color: 0xffffff, alpha: 0.9 });
+      }
+    }
+    if (forma >= 4) {
+      // forma 4: aura dourada, faíscas maiores e luz no entorno
+      g.circle(cx, cy - 4 * esc, (22 + pulso * 3) * esc).stroke({ width: 1.5, color: COR.ouro, alpha: 0.25 + pulso * 0.2 });
+      for (let i = 0; i < 4; i++) {
+        const a = -t * 1.5 + (i * TAU) / 4;
+        g.circle(cx + Math.cos(a) * 24 * esc, cy - 4 * esc + Math.sin(a) * 12 * esc, 2.2 * esc).fill({ color: COR.ouro, alpha: 0.95 });
+      }
+      this.luz(cx, cy - 6 * esc, 26 * esc, cor, 0.35 + pulso * 0.2);
+    }
+  }
 
   /** Ornamentos das formas 2 a 4: pontas, asas e coroa, desenhados sobre o corpo da torre. */
   private desenharOrnamento(g: Graphics, cx: number, cy: number, esc: number, tipo: Ornamento, cor: number): void {
