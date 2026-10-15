@@ -381,6 +381,20 @@ export function App() {
                 <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => vender(sel.id)}>
                   Vender · +{Math.floor(sel.investido * REEMBOLSO)}
                 </button>
+                {ref.mundo.torres.filter((x) => x.defId === sel.defId).length > 1 && (
+                  <button
+                    className="hud-btn"
+                    style={{ ...botao(), background: '#4a1530' }}
+                    onClick={() => {
+                      const iguais = ref.mundo.torres.filter((x) => x.defId === sel.defId);
+                      const ganho = iguais.reduce((soma, x) => soma + Math.floor(x.investido * REEMBOLSO), 0);
+                      if (!window.confirm(`Vender as ${iguais.length} torres ${def.nome} por ${ganho} de ouro?`)) return;
+                      iguais.forEach((x) => vender(x.id));
+                    }}
+                  >
+                    Vender todas as {def.nome} · +{ref.mundo.torres.filter((x) => x.defId === sel.defId).reduce((soma, x) => soma + Math.floor(x.investido * REEMBOLSO), 0)}
+                  </button>
+                )}
               </>
             );
           })()}

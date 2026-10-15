@@ -10,6 +10,7 @@ M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 ## Novidades
 - **Tutorial**: dicas na primeira partida, fechadas com "Entendi" (salvo no navegador).
 - **Prévia de upgrade**: cada melhoria mostra o efeito em dano, cadência, alcance e outros atributos.
+- **Venda em lote**: com várias torres do mesmo tipo, o painel da torre selecionada oferece vender todas de uma vez, com confirmação.
 - **Mapa de calor (H)**: mostra em amarelo a vermelho por onde os inimigos passam mais, para planejar onde posicionar as torres.
 - **Atalhos U e V**: melhora e vende a torre selecionada.
 - **Balista** e a fase **Pântano Profundo**.
