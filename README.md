@@ -5,7 +5,7 @@ Tower defense 2D (PixiJS + React + Zustand). 4 torres (Arqueiro, Canhão, Gelo, 
 (voador, curandeiro, blindado, espectro, sapador, chefe com fases e dragão), 10 ondas por fase.
 
 **Atalhos:** 1-7 escolhem torre · Q meteoro · W congelar · E escudo · Esc cancela / volta ao menu · Espaço pausa · Enter chama a próxima onda ·
-M liga/desliga o som · R reinicia.
+M liga/desliga o som · F tela cheia · R reinicia.
 
 ## Novidades
 - **Modo sem fim (∞):** depois de vencer uma fase, o botão *Modo sem fim* gera ondas infinitas. A composição gira

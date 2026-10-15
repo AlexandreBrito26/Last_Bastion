@@ -13,6 +13,7 @@ import { limpar, sistemaChefes, sistemaMovimento, sistemaOndas, sistemaProjeteis
 import { Renderizador } from './render/renderizador';
 import { useUI } from './store/ui';
 import { App } from './ui/App';
+import { alternarTelaCheia } from './ui/telaCheia';
 
 async function main(): Promise<void> {
   const raiz = document.getElementById('app')!;
@@ -132,6 +133,10 @@ async function main(): Promise<void> {
     const s = useUI.getState();
     if (k === 'm') {
       s.alternarMudo();
+      return;
+    }
+    if (k === 'f') {
+      alternarTelaCheia();
       return;
     }
     if (s.tela !== 'jogo') return;

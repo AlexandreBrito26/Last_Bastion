@@ -11,6 +11,7 @@ import { entrada, ref } from '../game/ref';
 import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
 import { Menu } from './Menu';
+import { alternarTelaCheia } from './telaCheia';
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 
@@ -60,6 +61,27 @@ const HABS = {
   congelar: { icone: '❄', nome: 'Congelar', tecla: 'W', cor: '#8fe3ff' },
   escudo: { icone: '🛡', nome: 'Escudo', tecla: 'E', cor: '#ffd166' },
 } as const;
+
+/** Botão de tela cheia; acompanha o estado real do documento (também muda com Esc). */
+function BotaoTelaCheia() {
+  const [cheia, setCheia] = useState(() => !!document.fullscreenElement);
+  useEffect(() => {
+    const aoMudar = () => setCheia(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', aoMudar);
+    return () => document.removeEventListener('fullscreenchange', aoMudar);
+  }, []);
+  return (
+    <button
+      className="hud-btn"
+      style={botao(cheia)}
+      onClick={() => { clique(); alternarTelaCheia(); }}
+      title={cheia ? 'Sair da tela cheia (F)' : 'Tela cheia (F)'}
+      aria-label={cheia ? 'Sair da tela cheia' : 'Entrar em tela cheia'}
+    >
+      {cheia ? '⤡' : '⤢'}
+    </button>
+  );
+}
 
 function BotaoHab({ nome, ativo, onClick }: { nome: NomeHab; ativo: boolean; onClick: () => void }) {
   const [, setTick] = useState(0);
@@ -143,6 +165,7 @@ export function App() {
             <button key={v} className="hud-btn" style={botao(s.velocidade === v)} onClick={() => { clique(); s.definirVelocidade(v); }}>{v}x</button>
           ))}
           <button className="hud-btn" style={botao(s.pausado)} onClick={() => { clique(); s.alternarPausa(); }}>{s.pausado ? 'Continuar' : 'Pausar'}</button>
+          <BotaoTelaCheia />
           <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
           <button className="hud-btn" style={botao()} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>
         </div>
