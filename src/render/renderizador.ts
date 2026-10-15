@@ -235,7 +235,9 @@ export class Renderizador {
     const cy = t.pos.y;
     const a = this.anguloTorre(t, m);
     const forma = formaTorre(t);
-    const cor = forma > 1 ? def.formas[forma - 2].cor : corTorre(def.id, def.cor, useUI.getState().skin);
+    // a skin escolhida é a base; cada forma puxa essa cor para a cor própria da forma (25%, 45%, 65%)
+    const corSkin = corTorre(def.id, def.cor, useUI.getState().skin);
+    const cor = forma > 1 ? mix(corSkin, def.formas[forma - 2].cor, 0.25 + 0.2 * (forma - 2)) : corSkin;
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
     const ramo = ramoPrincipal(t);
