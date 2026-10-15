@@ -283,6 +283,32 @@ export const TORRES: Record<string, DefTorre> = {
       ] },
     ],
   },
+  cristal: {
+    ...z, id: 'cristal', nome: 'Cristal Arcano', desc: 'Um prisma que dispara raios de energia. Acerta voadores e terrestres, com bom alcance.',
+    custo: 120, antiAereo: true, alcance: 170, cadencia: 0.8, dano: 40, velProjetil: 320, cor: 0xb388ff,
+    formas: [
+      { nome: 'Prismático', cor: 0x9d7bff, ornamento: 'pontas' },
+      { nome: 'Arcano Supremo', cor: 0x6a4cff, ornamento: 'asas' },
+      { nome: 'Cósmico', cor: 0xe0c3ff, ornamento: 'coroa' },
+    ],
+    arvore: [
+      { nome: 'Ressonância', nos: [
+        { nome: 'Vibração', desc: '+50% de dano', custo: 60, mod: { dano: 1.5 } },
+        { nome: 'Onda', desc: '+70% de dano, +10% de cadência', custo: 110, mod: { dano: 1.7, cadencia: 1.1 } },
+        { nome: 'Ressonância plena', desc: '+100% de dano', custo: 170, mod: { dano: 2 } },
+      ] },
+      { nome: 'Foco', nos: [
+        { nome: 'Lente', desc: '+25% de alcance', custo: 55, mod: { alcance: 1.25 } },
+        { nome: 'Feixe', desc: '+40% de alcance, +20% de cadência', custo: 100, mod: { alcance: 1.4, cadencia: 1.2 } },
+        { nome: 'Farol', desc: '+60% de alcance', custo: 160, mod: { alcance: 1.6 } },
+      ] },
+      { nome: 'Prisma', nos: [
+        { nome: 'Fratura', desc: 'Remove 40% da armadura', custo: 70, mod: { quebra: 0.4 } },
+        { nome: 'Luz cega', desc: 'Atordoa 0,3s por golpe', custo: 110, mod: { atordoa: 0.3 } },
+        { nome: 'Dispersão', desc: 'Remove 70% da armadura e atordoa 0,5s', custo: 170, mod: { quebra: 0.7, atordoa: 0.5 } },
+      ] },
+    ],
+  },
 };
 
 export const PRIORIDADES = ['primeiro', 'ultimo', 'forte', 'perto'] as const;

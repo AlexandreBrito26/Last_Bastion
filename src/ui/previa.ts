@@ -13,11 +13,11 @@ export function desenharPrevia(canvas: HTMLCanvasElement, skin: Skin): void {
   ctx.clearRect(0, 0, w, h);
 
   const hex = (c: number) => `#${c.toString(16).padStart(6, '0')}`;
-  const torres = ['arqueiro', 'canhao', 'gelo', 'tesla', 'alquimista', 'totem', 'morteiro', 'ballista'];
+  const torres = ['arqueiro', 'canhao', 'gelo', 'tesla', 'alquimista', 'totem', 'morteiro', 'ballista', 'cristal'];
   const cor = (id: string, padrao: number) => hex(skin.cores[id] ?? padrao);
 
   // torres (quadrados com borda escura)
-  const padroes: Record<string, number> = { arqueiro: 0x4cc9f0, canhao: 0x4361ee, gelo: 0xcaf0f8, tesla: 0x9d4edd, alquimista: 0x7cff6b, totem: 0xffd166, morteiro: 0xf8961e, ballista: 0x8d6e63 };
+  const padroes: Record<string, number> = { arqueiro: 0x4cc9f0, canhao: 0x4361ee, gelo: 0xcaf0f8, tesla: 0x9d4edd, alquimista: 0x7cff6b, totem: 0xffd166, morteiro: 0xf8961e, ballista: 0x8d6e63, cristal: 0xb388ff };
   torres.forEach((id, i) => {
     const x = 18 + i * 26;
     const y = 30;

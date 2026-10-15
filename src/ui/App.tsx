@@ -90,7 +90,7 @@ function Tutorial() {
     setVisto(true);
   };
   const passos = [
-    'Escolha uma torre na barra de baixo (ou tecle 1-8) e clique no terreno para construir.',
+    'Escolha uma torre na barra de baixo (ou tecle 1-9) e clique no terreno para construir.',
     'Clique numa torre para ver os upgrades. U melhora e V vende a torre selecionada.',
     'Enter chama a próxima onda antes do tempo. Espaço pausa.',
     'Q usa Meteoro, W congela os inimigos e E cria um escudo que protege as vidas.',
