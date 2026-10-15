@@ -63,7 +63,7 @@ const z = { area: 0, saltos: 0, lentFator: 1, lentDur: 0, quebra: 0, queima: 0, 
 export const TORRES: Record<string, DefTorre> = {
   arqueiro: {
     ...z, id: 'arqueiro', nome: 'Arqueiro', desc: 'Dano único, barato. Acerta voadores.',
-    custo: 50, antiAereo: true, alcance: 150, cadencia: 1.5, dano: 16, velProjetil: 420, cor: 0x4cc9f0,
+    custo: 50, antiAereo: true, alcance: 150, cadencia: 1.5, dano: 19, velProjetil: 420, cor: 0x4cc9f0,
     nivel2: { nome: 'Treino', desc: '+60% de dano', custo: 40, mod: { dano: 1.6 } },
     nivel3: {
       A: { nome: 'Cadência', desc: '+70% de cadência', custo: 70, mod: { cadencia: 1.7 } },
@@ -72,7 +72,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   canhao: {
     ...z, id: 'canhao', nome: 'Canhão', desc: 'Dano em área. Só atinge terrestres.',
-    custo: 90, antiAereo: false, alcance: 130, cadencia: 0.6, dano: 40, velProjetil: 300, area: 55, cor: 0x4361ee,
+    custo: 90, antiAereo: false, alcance: 130, cadencia: 0.6, dano: 48, velProjetil: 300, area: 55, cor: 0x4361ee,
     nivel2: { nome: 'Pólvora', desc: '+60% de dano', custo: 65, mod: { dano: 1.6 } },
     nivel3: {
       A: { nome: 'Raio', desc: '+50% de raio da explosão', custo: 100, mod: { area: 1.5 } },
@@ -81,7 +81,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   gelo: {
     ...z, id: 'gelo', nome: 'Gelo', desc: 'Lentidão. Só atinge terrestres.',
-    custo: 70, antiAereo: false, alcance: 120, cadencia: 1.2, dano: 6, velProjetil: 380,
+    custo: 70, antiAereo: false, alcance: 120, cadencia: 1.2, dano: 7, velProjetil: 380,
     lentFator: 0.5, lentDur: 2, cor: 0xcaf0f8,
     nivel2: { nome: 'Frio intenso', desc: 'Lentidão maior e mais longa', custo: 50, mod: { lentFator: 0.4, lentDur: 1.3 } },
     nivel3: {
@@ -91,7 +91,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   tesla: {
     ...z, id: 'tesla', nome: 'Tesla', desc: 'Raio em cadeia. Acerta voadores.',
-    tipo: 'cadeia', custo: 110, antiAereo: true, alcance: 125, cadencia: 1.1, dano: 14, velProjetil: 0, saltos: 2, cor: 0x9d4edd,
+    tipo: 'cadeia', custo: 110, antiAereo: true, alcance: 125, cadencia: 1.1, dano: 17, velProjetil: 0, saltos: 2, cor: 0x9d4edd,
     nivel2: { nome: 'Bobinas', desc: '+60% de dano', custo: 70, mod: { dano: 1.6 } },
     nivel3: {
       A: { nome: 'Mais saltos', desc: '+3 saltos na cadeia', custo: 110, mod: { saltos: 3 } },
@@ -100,7 +100,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   alquimista: {
     ...z, id: 'alquimista', nome: 'Alquimista', desc: 'Frasco de veneno que queima por tempo. Acerta voadores.',
-    custo: 85, antiAereo: true, alcance: 135, cadencia: 0.9, dano: 10, velProjetil: 340, queima: 6, cor: 0x7cff6b,
+    custo: 85, antiAereo: true, alcance: 135, cadencia: 0.9, dano: 12, velProjetil: 340, queima: 6, cor: 0x7cff6b,
     nivel2: { nome: 'Destilação', desc: '+60% de dano', custo: 60, mod: { dano: 1.6 } },
     nivel3: {
       A: { nome: 'Peste', desc: 'Queima 9 de dano/s', custo: 90, mod: { queima: 9 } },
@@ -118,7 +118,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   morteiro: {
     ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
-    custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 75, velProjetil: 230, area: 70, cor: 0xf8961e,
+    custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 90, velProjetil: 230, area: 70, cor: 0xf8961e,
     nivel2: { nome: 'Cargas pesadas', desc: '+60% de dano', custo: 90, mod: { dano: 1.6 } },
     nivel3: {
       A: { nome: 'Salva dupla', desc: '+80% de cadência', custo: 130, mod: { cadencia: 1.8 } },
@@ -127,7 +127,7 @@ export const TORRES: Record<string, DefTorre> = {
   },
   ballista: {
     ...z, id: 'ballista', nome: 'Balista', desc: 'Um virote pesado e lento, com muito dano por tiro. Só terrestres.',
-    custo: 110, antiAereo: false, alcance: 200, cadencia: 0.5, dano: 70, velProjetil: 520, cor: 0x8d6e63,
+    custo: 110, antiAereo: false, alcance: 200, cadencia: 0.5, dano: 84, velProjetil: 520, cor: 0x8d6e63,
     nivel2: { nome: 'Ponta de ferro', desc: '+50% de dano', custo: 75, mod: { dano: 1.5 } },
     nivel3: {
       A: { nome: 'Perfuração', desc: '+40% de alcance e +40% de dano', custo: 120, mod: { alcance: 1.4, dano: 1.4 } },
