@@ -24,6 +24,11 @@ export interface Upgrade {
   mod: Mod;
 }
 
+export interface Ramo {
+  nome: string;
+  nos: Upgrade[];
+}
+
 export type TipoTorre = 'projetil' | 'cadeia';
 
 export interface DefTorre {
@@ -45,12 +50,8 @@ export interface DefTorre {
   queima: number;
   atordoa: number;
   cor: number;
-  /** Nível 1 -> 2 (comum). */
-  nivel2: Upgrade;
-  /** Nível 2 -> 3: escolha exclusiva A ou B. */
-  nivel3: { A: Upgrade; B: Upgrade };
-  /** Nível 3 -> 4: evolução final do caminho escolhido. Opcional (o Totem não tem). */
-  nivel4?: { A: Upgrade; B: Upgrade };
+  /** Árvore de evolução: cada ramo tem nós que precisam ser comprados em ordem. */
+  arvore: Ramo[];
   /** Torre de suporte: não atira; dá bônus na aura. `dano` = % de dano e `cadencia` = % de cadência para as torres vizinhas. */
   suporte?: boolean;
 }
@@ -66,103 +67,171 @@ export const TORRES: Record<string, DefTorre> = {
   arqueiro: {
     ...z, id: 'arqueiro', nome: 'Arqueiro', desc: 'Dano único, barato. Acerta voadores.',
     custo: 50, antiAereo: true, alcance: 150, cadencia: 1.5, dano: 19, velProjetil: 420, cor: 0x4cc9f0,
-    nivel2: { nome: 'Treino', desc: '+60% de dano', custo: 40, mod: { dano: 1.6 } },
-    nivel3: {
-      A: { nome: 'Cadência', desc: '+70% de cadência', custo: 70, mod: { cadencia: 1.7 } },
-      B: { nome: 'Besta pesada', desc: '2x dano, +25% alcance', custo: 70, mod: { dano: 2, alcance: 1.25 } },
-    },
-    nivel4: {
-      A: { nome: 'Chuva de flechas', desc: '+40% de cadência e +30% de dano', custo: 160, mod: { cadencia: 1.4, dano: 1.3 } },
-      B: { nome: 'Flecha perfurante', desc: '+80% de dano e +20% de alcance', custo: 170, mod: { dano: 1.8, alcance: 1.2 } },
-    },
+    arvore: [
+      { nome: 'Precisão', nos: [
+        { nome: 'Treino', desc: '+60% de dano', custo: 50, mod: { dano: 1.6 } },
+        { nome: 'Besta pesada', desc: '2x dano, +25% de alcance', custo: 90, mod: { dano: 2, alcance: 1.25 } },
+        { nome: 'Flecha perfurante', desc: '+80% de dano, +20% de alcance', custo: 150, mod: { dano: 1.8, alcance: 1.2 } },
+      ] },
+      { nome: 'Cadência', nos: [
+        { nome: 'Arco rápido', desc: '+40% de cadência', custo: 60, mod: { cadencia: 1.4 } },
+        { nome: 'Chuva de flechas', desc: '+50% de cadência, +20% de dano', custo: 110, mod: { cadencia: 1.5, dano: 1.2 } },
+        { nome: 'Tiro rápido', desc: '+70% de cadência', custo: 160, mod: { cadencia: 1.7 } },
+      ] },
+      { nome: 'Mira', nos: [
+        { nome: 'Mira longa', desc: '+20% de alcance', custo: 50, mod: { alcance: 1.2 } },
+        { nome: 'Mira de águia', desc: '+30% de alcance', custo: 90, mod: { alcance: 1.3 } },
+        { nome: 'Olho de falcão', desc: '+40% de alcance, +20% de dano', custo: 150, mod: { alcance: 1.4, dano: 1.2 } },
+      ] },
+    ],
   },
   canhao: {
     ...z, id: 'canhao', nome: 'Canhão', desc: 'Dano em área. Só atinge terrestres.',
     custo: 90, antiAereo: false, alcance: 130, cadencia: 0.6, dano: 48, velProjetil: 300, area: 55, cor: 0x4361ee,
-    nivel2: { nome: 'Pólvora', desc: '+60% de dano', custo: 65, mod: { dano: 1.6 } },
-    nivel3: {
-      A: { nome: 'Raio', desc: '+50% de raio da explosão', custo: 100, mod: { area: 1.5 } },
-      B: { nome: 'Incendiário', desc: 'Queima 12 de dano/s por 3s', custo: 100, mod: { queima: 12 } },
-    },
-    nivel4: {
-      A: { nome: 'Bombardeio', desc: '+50% de raio e +40% de dano', custo: 160, mod: { area: 1.5, dano: 1.4 } },
-      B: { nome: 'Fogo infernal', desc: 'Queima 30 de dano/s e +20% de dano', custo: 170, mod: { queima: 30, dano: 1.2 } },
-    },
+    arvore: [
+      { nome: 'Potência', nos: [
+        { nome: 'Pólvora', desc: '+60% de dano', custo: 65, mod: { dano: 1.6 } },
+        { nome: 'Carga dupla', desc: '+50% de dano', custo: 100, mod: { dano: 1.5 } },
+        { nome: 'Canhão de cerco', desc: '+80% de dano', custo: 170, mod: { dano: 1.8 } },
+      ] },
+      { nome: 'Área', nos: [
+        { nome: 'Raio', desc: '+50% de raio da explosão', custo: 100, mod: { area: 1.5 } },
+        { nome: 'Estrondo', desc: '+30% de raio, +20% de dano', custo: 130, mod: { area: 1.3, dano: 1.2 } },
+        { nome: 'Onda de choque', desc: '+60% de raio', custo: 170, mod: { area: 1.6 } },
+      ] },
+      { nome: 'Fogo', nos: [
+        { nome: 'Incendiário', desc: 'Queima 12 de dano/s por 3s', custo: 100, mod: { queima: 12 } },
+        { nome: 'Brasa', desc: 'Queima 20 de dano/s', custo: 130, mod: { queima: 20 } },
+        { nome: 'Inferno', desc: 'Queima 30 de dano/s', custo: 170, mod: { queima: 30 } },
+      ] },
+    ],
   },
   gelo: {
     ...z, id: 'gelo', nome: 'Gelo', desc: 'Lentidão. Só atinge terrestres.',
     custo: 70, antiAereo: false, alcance: 120, cadencia: 1.2, dano: 7, velProjetil: 380,
     lentFator: 0.5, lentDur: 2, cor: 0xcaf0f8,
-    nivel2: { nome: 'Frio intenso', desc: 'Lentidão maior e mais longa', custo: 50, mod: { lentFator: 0.4, lentDur: 1.3 } },
-    nivel3: {
-      A: { nome: 'Congelar', desc: 'Atordoa 0,35s por golpe, lentidão 70%', custo: 80, mod: { atordoa: 0.35, lentFator: 0.3 } },
-      B: { nome: 'Quebra-armadura', desc: 'Remove 60% da armadura por 4s', custo: 80, mod: { quebra: 0.6 } },
-    },
-    nivel4: {
-      A: { nome: 'Zero absoluto', desc: 'Atordoa 0,6s e lentidão 80%', custo: 160, mod: { atordoa: 0.6, lentFator: 0.2 } },
-      B: { nome: 'Armadura destruída', desc: 'Remove 80% da armadura e +50% de dano', custo: 170, mod: { quebra: 0.8, dano: 1.5 } },
-    },
+    arvore: [
+      { nome: 'Frio', nos: [
+        { nome: 'Frio intenso', desc: 'Lentidão maior e mais longa', custo: 50, mod: { lentFator: 0.4, lentDur: 1.3 } },
+        { nome: 'Congelar', desc: 'Atordoa 0,35s por golpe, lentidão 70%', custo: 90, mod: { atordoa: 0.35, lentFator: 0.3 } },
+        { nome: 'Zero absoluto', desc: 'Atordoa 0,6s e lentidão 80%', custo: 160, mod: { atordoa: 0.6, lentFator: 0.2 } },
+      ] },
+      { nome: 'Gelo profundo', nos: [
+        { nome: 'Gelo grosso', desc: '+40% de dano', custo: 60, mod: { dano: 1.4 } },
+        { nome: 'Cristal', desc: '+60% de dano', custo: 110, mod: { dano: 1.6 } },
+        { nome: 'Geleira', desc: '+80% de dano, +20% de alcance', custo: 160, mod: { dano: 1.8, alcance: 1.2 } },
+      ] },
+      { nome: 'Quebra', nos: [
+        { nome: 'Quebra-armadura', desc: 'Remove 60% da armadura por 4s', custo: 80, mod: { quebra: 0.6 } },
+        { nome: 'Fratura', desc: 'Remove 70% da armadura', custo: 120, mod: { quebra: 0.7 } },
+        { nome: 'Armadura destruída', desc: 'Remove 80% da armadura, +50% de dano', custo: 170, mod: { quebra: 0.8, dano: 1.5 } },
+      ] },
+    ],
   },
   tesla: {
     ...z, id: 'tesla', nome: 'Tesla', desc: 'Raio em cadeia. Acerta voadores.',
     tipo: 'cadeia', custo: 110, antiAereo: true, alcance: 125, cadencia: 1.1, dano: 17, velProjetil: 0, saltos: 2, cor: 0x9d4edd,
-    nivel2: { nome: 'Bobinas', desc: '+60% de dano', custo: 70, mod: { dano: 1.6 } },
-    nivel3: {
-      A: { nome: 'Mais saltos', desc: '+3 saltos na cadeia', custo: 110, mod: { saltos: 3 } },
-      B: { nome: 'Atordoa', desc: 'Atordoa 0,5s por golpe, +20% dano', custo: 110, mod: { atordoa: 0.5, dano: 1.2 } },
-    },
-    nivel4: {
-      A: { nome: 'Tempestade', desc: '+3 saltos e +30% de dano', custo: 170, mod: { saltos: 3, dano: 1.3 } },
-      B: { nome: 'Choque paralisante', desc: 'Atordoa 0,8s e +30% de cadência', custo: 170, mod: { atordoa: 0.8, cadencia: 1.3 } },
-    },
+    arvore: [
+      { nome: 'Corrente', nos: [
+        { nome: 'Mais saltos', desc: '+3 saltos na cadeia', custo: 110, mod: { saltos: 3 } },
+        { nome: 'Cadeia longa', desc: '+5 saltos na cadeia', custo: 150, mod: { saltos: 5 } },
+        { nome: 'Tempestade', desc: '+3 saltos, +30% de dano', custo: 170, mod: { saltos: 3, dano: 1.3 } },
+      ] },
+      { nome: 'Voltagem', nos: [
+        { nome: 'Alta tensão', desc: '+50% de dano', custo: 100, mod: { dano: 1.5 } },
+        { nome: 'Sobrecarga', desc: '+70% de dano', custo: 140, mod: { dano: 1.7 } },
+        { nome: 'Raio final', desc: '+100% de dano', custo: 180, mod: { dano: 2 } },
+      ] },
+      { nome: 'Choque', nos: [
+        { nome: 'Atordoa', desc: 'Atordoa 0,5s por golpe, +20% de dano', custo: 110, mod: { atordoa: 0.5, dano: 1.2 } },
+        { nome: 'Choque paralisante', desc: 'Atordoa 0,8s e +30% de cadência', custo: 150, mod: { atordoa: 0.8, cadencia: 1.3 } },
+        { nome: 'Paralisia', desc: 'Atordoa 1s por golpe', custo: 180, mod: { atordoa: 1 } },
+      ] },
+    ],
   },
   alquimista: {
     ...z, id: 'alquimista', nome: 'Alquimista', desc: 'Frasco de veneno que queima por tempo. Acerta voadores.',
     custo: 85, antiAereo: true, alcance: 135, cadencia: 0.9, dano: 12, velProjetil: 340, queima: 6, cor: 0x7cff6b,
-    nivel2: { nome: 'Destilação', desc: '+60% de dano', custo: 60, mod: { dano: 1.6 } },
-    nivel3: {
-      A: { nome: 'Peste', desc: 'Queima 9 de dano/s', custo: 90, mod: { queima: 9 } },
-      B: { nome: 'Vapor', desc: '+30% de alcance, +40% de cadência', custo: 90, mod: { alcance: 1.3, cadencia: 1.4 } },
-    },
-    nivel4: {
-      A: { nome: 'Epidemia', desc: 'Queima 18 de dano/s e +20% de alcance', custo: 160, mod: { queima: 18, alcance: 1.2 } },
-      B: { nome: 'Névoa tóxica', desc: '+50% de cadência e +20% de alcance', custo: 170, mod: { cadencia: 1.5, alcance: 1.2 } },
-    },
+    arvore: [
+      { nome: 'Destilação', nos: [
+        { nome: 'Destilação', desc: '+60% de dano', custo: 60, mod: { dano: 1.6 } },
+        { nome: 'Elixir', desc: '+80% de dano', custo: 110, mod: { dano: 1.8 } },
+        { nome: 'Essência', desc: '+100% de dano', custo: 160, mod: { dano: 2 } },
+      ] },
+      { nome: 'Peste', nos: [
+        { nome: 'Peste', desc: 'Queima 9 de dano/s', custo: 90, mod: { queima: 9 } },
+        { nome: 'Epidemia', desc: 'Queima 18 de dano/s, +20% de alcance', custo: 140, mod: { queima: 18, alcance: 1.2 } },
+        { nome: 'Praga', desc: 'Queima 26 de dano/s', custo: 180, mod: { queima: 26 } },
+      ] },
+      { nome: 'Vapor', nos: [
+        { nome: 'Vapor', desc: '+30% de alcance, +40% de cadência', custo: 90, mod: { alcance: 1.3, cadencia: 1.4 } },
+        { nome: 'Névoa tóxica', desc: '+50% de cadência, +20% de alcance', custo: 140, mod: { cadencia: 1.5, alcance: 1.2 } },
+        { nome: 'Nuvem', desc: '+70% de cadência', custo: 180, mod: { cadencia: 1.7 } },
+      ] },
+    ],
   },
   totem: {
     ...z, id: 'totem', nome: 'Totem', desc: 'Não ataca. Dá +15% de dano e +10% de cadência às torres próximas (não acumula).',
     custo: 80, antiAereo: false, alcance: 120, cadencia: 10, dano: 15, velProjetil: 0, cor: 0xffd166, suporte: true,
-    nivel2: { nome: 'Bênção', desc: 'Aura maior: +25% de alcance', custo: 60, mod: { alcance: 1.25 } },
-    nivel3: {
-      A: { nome: 'Fúria', desc: 'Aura de dano +50%', custo: 90, mod: { dano: 1.5 } },
-      B: { nome: 'Ritmo', desc: 'Aura de cadência +60%', custo: 90, mod: { cadencia: 1.6 } },
-    },
+    arvore: [
+      { nome: 'Fúria', nos: [
+        { nome: 'Fúria', desc: 'Aura de dano +50%', custo: 90, mod: { dano: 1.5 } },
+        { nome: 'Fúria maior', desc: 'Aura de dano +100%', custo: 140, mod: { dano: 2 } },
+        { nome: 'Ira', desc: 'Aura de dano +150%', custo: 180, mod: { dano: 2.5 } },
+      ] },
+      { nome: 'Ritmo', nos: [
+        { nome: 'Ritmo', desc: 'Aura de cadência +60%', custo: 90, mod: { cadencia: 1.6 } },
+        { nome: 'Compasso', desc: 'Aura de cadência +100%', custo: 140, mod: { cadencia: 2 } },
+        { nome: 'Tambor', desc: 'Aura de cadência +140%', custo: 180, mod: { cadencia: 2.4 } },
+      ] },
+      { nome: 'Bênção', nos: [
+        { nome: 'Bênção', desc: 'Aura maior: +25% de alcance', custo: 60, mod: { alcance: 1.25 } },
+        { nome: 'Halo', desc: 'Aura maior: +50% de alcance', custo: 110, mod: { alcance: 1.5 } },
+        { nome: 'Santuário', desc: 'Aura enorme: +80% de alcance', custo: 160, mod: { alcance: 1.8 } },
+      ] },
+    ],
   },
   morteiro: {
     ...z, id: 'morteiro', nome: 'Morteiro', desc: 'Alcance enorme e dano em área devastador, mas lento. Só terrestres.',
     custo: 130, antiAereo: false, alcance: 230, cadencia: 0.33, dano: 90, velProjetil: 230, area: 70, cor: 0xf8961e,
-    nivel2: { nome: 'Cargas pesadas', desc: '+60% de dano', custo: 90, mod: { dano: 1.6 } },
-    nivel3: {
-      A: { nome: 'Salva dupla', desc: '+80% de cadência', custo: 130, mod: { cadencia: 1.8 } },
-      B: { nome: 'Napalm', desc: 'Queima 22 de dano/s, +25% de raio', custo: 130, mod: { queima: 22, area: 1.25 } },
-    },
-    nivel4: {
-      A: { nome: 'Barragem', desc: '+50% de cadência e +30% de raio', custo: 170, mod: { cadencia: 1.5, area: 1.3 } },
-      B: { nome: 'Inferno', desc: 'Queima 40 de dano/s e +20% de raio', custo: 170, mod: { queima: 40, area: 1.2 } },
-    },
+    arvore: [
+      { nome: 'Cargas', nos: [
+        { nome: 'Cargas pesadas', desc: '+60% de dano', custo: 90, mod: { dano: 1.6 } },
+        { nome: 'Cargas de cerco', desc: '+80% de dano', custo: 140, mod: { dano: 1.8 } },
+        { nome: 'Bomba final', desc: '+100% de dano', custo: 190, mod: { dano: 2 } },
+      ] },
+      { nome: 'Salva', nos: [
+        { nome: 'Salva dupla', desc: '+80% de cadência', custo: 130, mod: { cadencia: 1.8 } },
+        { nome: 'Salva tripla', desc: '+100% de cadência', custo: 170, mod: { cadencia: 2 } },
+        { nome: 'Barragem', desc: '+50% de cadência, +30% de raio', custo: 190, mod: { cadencia: 1.5, area: 1.3 } },
+      ] },
+      { nome: 'Napalm', nos: [
+        { nome: 'Napalm', desc: 'Queima 22 de dano/s, +25% de raio', custo: 130, mod: { queima: 22, area: 1.25 } },
+        { nome: 'Inferno', desc: 'Queima 40 de dano/s, +20% de raio', custo: 170, mod: { queima: 40, area: 1.2 } },
+        { nome: 'Apocalipse', desc: 'Queima 60 de dano/s', custo: 200, mod: { queima: 60 } },
+      ] },
+    ],
   },
   ballista: {
     ...z, id: 'ballista', nome: 'Balista', desc: 'Um virote pesado e lento, com muito dano por tiro. Só terrestres.',
     custo: 110, antiAereo: false, alcance: 200, cadencia: 0.5, dano: 84, velProjetil: 520, cor: 0x8d6e63,
-    nivel2: { nome: 'Ponta de ferro', desc: '+50% de dano', custo: 75, mod: { dano: 1.5 } },
-    nivel3: {
-      A: { nome: 'Perfuração', desc: '+40% de alcance e +40% de dano', custo: 120, mod: { alcance: 1.4, dano: 1.4 } },
-      B: { nome: 'Rajada', desc: '+60% de cadência', custo: 120, mod: { cadencia: 1.6 } },
-    },
-    nivel4: {
-      A: { nome: 'Virote mortal', desc: '+60% de dano e +20% de alcance', custo: 170, mod: { dano: 1.6, alcance: 1.2 } },
-      B: { nome: 'Chuva de virotes', desc: '+50% de cadência e +20% de dano', custo: 170, mod: { cadencia: 1.5, dano: 1.2 } },
-    },
+    arvore: [
+      { nome: 'Ponta de ferro', nos: [
+        { nome: 'Ponta de ferro', desc: '+50% de dano', custo: 75, mod: { dano: 1.5 } },
+        { nome: 'Ponta de aço', desc: '+80% de dano', custo: 120, mod: { dano: 1.8 } },
+        { nome: 'Virote mortal', desc: '+60% de dano, +20% de alcance', custo: 170, mod: { dano: 1.6, alcance: 1.2 } },
+      ] },
+      { nome: 'Perfuração', nos: [
+        { nome: 'Perfuração', desc: '+40% de alcance, +40% de dano', custo: 120, mod: { alcance: 1.4, dano: 1.4 } },
+        { nome: 'Longo alcance', desc: '+50% de alcance', custo: 110, mod: { alcance: 1.5 } },
+        { nome: 'Lança longa', desc: '+60% de alcance, +20% de dano', custo: 170, mod: { alcance: 1.6, dano: 1.2 } },
+      ] },
+      { nome: 'Rajada', nos: [
+        { nome: 'Rajada', desc: '+60% de cadência', custo: 120, mod: { cadencia: 1.6 } },
+        { nome: 'Chuva de virotes', desc: '+50% de cadência, +20% de dano', custo: 170, mod: { cadencia: 1.5, dano: 1.2 } },
+        { nome: 'Metralha', desc: '+80% de cadência', custo: 190, mod: { cadencia: 1.8 } },
+      ] },
+    ],
   },
 };
 
@@ -188,10 +257,20 @@ export interface Stats {
 export function modsAplicados(t: Torre): Mod[] {
   const def = TORRES[t.defId];
   const mods: Mod[] = [];
-  if (t.nivel >= 2) mods.push(def.nivel2.mod);
-  if (t.nivel >= 3 && t.caminho) mods.push(def.nivel3[t.caminho].mod);
-  if (t.nivel >= 4 && t.caminho && def.nivel4) mods.push(def.nivel4[t.caminho].mod);
+  def.arvore.forEach((ramo, r) => {
+    for (let i = 0; i < t.ramos[r]; i++) mods.push(ramo.nos[i].mod);
+  });
   return mods;
+}
+
+/** Índice do ramo com mais nós comprados (define a cor de destaque). -1 se nada foi comprado. */
+export function ramoPrincipal(t: Torre): number {
+  let melhor = -1;
+  let max = 0;
+  t.ramos.forEach((n, r) => {
+    if (n > max) { max = n; melhor = r; }
+  });
+  return melhor;
 }
 
 /**
@@ -250,14 +329,17 @@ export function previewStats(st: Stats, mod: Mod): Stats {
 }
 
 export interface OpcaoUpgrade {
-  chave: 'N' | 'A' | 'B';
+  ramo: number;
   up: Upgrade;
 }
 
+/** Próximo nó de cada ramo que ainda não está no fim. */
 export function opcoesUpgrade(t: Torre): OpcaoUpgrade[] {
   const def = TORRES[t.defId];
-  if (t.nivel === 1) return [{ chave: 'N', up: def.nivel2 }];
-  if (t.nivel === 2) return [{ chave: 'A', up: def.nivel3.A }, { chave: 'B', up: def.nivel3.B }];
-  if (t.nivel === 3 && t.caminho && def.nivel4) return [{ chave: t.caminho, up: def.nivel4[t.caminho] }];
-  return [];
+  const ops: OpcaoUpgrade[] = [];
+  def.arvore.forEach((ramo, r) => {
+    const prox = ramo.nos[t.ramos[r]];
+    if (prox) ops.push({ ramo: r, up: prox });
+  });
+  return ops;
 }

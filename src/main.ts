@@ -160,7 +160,7 @@ async function main(): Promise<void> {
         if (k === 'v') vender(t.id);
         else {
           const op = opcoesUpgrade(t)[0];
-          if (op) melhorar(t.id, op.chave);
+          if (op) melhorar(t.id, op.ramo);
         }
       }
     } else if (k === 'enter') {

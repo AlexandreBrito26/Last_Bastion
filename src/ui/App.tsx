@@ -342,7 +342,7 @@ export function App() {
               <>
                 <div style={{ fontSize: 16 }}>
                   {def.nome} · nível {sel.nivel}
-                  {sel.caminho ? ` (${def.nivel3[sel.caminho].nome})` : ''}
+                  <div style={{ fontWeight: 400, fontSize: 11, opacity: 0.8 }}>{def.arvore.map((r, i) => `${r.nome} ${sel.ramos[i] ?? 0}`).join(' · ')}</div>
                 </div>
                 <div style={{ fontWeight: 400, fontSize: 13, lineHeight: 1.5 }}>
                   Dano {st.dano.toFixed(0)} · Cadência {st.cadencia.toFixed(1)}/s<br />
@@ -363,15 +363,15 @@ export function App() {
                     </button>
                   ))}
                 </div>
-                {ops.length === 0 && <div style={{ fontWeight: 400, fontSize: 13 }}>Nível máximo</div>}
+                {ops.length === 0 && <div style={{ fontWeight: 400, fontSize: 13 }}>Todos os ramos completos</div>}
                 {ops.map((o) => (
                   <button
-                    key={o.chave}
+                    key={o.ramo}
                     className="hud-btn"
                     style={{ ...botao(false, s.ouro < o.up.custo), textAlign: 'left' }}
-                    onClick={() => melhorar(sel.id, o.chave)}
+                    onClick={() => melhorar(sel.id, o.ramo)}
                   >
-                    {o.chave === 'N' ? 'Melhorar' : `Caminho ${o.chave}`}: {o.up.nome} · {o.up.custo}
+                    {def.arvore[o.ramo].nome}: {o.up.nome} · {o.up.custo}
                     <br />
                     <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
                     <br />

@@ -1,7 +1,7 @@
 import { Application, BlurFilter, ColorMatrixFilter, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { COR } from '../core/cores';
 import { INIMIGOS } from '../game/data/inimigos';
-import { statsTorre, TORRES } from '../game/data/torres';
+import { ramoPrincipal, statsTorre, TORRES } from '../game/data/torres';
 import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '../game/data/skins';
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
@@ -237,7 +237,8 @@ export class Renderizador {
     const cor = corTorre(def.id, def.cor, useUI.getState().skin);
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
-    const corCaminho = t.caminho === 'A' ? COR.torreArcana : t.caminho === 'B' ? COR.inimigoElite : cor;
+    const ramo = ramoPrincipal(t);
+    const corCaminho = ramo === 0 ? COR.torreArcana : ramo === 1 ? COR.inimigoElite : cor;
 
     // sombra e plinto
     g.ellipse(cx + 4, cy + 12 * esc, 19 * esc, 8 * esc).fill({ color: 0x000000, alpha: 0.38 });

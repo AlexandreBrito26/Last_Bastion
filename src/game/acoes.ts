@@ -22,7 +22,7 @@ export function construir(defId: string, pos: Vec): boolean {
     pos: { x: pos.x, y: pos.y },
     recarga: 0,
     nivel: 1,
-    caminho: null,
+    ramos: [],
     prioridade: 'primeiro',
     investido: custo,
     flash: 0,
@@ -35,17 +35,17 @@ export function construir(defId: string, pos: Vec): boolean {
   return true;
 }
 
-export function melhorar(id: number, chave: 'N' | 'A' | 'B'): boolean {
+export function melhorar(id: number, ramo: number): boolean {
   const t = ref.mundo.torres.find((x) => x.id === id);
   if (!t) return false;
-  const op = opcoesUpgrade(t).find((o) => o.chave === chave);
+  const op = opcoesUpgrade(t).find((o) => o.ramo === ramo);
   if (!op || !useUI.getState().gastarOuro(op.up.custo)) {
     emitir({ t: 'erro' });
     return false;
   }
   t.investido += op.up.custo;
+  t.ramos[ramo] = (t.ramos[ramo] ?? 0) + 1;
   t.nivel++;
-  if (chave !== 'N') t.caminho = chave;
   t.melhoria = 0.5;
   emitir({ t: 'melhorar', pos: t.pos, cor: TORRES[t.defId].cor });
   useUI.getState().bump();
