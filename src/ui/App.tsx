@@ -6,6 +6,7 @@ import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melho
 import { custoTorre } from '../game/construcao';
 import { nomeTorre, opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
+import { HISTORIA } from '../game/historia';
 import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
 import { chaveFase, useUI } from '../store/ui';
@@ -76,6 +77,36 @@ function resumoMudanca(antes: Stats, depois: Stats): string {
   if (depois.quebra !== antes.quebra) partes.push(`Quebra ${Math.round(depois.quebra * 100)}%`);
   if (depois.atordoa !== antes.atordoa) partes.push(`Atordoa ${depois.atordoa.toFixed(2)}s`);
   return partes.join(' · ');
+}
+
+/** Cutscene curta de cada fase: painéis de texto com Continuar, Enter ou Espaço. Esc pula. */
+function Intro() {
+  const intro = useUI((s) => s.intro);
+  const avancar = useUI((s) => s.avancarIntro);
+  const pular = useUI((s) => s.pularIntro);
+  if (!intro) return null;
+  const paineis = HISTORIA[intro.mapa] ?? [];
+  const ultimo = intro.passo + 1 >= paineis.length;
+  const nomeFase = MAPAS.find((m) => m.id === intro.mapa)?.nome ?? '';
+  return (
+    <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24, background: 'linear-gradient(180deg, #0c0a1dcc, #0c0a1ff2)', pointerEvents: 'auto' }}>
+      <div style={{ font: '700 13px system-ui, sans-serif', letterSpacing: 3, color: hex(COR.acento) }}>{nomeFase.toUpperCase()}</div>
+      <p key={intro.passo} style={{ maxWidth: 560, margin: 0, font: '500 19px Georgia, serif', lineHeight: 1.6, textAlign: 'center', color: hex(COR.ui), animation: 'lb-subir .5s both' }}>
+        {paineis[intro.passo]}
+      </p>
+      <div style={{ display: 'flex', gap: 6 }} aria-hidden="true">
+        {paineis.map((_, i) => (
+          <span key={i} style={{ width: 8, height: 8, borderRadius: '50%', background: i <= intro.passo ? hex(COR.acento) : '#3d2f66' }} />
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 10 }}>
+        <button className="hud-btn" style={botao()} onClick={() => { clique(); pular(); }}>Pular</button>
+        <button className="hud-btn" style={{ ...botao(true), padding: '8px 18px', fontSize: 14 }} onClick={() => { clique(); avancar(); }}>
+          {ultimo ? 'Começar ▶' : 'Continuar ▶'}
+        </button>
+      </div>
+    </div>
+  );
 }
 
 /** Dicas da primeira partida. Some depois de "Entendi" (salvo no navegador). */
@@ -330,6 +361,7 @@ export function App() {
       </div>
 
       {s.tela === 'jogo' && <Tutorial />}
+      {s.tela === 'jogo' && <Intro />}
 
       {/* Painel da torre selecionada */}
       {sel && (
@@ -429,7 +461,7 @@ export function App() {
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             {s.fase === 'vitoria' && MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1] && (
-              <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); novaPartida(MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1]); }}>Próxima fase ▶</button>
+              <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); const prox = MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1]; novaPartida(prox); s.iniciarIntro(prox.id); }}>Próxima fase ▶</button>
             )}
             {s.fase === 'vitoria' && (
               <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); continuarSemFim(); }}>Modo sem fim ∞</button>

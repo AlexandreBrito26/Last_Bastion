@@ -8,6 +8,7 @@ Tower defense 2D (PixiJS + React + Zustand). 6 torres de ataque (Arqueiro, Canh�
 M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 
 ## Novidades
+- **História por fase**: cada mapa abre com uma cutscene curta de três painéis. Enter ou Espaço avança, Esc pula.
 - **Tutorial**: dicas na primeira partida, fechadas com "Entendi" (salvo no navegador).
 - **Prévia de upgrade**: cada melhoria mostra o efeito em dano, cadência, alcance e outros atributos.
 - **Formas da torre**: a cada 3 nós comprados a torre evolui. Cada forma tem nome próprio, ornamento (pontas, asas e coroa) e cor que parte da skin escolhida e vai ficando mais parecida com a cor da forma. Cada forma também tem efeitos animados: brilho pulsante (forma 2), faíscas orbitando (forma 3) e aura dourada com luz (forma 4). Com mais dano e cadência. Por exemplo, o Arqueiro vai de Batedor a Franco-atirador e Sentinela Celeste.

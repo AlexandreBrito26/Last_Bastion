@@ -58,6 +58,7 @@ function Fases({ fechar }: { fechar: () => void }) {
     audio.tocar('clique');
     novaPartida(m);
     useUI.getState().definirTela('jogo');
+    useUI.getState().iniciarIntro(m.id);
   };
   return (
     <div style={{ width: 'min(860px, 94%)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', animation: 'lb-entrar .25s both' }}>

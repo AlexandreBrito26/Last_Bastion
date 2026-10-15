@@ -3,6 +3,7 @@ import type { Fase } from '../game/estado';
 import { gravarSkin, gravarCompradas, lerCompradas, lerSkin, SKINS } from '../game/data/skins';
 import { estrelasPorVidas, gravarMoedas, lerMoedas, recompensaVitoria } from '../game/data/economia';
 import { gravarNivel, lerNivel, type NivelEfeitos } from '../core/qualidade';
+import { HISTORIA } from '../game/historia';
 
 /** Só estado que a UI precisa. Posições a 60fps ficam fora daqui. */
 export const OURO_INICIAL = 180;
@@ -108,9 +109,15 @@ interface EstadoUI {
   registrarDano: () => void;
   bump: () => void;
   reiniciar: (mapaId: string, ouro: number, vidas: number) => void;
+  /** Cutscene da fase: painel atual e mapa. Enquanto existir, o jogo fica pausado. */
+  intro: { mapa: string; passo: number } | null;
+  iniciarIntro: (mapa: string) => void;
+  avancarIntro: () => void;
+  pularIntro: () => void;
 }
 
 export const useUI = create<EstadoUI>((set, get) => ({
+  intro: null,
   tela: 'menu',
   jogoIniciado: false,
   ...lerConfig(),
@@ -184,6 +191,18 @@ export const useUI = create<EstadoUI>((set, get) => ({
   selecionarTorre: (id) => set({ selecionadaId: id, construirId: null, habilidade: null }),
   definirVelocidade: (v) => set({ velocidade: v }),
   alternarPausa: () => set((s) => ({ pausado: !s.pausado })),
+  iniciarIntro: (mapa) => {
+    if (!HISTORIA[mapa]) return;
+    set({ intro: { mapa, passo: 0 }, pausado: true });
+  },
+  avancarIntro: () =>
+    set((s) => {
+      if (!s.intro) return {};
+      const total = HISTORIA[s.intro.mapa]?.length ?? 0;
+      if (s.intro.passo + 1 >= total) return { intro: null, pausado: false };
+      return { intro: { ...s.intro, passo: s.intro.passo + 1 } };
+    }),
+  pularIntro: () => set({ intro: null, pausado: false }),
   definirTela: (t) => set((s) => ({ tela: t, jogoIniciado: s.jogoIniciado || t === 'jogo', construirId: null })),
   efeitos: lerNivel(),
   definirEfeitos: (n) => {

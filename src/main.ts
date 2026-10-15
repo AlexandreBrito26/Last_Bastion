@@ -145,6 +145,15 @@ async function main(): Promise<void> {
       return;
     }
     if (s.tela !== 'jogo') return;
+    if (s.intro) {
+      if (k === 'enter' || k === ' ') {
+        ev.preventDefault();
+        s.avancarIntro();
+      } else if (k === 'escape') {
+        s.pularIntro();
+      }
+      return;
+    }
     if (k === 'r') {
       novaPartida();
     } else if (k === 'q') {
