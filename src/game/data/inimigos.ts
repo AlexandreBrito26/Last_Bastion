@@ -31,6 +31,8 @@ export const INIMIGOS: Record<string, DefInimigo> = {
     cura: { raio: 90, quantidade: 12, intervalo: 1 },
   },
   espectro: { ...base, id: 'espectro', nome: 'Espectro', vida: 45, velocidade: 150, raio: 9, recompensa: 9, cor: 0x8e7dff, voador: true },
+  golem: { ...base, id: 'golem', nome: 'Golem de Cristal', vida: 420, velocidade: 38, raio: 17, recompensa: 26, cor: 0x7ec8e3, armadura: 9, danoBase: 3 },
+  ceifador: { ...base, id: 'ceifador', nome: 'Ceifador', vida: 110, velocidade: 120, raio: 11, recompensa: 16, cor: 0x2d1b4e, voador: true, danoBase: 2 },
   sapador: { ...base, id: 'sapador', nome: 'Sapador', vida: 130, velocidade: 55, raio: 13, recompensa: 14, cor: 0xc2185b, armadura: 3, danoBase: 2 },
   dragao: {
     ...base, id: 'dragao', nome: 'Dragão de Brasa', vida: 2600, velocidade: 40, raio: 28, recompensa: 220, cor: 0xff5e3a, armadura: 6, voador: true, danoBase: 9,

@@ -8,6 +8,7 @@ Tower defense 2D (PixiJS + React + Zustand). 6 torres de ataque (Arqueiro, Canh�
 M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 
 ## Novidades
+- **Novos inimigos**: Golem de Cristal (lento e muito blindado, aparece na 7ª onda) e Ceifador (voador rápido, aparece antes do chefe). Ambos entram no modo sem fim.
 - **Novas skins**: Geada (gelo), Floresta (madeira e musgo) e Brasa (ferro quente e lava), além das já existentes. Todas cobrem a Balista e o Cristal Arcano.
 - **História por fase**: cada mapa abre com uma cutscene curta de três painéis. Enter ou Espaço avança, Esc pula.
 - **Tutorial**: dicas na primeira partida, fechadas com "Entendi" (salvo no navegador).
