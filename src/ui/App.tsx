@@ -4,7 +4,7 @@ import { audio } from '../core/audio';
 import { COR } from '../core/cores';
 import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
 import { custoTorre } from '../game/construcao';
-import { opcoesUpgrade, PRIORIDADES, REEMBOLSO, statsTorre, TORRES } from '../game/data/torres';
+import { opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
 import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
@@ -63,6 +63,48 @@ const HABS = {
 } as const;
 
 /** Botão de tela cheia; acompanha o estado real do documento (também muda com Esc). */
+/** Lista o que muda nas estatísticas de uma torre quando um upgrade é aplicado. */
+function resumoMudanca(antes: Stats, depois: Stats): string {
+  const partes: string[] = [];
+  if (depois.dano !== antes.dano) partes.push(`Dano ${antes.dano.toFixed(0)}→${depois.dano.toFixed(0)}`);
+  if (depois.cadencia !== antes.cadencia) partes.push(`Cadência ${antes.cadencia.toFixed(1)}→${depois.cadencia.toFixed(1)}`);
+  if (depois.alcance !== antes.alcance) partes.push(`Alcance ${antes.alcance.toFixed(0)}→${depois.alcance.toFixed(0)}`);
+  if (depois.area !== antes.area) partes.push(`Raio ${antes.area.toFixed(0)}→${depois.area.toFixed(0)}`);
+  if (depois.queima !== antes.queima) partes.push(`Queima ${antes.queima.toFixed(0)}→${depois.queima.toFixed(0)}/s`);
+  if (depois.lentFator !== antes.lentFator) partes.push(`Lentidão ${Math.round((1 - antes.lentFator) * 100)}%→${Math.round((1 - depois.lentFator) * 100)}%`);
+  if (depois.quebra !== antes.quebra) partes.push(`Quebra ${Math.round(depois.quebra * 100)}%`);
+  if (depois.atordoa !== antes.atordoa) partes.push(`Atordoa ${depois.atordoa.toFixed(2)}s`);
+  return partes.join(' · ');
+}
+
+/** Dicas da primeira partida. Some depois de "Entendi" (salvo no navegador). */
+function Tutorial() {
+  const chave = 'lb:tutorial-visto';
+  const [visto, setVisto] = useState(() => {
+    try { return localStorage.getItem(chave) === '1'; } catch { return true; }
+  });
+  if (visto) return null;
+  const fechar = () => {
+    try { localStorage.setItem(chave, '1'); } catch { /* sem armazenamento: só fecha */ }
+    setVisto(true);
+  };
+  const passos = [
+    'Escolha uma torre na barra de baixo (ou tecle 1-8) e clique no terreno para construir.',
+    'Clique numa torre para ver os upgrades. U melhora e V vende a torre selecionada.',
+    'Enter chama a próxima onda antes do tempo. Espaço pausa.',
+    'Q usa Meteoro, W congela os inimigos e E cria um escudo que protege as vidas.',
+  ];
+  return (
+    <div className="hud-painel" style={{ ...painel, position: 'absolute', left: 8, top: 56, width: 280, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-descer .3s both', zIndex: 3 }}>
+      <div style={{ fontSize: 15 }}>Como jogar</div>
+      <ol style={{ margin: 0, paddingLeft: 18, fontWeight: 400, fontSize: 13, lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {passos.map((p) => <li key={p}>{p}</li>)}
+      </ol>
+      <button className="hud-btn" style={botao(true)} onClick={fechar}>Entendi</button>
+    </div>
+  );
+}
+
 function BotaoTelaCheia() {
   const [cheia, setCheia] = useState(() => !!document.fullscreenElement);
   useEffect(() => {
@@ -269,6 +311,8 @@ export function App() {
         </span>
       </div>
 
+      {s.tela === 'jogo' && <Tutorial />}
+
       {/* Painel da torre selecionada */}
       {sel && (
         <div key={sel.id} className="hud-painel" style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
@@ -312,6 +356,8 @@ export function App() {
                     {o.chave === 'N' ? 'Melhorar' : `Caminho ${o.chave}`}: {o.up.nome} · {o.up.custo}
                     <br />
                     <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
+                    <br />
+                    <span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{resumoMudanca(st, previewStats(st, o.up.mod))}</span>
                   </button>
                 ))}
                 <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => vender(sel.id)}>

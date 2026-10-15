@@ -202,6 +202,22 @@ export function statsTorre(t: Torre): Stats {
   return s;
 }
 
+/** Estatísticas que a torre teria aplicando um upgrade. Mesma regra de `statsTorre`. */
+export function previewStats(st: Stats, mod: Mod): Stats {
+  const s: Stats = { ...st };
+  s.dano *= mod.dano ?? 1;
+  s.cadencia *= mod.cadencia ?? 1;
+  s.alcance *= mod.alcance ?? 1;
+  s.area *= mod.area ?? 1;
+  s.lentDur *= mod.lentDur ?? 1;
+  s.saltos += mod.saltos ?? 0;
+  if (mod.lentFator !== undefined) s.lentFator = Math.min(s.lentFator, mod.lentFator);
+  if (mod.quebra !== undefined) s.quebra = Math.max(s.quebra, mod.quebra);
+  if (mod.queima !== undefined) s.queima = Math.max(s.queima, mod.queima);
+  if (mod.atordoa !== undefined) s.atordoa = Math.max(s.atordoa, mod.atordoa);
+  return s;
+}
+
 export interface OpcaoUpgrade {
   chave: 'N' | 'A' | 'B';
   up: Upgrade;

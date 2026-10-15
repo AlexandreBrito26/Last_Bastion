@@ -2,10 +2,10 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { audio } from './core/audio';
 import { LoopFixo } from './core/loop';
-import { chamarOnda, construir, habPronta, usarCongelar, usarEscudo, usarMeteoro } from './game/acoes';
+import { chamarOnda, construir, habPronta, melhorar, usarCongelar, usarEscudo, usarMeteoro, vender } from './game/acoes';
 import { torreEm } from './game/construcao';
 import { MAPA_1 } from './game/data/mapas';
-import { TORRES } from './game/data/torres';
+import { opcoesUpgrade, TORRES } from './game/data/torres';
 import { atualizarFeedback, iniciarFeedback } from './game/feedback';
 import { novaPartida } from './game/partida';
 import { entrada, ref } from './game/ref';
@@ -149,6 +149,15 @@ async function main(): Promise<void> {
       if (usarCongelar()) vibrar(30);
     } else if (k === 'e') {
       if (usarEscudo()) vibrar(30);
+    } else if (k === 'u' || k === 'v') {
+      const t = ref.mundo.torres.find((x) => x.id === s.selecionadaId);
+      if (t) {
+        if (k === 'v') vender(t.id);
+        else {
+          const op = opcoesUpgrade(t)[0];
+          if (op) melhorar(t.id, op.chave);
+        }
+      }
     } else if (k === 'enter') {
       chamarOnda();
     } else if (k >= '1' && k <= '9') {
