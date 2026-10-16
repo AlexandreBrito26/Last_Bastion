@@ -65,4 +65,14 @@ export const HISTORIA: Record<string, string[]> = {
     'Golens de cristal despertam ao som dos passos, e corvos voam por entre as galerias.',
     'No fundo da caverna dorme um Golem Gigante. Quem o derrotar leva o que restou dos cristais raros.',
   ],
+  'vulcao-adormecido': [
+    'Além da caverna, a trilha sobe por um vulcão que parecia extinto. A terra ainda treme sob os pés.',
+    'Ogros e sapadores abrem caminho entre as rochas quentes, enquanto espectros cruzam o céu de cinzas.',
+    'No topo, um colosso desperta com o calor do vulcão. Derrote-o antes que a lava engula a trilha.',
+  ],
+  'oasis-perdido': [
+    'No meio do deserto, um oásis que os mapas esqueceram ainda guarda água fresca.',
+    'Escudeiros protegem a fonte, e corvos sobrevoam o caminho. Os curandeiros mantêm o inimigo de pé.',
+    'Ao fim da trilha, um golem guarda a última água. Quem chegar lá reabastece a fortaleza.',
+  ],
 };
