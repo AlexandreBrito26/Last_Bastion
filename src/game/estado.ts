@@ -29,13 +29,17 @@ export interface Torre {
   defId: string;
   pos: Vec;
   recarga: number;
+  /** Nós comprados em cada ramo da árvore (ex.: [2, 0, 1]). */
+  ramos: number[];
+  /** Nível geral (1 + total de nós), usado nas bolinhas de nível. */
   nivel: number;
-  caminho: 'A' | 'B' | null;
   prioridade: Prioridade;
   investido: number;
   flash: number; // s restantes do clarão de disparo
   idade: number; // s desde a construção (animação de entrada)
   melhoria: number; // s restantes do brilho de melhoria
+  /** Evolução Celestial (só arqueiros, comprada em partida). */
+  celestial?: boolean;
 }
 
 export interface EfeitoProj {

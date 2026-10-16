@@ -9,6 +9,8 @@ export const ref = {
   ondas: [] as DefOnda[],
   /** modo sem fim: depois da última onda, novas ondas são geradas em vez de vencer */
   endless: false,
+  /** número de ondas da fase antes do modo sem fim (as infinitas vêm depois) */
+  endlessBase: 0,
 };
 
 /** Estado de entrada de alta frequência (mouse). */

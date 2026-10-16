@@ -9,6 +9,7 @@ export const ESTILOS = `
 @keyframes lb-brilho { 0%,100% { opacity: .55 } 50% { opacity: 1 } }
 @keyframes lb-pop { 0% { transform: scale(1.5); filter: brightness(1.8) } 100% { transform: scale(1); filter: none } }
 @keyframes lb-tremer { 0%,100% { transform: translateX(0) } 20% { transform: translateX(-5px) } 40% { transform: translateX(5px) } 60% { transform: translateX(-3px) } 80% { transform: translateX(3px) } }
+@keyframes lb-barra { from { width: 0 } to { width: 100% } }
 @keyframes lb-subir { from { opacity: 0; transform: translateY(24px) } to { opacity: 1; transform: none } }
 @keyframes lb-esq { from { opacity: 0; transform: translateX(28px) } to { opacity: 1; transform: none } }
 @keyframes lb-descer { from { opacity: 0; transform: translateY(-16px) } to { opacity: 1; transform: none } }
@@ -42,6 +43,7 @@ export const ESTILOS = `
 .lb-range { accent-color: ${hex(COR.acento)}; width: 100%; cursor: pointer; }
 @media (pointer: coarse) { .hud-btn:hover:not(:disabled), .lb-btn:hover:not(:disabled) { transform: none; filter: none; } }
 .compacto .hud-btn { padding: 5px 8px !important; font-size: 12px !important; min-height: 32px; }
+.compacto .hud-btn, .compacto .lb-btn { min-height: 40px; }
 .compacto .hud-dica { display: none; }
 .compacto .hud-hab-txt { font-size: 11px; }
 .compacto .hud-painel { width: 190px !important; max-height: 78%; overflow-y: auto; padding: 8px !important; }
@@ -56,6 +58,7 @@ export const ESTILOS = `
 .compacto .fase-card { padding: 5px !important; max-width: 200px !important; flex-basis: 150px !important; }
 .lb-btn.fase-card:hover:not(:disabled) { transform: translateY(-4px) scale(1.02); }
 .compacto .menu-rodape { display: none; }
+.menu-info { max-height: 90vh; max-height: 90dvh; overflow-y: auto; }
 .compacto .menu-info { max-height: 80%; overflow-y: auto; }
 .compacto .hud-topo { gap: 8px !important; font-size: 13px; top: max(4px, env(safe-area-inset-top)) !important; left: max(6px, env(safe-area-inset-left)) !important; right: max(6px, env(safe-area-inset-right)) !important; }
 .compacto .hud-loja { gap: 5px !important; padding: 6px !important; left: max(6px, env(safe-area-inset-left)) !important; bottom: max(6px, env(safe-area-inset-bottom)) !important; }

@@ -1,6 +1,7 @@
+import { EFEITO_DESCONTO_MOEDA, precoUpgrade } from './data/economia';
 import { INIMIGOS } from './data/inimigos';
 import type { Vec } from '../core/vec';
-import { opcoesUpgrade, REEMBOLSO, TORRES, type Prioridade } from './data/torres';
+import { opcoesUpgrade, RAMO_CELESTIAL, REEMBOLSO, TORRES, type Prioridade } from './data/torres';
 import type { Torre } from './estado';
 import { custoTorre, posicaoValida } from './construcao';
 import { ref } from './ref';
@@ -22,7 +23,7 @@ export function construir(defId: string, pos: Vec): boolean {
     pos: { x: pos.x, y: pos.y },
     recarga: 0,
     nivel: 1,
-    caminho: null,
+    ramos: [],
     prioridade: 'primeiro',
     investido: custo,
     flash: 0,
@@ -30,22 +31,28 @@ export function construir(defId: string, pos: Vec): boolean {
     melhoria: 0,
   };
   ref.mundo.torres.push(t);
+  useUI.getState().progredirDesafio('construir', 1);
   emitir({ t: 'construir', pos: t.pos, cor: def.cor });
   useUI.getState().bump();
   return true;
 }
 
-export function melhorar(id: number, chave: 'N' | 'A' | 'B'): boolean {
+export function melhorar(id: number, ramo: number): boolean {
   const t = ref.mundo.torres.find((x) => x.id === id);
   if (!t) return false;
-  const op = opcoesUpgrade(t).find((o) => o.chave === chave);
-  if (!op || !useUI.getState().gastarOuro(op.up.custo)) {
+  const op = opcoesUpgrade(t, useUI.getState().celestialLiberada).find((o) => o.ramo === ramo);
+  const custo = op ? precoUpgrade(op.up.custo, EFEITO_DESCONTO_MOEDA[useUI.getState().melhoriasMoeda.desconto]) : 0;
+  if (!op || !useUI.getState().gastarOuro(custo)) {
     emitir({ t: 'erro' });
     return false;
   }
-  t.investido += op.up.custo;
+  t.investido += custo;
+  if (ramo === RAMO_CELESTIAL) {
+    t.celestial = true;
+  } else {
+    t.ramos[ramo] = (t.ramos[ramo] ?? 0) + 1;
+  }
   t.nivel++;
-  if (chave !== 'N') t.caminho = chave;
   t.melhoria = 0.5;
   emitir({ t: 'melhorar', pos: t.pos, cor: TORRES[t.defId].cor });
   useUI.getState().bump();

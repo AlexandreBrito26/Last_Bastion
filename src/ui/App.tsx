@@ -1,16 +1,21 @@
+import { EFEITO_DESCONTO_MOEDA, precoUpgrade } from '../game/data/economia';
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { audio } from '../core/audio';
 import { COR } from '../core/cores';
 import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
 import { custoTorre } from '../game/construcao';
-import { opcoesUpgrade, PRIORIDADES, REEMBOLSO, statsTorre, TORRES } from '../game/data/torres';
+import { nomeTorre, opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
+import { cenaDe } from '../game/cenas';
+import { CenaPlayer } from './Cutscene';
 import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
 import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
 import { Menu } from './Menu';
+import { alternarTelaCheia } from './telaCheia';
+import { alternarCalor, calorLigado } from '../game/calor';
 
 const hex = (n: number) => '#' + n.toString(16).padStart(6, '0');
 
@@ -61,6 +66,97 @@ const HABS = {
   escudo: { icone: '🛡', nome: 'Escudo', tecla: 'E', cor: '#ffd166' },
 } as const;
 
+/** Botão de tela cheia; acompanha o estado real do documento (também muda com Esc). */
+/** Lista o que muda nas estatísticas de uma torre quando um upgrade é aplicado. */
+function resumoMudanca(antes: Stats, depois: Stats): string {
+  const partes: string[] = [];
+  if (depois.dano !== antes.dano) partes.push(`Dano ${antes.dano.toFixed(0)}→${depois.dano.toFixed(0)}`);
+  if (depois.cadencia !== antes.cadencia) partes.push(`Cadência ${antes.cadencia.toFixed(1)}→${depois.cadencia.toFixed(1)}`);
+  if (depois.alcance !== antes.alcance) partes.push(`Alcance ${antes.alcance.toFixed(0)}→${depois.alcance.toFixed(0)}`);
+  if (depois.area !== antes.area) partes.push(`Raio ${antes.area.toFixed(0)}→${depois.area.toFixed(0)}`);
+  if (depois.queima !== antes.queima) partes.push(`Queima ${antes.queima.toFixed(0)}→${depois.queima.toFixed(0)}/s`);
+  if (depois.lentFator !== antes.lentFator) partes.push(`Lentidão ${Math.round((1 - antes.lentFator) * 100)}%→${Math.round((1 - depois.lentFator) * 100)}%`);
+  if (depois.quebra !== antes.quebra) partes.push(`Quebra ${Math.round(depois.quebra * 100)}%`);
+  if (depois.atordoa !== antes.atordoa) partes.push(`Atordoa ${depois.atordoa.toFixed(2)}s`);
+  return partes.join(' · ');
+}
+
+/** Cutscene curta de cada fase: painéis de texto com Continuar, Enter ou Espaço. Esc pula. */
+function Intro() {
+  const intro = useUI((s) => s.intro);
+  const avancar = useUI((s) => s.avancarIntro);
+  const pular = useUI((s) => s.pularIntro);
+  if (!intro) return null;
+  const cena = cenaDe(intro.mapa);
+  if (!cena) return null;
+  return <CenaPlayer cena={cena} passo={intro.passo} onPasso={() => avancar()} onFim={() => pular()} />;
+}
+
+/** Dicas da primeira partida. Some depois de "Entendi" (salvo no navegador). */
+function Tutorial() {
+  const chave = 'lb:tutorial-visto';
+  const [visto, setVisto] = useState(() => {
+    try { return localStorage.getItem(chave) === '1'; } catch { return true; }
+  });
+  if (visto) return null;
+  const fechar = () => {
+    try { localStorage.setItem(chave, '1'); } catch { /* sem armazenamento: só fecha */ }
+    setVisto(true);
+  };
+  const passos = [
+    'Escolha uma torre na barra de baixo (ou tecle 1-9) e clique no terreno para construir.',
+    'Clique numa torre para ver os upgrades. U melhora e V vende a torre selecionada.',
+    'Enter chama a próxima onda antes do tempo. Espaço pausa.',
+    'Q usa Meteoro, W congela os inimigos e E cria um escudo que protege as vidas.',
+    'As moedas: 🪙 vêm das vitórias e compra skins e melhorias. 💚 cai dos inimigos e dos desafios. 🔴 é rara: cai dos inimigos e dos Relicários Errantes.',
+  ];
+  return (
+    <div className="hud-painel" style={{ ...painel, position: 'absolute', left: 8, top: 56, width: 280, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-descer .3s both', zIndex: 3 }}>
+      <div style={{ fontSize: 15 }}>Como jogar</div>
+      <ol style={{ margin: 0, paddingLeft: 18, fontWeight: 400, fontSize: 13, lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {passos.map((p) => <li key={p}>{p}</li>)}
+      </ol>
+      <button className="hud-btn" style={botao(true)} onClick={fechar}>Entendi</button>
+    </div>
+  );
+}
+
+/** Liga e desliga o mapa de calor (tecla H). */
+function BotaoCalor() {
+  const [ligado, setLigado] = useState(calorLigado);
+  return (
+    <button
+      className="hud-btn"
+      style={botao(ligado)}
+      onClick={() => { clique(); alternarCalor(); setLigado(calorLigado()); }}
+      title={ligado ? 'Esconder mapa de calor (H)' : 'Mostrar mapa de calor (H)'}
+      aria-label="Mapa de calor"
+    >
+      🔥
+    </button>
+  );
+}
+
+function BotaoTelaCheia() {
+  const [cheia, setCheia] = useState(() => !!document.fullscreenElement);
+  useEffect(() => {
+    const aoMudar = () => setCheia(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', aoMudar);
+    return () => document.removeEventListener('fullscreenchange', aoMudar);
+  }, []);
+  return (
+    <button
+      className="hud-btn"
+      style={botao(cheia)}
+      onClick={() => { clique(); alternarTelaCheia(); }}
+      title={cheia ? 'Sair da tela cheia (F)' : 'Tela cheia (F)'}
+      aria-label={cheia ? 'Sair da tela cheia' : 'Entrar em tela cheia'}
+    >
+      {cheia ? '⤡' : '⤢'}
+    </button>
+  );
+}
+
 function BotaoHab({ nome, ativo, onClick }: { nome: NomeHab; ativo: boolean; onClick: () => void }) {
   const [, setTick] = useState(0);
   useEffect(() => {
@@ -99,7 +195,10 @@ export function App() {
     setAviso({ id, texto });
     setTimeout(() => setAviso((a) => (a?.id === id ? null : a)), 1100);
   };
+  useEffect(() => { if (s.toast) avisar(s.toast.texto); }, [s.toast?.id]);
   const sel = ref.mundo?.torres.find((t) => t.id === s.selecionadaId) ?? null;
+  // inimigos que ainda faltam nesta onda: na fila de nascimento ou vivos no mapa
+  const restantes = ref.mundo ? ref.mundo.fila.length + ref.mundo.inimigos.filter((e) => e.vivo).length : 0;
   // ficha: sob o ponteiro (desktop) ou da torre escolhida para construir (toque)
   const idFicha = hover ?? s.construirId;
 
@@ -129,6 +228,7 @@ export function App() {
         <Contador rotulo="Ouro" valor={s.ouro} cor={hex(COR.ouro)} />
         <Contador rotulo="Vidas" valor={s.vidas} cor={hex(COR.vida)} animacao="lb-tremer .4s" alerta={s.vidas > 0 && s.vidas <= 5} />
         <span>Onda {s.onda}/{s.totalOndas}<span className="hud-dica" style={{ opacity: 0.55, fontWeight: 400 }}> · {mapaPorId(s.mapaId).nome}</span></span>
+        {s.fase === 'onda' && <span title="Inimigos que ainda faltam nesta onda" style={{ opacity: 0.85 }}>Inimigos: {restantes}</span>}
         {s.fase === 'pausa' && !s.pausado && (
           <button className="hud-btn" style={{ ...botao(), pointerEvents: 'auto' }} onClick={chamarOnda} title="Atalho: Enter">
             Chamar onda · {s.contagem}s{sobra > 0 ? ` (+${sobra} ouro)` : ''}
@@ -143,6 +243,8 @@ export function App() {
             <button key={v} className="hud-btn" style={botao(s.velocidade === v)} onClick={() => { clique(); s.definirVelocidade(v); }}>{v}x</button>
           ))}
           <button className="hud-btn" style={botao(s.pausado)} onClick={() => { clique(); s.alternarPausa(); }}>{s.pausado ? 'Continuar' : 'Pausar'}</button>
+          <BotaoCalor />
+          <BotaoTelaCheia />
           <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
           <button className="hud-btn" style={botao()} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>
         </div>
@@ -192,7 +294,7 @@ export function App() {
 
       {/* Loja */}
       <div className="hud-loja" style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
-        {Object.values(TORRES).map((d, i) => {
+        {Object.values(TORRES).filter((d) => !d.desbloqueio || s.torresLiberadas[d.id]).map((d, i) => {
           const custo = custoTorre(ref.mundo, d.id);
           const semOuro = s.ouro < custo;
           return (
@@ -246,18 +348,21 @@ export function App() {
         </span>
       </div>
 
+      {s.tela === 'jogo' && <Tutorial />}
+      {s.tela === 'jogo' && <Intro />}
+
       {/* Painel da torre selecionada */}
       {sel && (
         <div key={sel.id} className="hud-painel" style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
           {(() => {
             const def = TORRES[sel.defId];
             const st = statsTorre(sel);
-            const ops = opcoesUpgrade(sel);
+            const ops = opcoesUpgrade(sel, s.celestialLiberada);
             return (
               <>
                 <div style={{ fontSize: 16 }}>
-                  {def.nome} · nível {sel.nivel}
-                  {sel.caminho ? ` (${def.nivel3[sel.caminho].nome})` : ''}
+                  {nomeTorre(sel)} · nível {sel.nivel}
+                  <div style={{ fontWeight: 400, fontSize: 11, opacity: 0.8 }}>{def.arvore.map((r, i) => `${r.nome} ${sel.ramos[i] ?? 0}`).join(' · ')}</div>
                 </div>
                 <div style={{ fontWeight: 400, fontSize: 13, lineHeight: 1.5 }}>
                   Dano {st.dano.toFixed(0)} · Cadência {st.cadencia.toFixed(1)}/s<br />
@@ -278,22 +383,38 @@ export function App() {
                     </button>
                   ))}
                 </div>
-                {ops.length === 0 && <div style={{ fontWeight: 400, fontSize: 13 }}>Nível máximo</div>}
+                {ops.length === 0 && <div style={{ fontWeight: 400, fontSize: 13 }}>Todos os ramos completos</div>}
                 {ops.map((o) => (
                   <button
-                    key={o.chave}
+                    key={o.ramo}
                     className="hud-btn"
-                    style={{ ...botao(false, s.ouro < o.up.custo), textAlign: 'left' }}
-                    onClick={() => melhorar(sel.id, o.chave)}
+                    style={{ ...botao(false, s.ouro < precoUpgrade(o.up.custo, EFEITO_DESCONTO_MOEDA[s.melhoriasMoeda.desconto])), textAlign: 'left' }}
+                    onClick={() => melhorar(sel.id, o.ramo)}
                   >
-                    {o.chave === 'N' ? 'Melhorar' : `Caminho ${o.chave}`}: {o.up.nome} · {o.up.custo}
+                    {o.ramo < 0 ? 'Celestial' : def.arvore[o.ramo].nome}: {o.up.nome} · {precoUpgrade(o.up.custo, EFEITO_DESCONTO_MOEDA[s.melhoriasMoeda.desconto])}
                     <br />
                     <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
+                    <br />
+                    <span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{resumoMudanca(st, previewStats(st, o.up.mod))}</span>
                   </button>
                 ))}
                 <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => vender(sel.id)}>
                   Vender · +{Math.floor(sel.investido * REEMBOLSO)}
                 </button>
+                {ref.mundo.torres.filter((x) => x.defId === sel.defId).length > 1 && (
+                  <button
+                    className="hud-btn"
+                    style={{ ...botao(), background: '#4a1530' }}
+                    onClick={() => {
+                      const iguais = ref.mundo.torres.filter((x) => x.defId === sel.defId);
+                      const ganho = iguais.reduce((soma, x) => soma + Math.floor(x.investido * REEMBOLSO), 0);
+                      if (!window.confirm(`Vender as ${iguais.length} torres ${def.nome} por ${ganho} de ouro?`)) return;
+                      iguais.forEach((x) => vender(x.id));
+                    }}
+                  >
+                    Vender todas as {def.nome} · +{ref.mundo.torres.filter((x) => x.defId === sel.defId).reduce((soma, x) => soma + Math.floor(x.investido * REEMBOLSO), 0)}
+                  </button>
+                )}
               </>
             );
           })()}
@@ -323,12 +444,12 @@ export function App() {
           )}
           {s.fase === 'vitoria' && (
             <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.ouro), animation: 'lb-subir .4s .5s both' }}>
-              +{s.ultimaRecompensa} moedas
+              +{s.ultimaRecompensa} moedas{s.ultimaVerdes > 0 ? ` · +${s.ultimaVerdes} 💚` : ''}{s.ultimaRubis > 0 ? ` · +${s.ultimaRubis} 🔴` : ''}
             </div>
           )}
           <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
             {s.fase === 'vitoria' && MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1] && (
-              <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); novaPartida(MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1]); }}>Próxima fase ▶</button>
+              <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); const prox = MAPAS[MAPAS.findIndex((m) => m.id === s.mapaId) + 1]; novaPartida(prox); s.iniciarIntro(prox.id); }}>Próxima fase ▶</button>
             )}
             {s.fase === 'vitoria' && (
               <button className="hud-btn" style={{ ...botao(true), padding: '10px 18px', fontSize: 15 }} onClick={() => { clique(); continuarSemFim(); }}>Modo sem fim ∞</button>

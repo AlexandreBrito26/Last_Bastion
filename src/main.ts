@@ -2,10 +2,11 @@ import { createElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { audio } from './core/audio';
 import { LoopFixo } from './core/loop';
-import { chamarOnda, construir, habPronta, usarCongelar, usarEscudo, usarMeteoro } from './game/acoes';
+import { chamarOnda, construir, habPronta, melhorar, usarCongelar, usarEscudo, usarMeteoro, vender } from './game/acoes';
 import { torreEm } from './game/construcao';
 import { MAPA_1 } from './game/data/mapas';
-import { TORRES } from './game/data/torres';
+import { opcoesUpgrade, TORRES } from './game/data/torres';
+import { alternarCalor } from './game/calor';
 import { atualizarFeedback, iniciarFeedback } from './game/feedback';
 import { novaPartida } from './game/partida';
 import { entrada, ref } from './game/ref';
@@ -13,6 +14,7 @@ import { limpar, sistemaChefes, sistemaMovimento, sistemaOndas, sistemaProjeteis
 import { Renderizador } from './render/renderizador';
 import { useUI } from './store/ui';
 import { App } from './ui/App';
+import { alternarTelaCheia } from './ui/telaCheia';
 
 async function main(): Promise<void> {
   const raiz = document.getElementById('app')!;
@@ -134,7 +136,24 @@ async function main(): Promise<void> {
       s.alternarMudo();
       return;
     }
+    if (k === 'f') {
+      alternarTelaCheia();
+      return;
+    }
+    if (k === 'h') {
+      alternarCalor();
+      return;
+    }
     if (s.tela !== 'jogo') return;
+    if (s.intro) {
+      if (k === 'enter' || k === ' ') {
+        ev.preventDefault();
+        s.avancarIntro();
+      } else if (k === 'escape') {
+        s.pularIntro();
+      }
+      return;
+    }
     if (k === 'r') {
       novaPartida();
     } else if (k === 'q') {
@@ -144,12 +163,22 @@ async function main(): Promise<void> {
       if (usarCongelar()) vibrar(30);
     } else if (k === 'e') {
       if (usarEscudo()) vibrar(30);
+    } else if (k === 'u' || k === 'v') {
+      const t = ref.mundo.torres.find((x) => x.id === s.selecionadaId);
+      if (t) {
+        if (k === 'v') vender(t.id);
+        else {
+          const op = opcoesUpgrade(t, s.celestialLiberada)[0];
+          if (op) melhorar(t.id, op.ramo);
+        }
+      }
     } else if (k === 'enter') {
       chamarOnda();
     } else if (k >= '1' && k <= '9') {
       const ids = Object.keys(TORRES);
       const id = ids[Number(k) - 1];
-      if (id) s.definirConstruir(s.construirId === id ? null : id);
+      const bloqueada = !!TORRES[id ?? '']?.desbloqueio && !s.torresLiberadas[id ?? ''];
+      if (id && !bloqueada) s.definirConstruir(s.construirId === id ? null : id);
     } else if (k === 'escape') {
       if (s.habilidade) s.definirHabilidade(null);
       else if (s.construirId || s.selecionadaId !== null) s.definirConstruir(null);

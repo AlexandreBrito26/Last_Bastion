@@ -1,3 +1,5 @@
+import { buffDaTorre } from '../data/skins';
+import { registrarCalor } from '../calor';
 import { dist, type Vec } from '../../core/vec';
 import { INIMIGOS } from '../data/inimigos';
 import { auraDe, DECAIMENTO_SALTO, DUR_QUEBRA, DUR_QUEIMA, RAIO_SALTO, statsTorre, TORRES, type Stats } from '../data/torres';
@@ -8,6 +10,7 @@ import type { EfeitoProj, Inimigo, Mundo, Projetil, Torre } from '../estado';
 import { useUI } from '../../store/ui';
 import { emitir } from '../../core/eventos';
 import { COR } from '../../core/cores';
+import { CHANCE_RELICARIO, recompensaOndaSemFim, sorteiaRecompensaRelicario, sorteiaRubis, sorteiaVerdes } from '../data/economia';
 
 function iniciarOnda(m: Mundo): void {
   const def = ref.ondas[m.ondaIdx];
@@ -75,11 +78,24 @@ export function sistemaOndas(m: Mundo, mapa: Mapa, dt: number): void {
   // fase === 'onda'
   m.tempoOnda += dt;
   while (m.fila.length > 0 && m.fila[0].em <= m.tempoOnda) {
-    criarInimigo(m, mapa, m.fila.shift()!.defId);
+    const prox = m.fila.shift()!.defId;
+    const raro = !INIMIGOS[prox]?.chefe && Math.random() < CHANCE_RELICARIO;
+    criarInimigo(m, mapa, raro ? 'relicario' : prox);
   }
   if (m.fila.length === 0 && !m.inimigos.some((e) => e.vivo)) {
     ui.ganharOuro(ref.ondas[m.ondaIdx].bonus);
     m.ondaIdx++;
+    if (ref.endless) {
+      const k = m.ondaIdx - ref.endlessBase;
+      if (k >= 1) {
+        const r = recompensaOndaSemFim(k);
+        ui.ganharMoedas(r.moedas);
+        if (r.verdes > 0) ui.ganharVerdes(r.verdes);
+        if (r.rubis > 0) ui.ganharRubis(r.rubis);
+        const partes = [`+${r.moedas} 🪙`, r.verdes > 0 ? `+${r.verdes} 💚` : '', r.rubis > 0 ? `+${r.rubis} 🔴` : ''].filter(Boolean);
+        ui.mostrarToast(`Sem fim: ${partes.join(' · ')}`);
+      }
+    }
     // modo sem fim: gera a próxima onda infinita em vez de vencer
     if (ref.endless && m.ondaIdx >= ref.ondas.length) ref.ondas.push(ondaInfinita(ref.ondas.length));
     if (m.ondaIdx >= ref.ondas.length) {
@@ -109,6 +125,16 @@ export function aplicarDano(e: Inimigo, dano: number, ignoraArmadura = false): v
   if (e.vida <= 0) {
     e.vivo = false;
     useUI.getState().ganharOuro(def.recompensa);
+    const drop = sorteiaVerdes(useUI.getState().melhorias.drop);
+    if (drop > 0) useUI.getState().ganharVerdes(drop);
+    const rubi = sorteiaRubis();
+    if (rubi > 0) useUI.getState().ganharRubis(rubi);
+    useUI.getState().progredirDesafio('matar', 1);
+    if (e.defId === 'relicario') {
+      const r = sorteiaRecompensaRelicario();
+      useUI.getState().ganharRubis(r.rubis);
+      useUI.getState().ganharVerdes(r.verdes);
+    }
     emitir({ t: 'morte', pos: { x: e.pos.x, y: e.pos.y }, cor: def.cor, raio: def.raio, ouro: def.recompensa, chefe: !!def.chefe });
   }
 }
@@ -189,6 +215,7 @@ export function sistemaMovimento(m: Mundo, mapa: Mapa, dt: number): void {
       }
     }
     e.progresso += total - resta;
+    registrarCalor(e.pos.x, e.pos.y, dt);
     if (e.indiceWp >= mapa.waypoints.length) {
       e.vivo = false;
       e.chegou = true;
@@ -260,6 +287,9 @@ export function sistemaTorres(m: Mundo, dt: number): void {
   for (const t of m.torres) {
     const def = TORRES[t.defId];
     const st = statsTorre(t);
+    const bf = buffDaTorre(t.defId, useUI.getState().escolhas);
+    st.dano *= 1 + bf.dano / 100;
+    st.cadencia *= 1 + bf.cadencia / 100;
     t.idade += dt;
     t.flash = Math.max(0, t.flash - dt);
     t.melhoria = Math.max(0, t.melhoria - dt);

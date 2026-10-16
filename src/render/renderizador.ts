@@ -1,11 +1,12 @@
 import { Application, BlurFilter, ColorMatrixFilter, Container, Graphics, Sprite, Text, Texture } from 'pixi.js';
 import { COR } from '../core/cores';
 import { INIMIGOS } from '../game/data/inimigos';
-import { statsTorre, TORRES } from '../game/data/torres';
-import { corBastiao, corInimigo, corProjetil, corTorre, formaProjetil } from '../game/data/skins';
+import { formaTorre, ramoPrincipal, statsTorre, TORRES, type Ornamento } from '../game/data/torres';
+import { corEscolhida, formaEscolhida } from '../game/data/skins';
 import { custoTorre, posicaoValida } from '../game/construcao';
 import { HAB } from '../game/acoes';
 import { fx } from '../game/feedback';
+import { calorLigado, CELULA_CALOR, gradeCalor } from '../game/calor';
 import { brilhoBorda, contorno, corpoRespirando } from './sprites';
 import { entrada, ref } from '../game/ref';
 import { useUI } from '../store/ui';
@@ -66,6 +67,7 @@ export class Renderizador {
   private entidades = new Graphics();
   private particulas = new Graphics();
   private brilho = new Graphics();
+  private calor = new Graphics();
   private camadaTexto = new Container();
   private camadaVinheta = new Container();
   private textos: Text[] = [];
@@ -127,7 +129,7 @@ export class Renderizador {
     } catch {
       this.blur = null;
     }
-    this.mundo.addChild(this.camadaChao, this.entidades, this.particulas, this.brilho, this.camadaTexto, this.camadaVinheta);
+    this.mundo.addChild(this.camadaChao, this.calor, this.entidades, this.particulas, this.brilho, this.camadaTexto, this.camadaVinheta);
     this.montarMapa(mapa);
   }
 
@@ -232,10 +234,15 @@ export class Renderizador {
     const cx = t.pos.x;
     const cy = t.pos.y;
     const a = this.anguloTorre(t, m);
-    const cor = corTorre(def.id, def.cor, useUI.getState().skin);
+    const forma = formaTorre(t);
+    // a skin escolhida é a base; cada forma puxa essa cor para a cor própria da forma (40%, 60%, 80%)
+    const ui = useUI.getState();
+    const corSkin = corEscolhida(`torre:${def.id}`, ui.escolhas, def.cor);
+    const cor = forma > 1 ? mix(corSkin, def.formas[forma - 2].cor, 0.4 + 0.2 * (forma - 2)) : corSkin;
     const flash = Math.min(1, t.flash / 0.09);
     const recuo = flash * 4;
-    const corCaminho = t.caminho === 'A' ? COR.torreArcana : t.caminho === 'B' ? COR.inimigoElite : cor;
+    const ramo = ramoPrincipal(t);
+    const corCaminho = ramo === 0 ? COR.torreArcana : ramo === 1 ? COR.inimigoElite : cor;
 
     // sombra e plinto
     g.ellipse(cx + 4, cy + 12 * esc, 19 * esc, 8 * esc).fill({ color: 0x000000, alpha: 0.38 });
@@ -245,6 +252,11 @@ export class Renderizador {
     g.poly(poligono(cx, cy, 16 * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: clarear(0x41555f, 0.35), alpha: 0.8 });
     brilhoBorda(g, cx, cy - 1.5 * esc, 13.5 * esc, 0xffffff, 0.14);
     if (t.nivel > 1) g.poly(poligono(cx, cy, 17.5 * esc, 8, Math.PI / 8)).stroke({ width: 2, color: corCaminho, alpha: 0.9 });
+    if (forma > 1) {
+      // anel dourado a partir da 2ª forma; a 4ª forma ganha um segundo anel mais externo
+      g.poly(poligono(cx, cy, (20 + forma) * esc, 8, Math.PI / 8)).stroke({ width: 1.5, color: COR.ouro, alpha: 0.35 + forma * 0.1 });
+      if (forma === 4) g.poly(poligono(cx, cy, 24 * esc, 8, Math.PI / 8)).stroke({ width: 1, color: COR.ouro, alpha: 0.5 });
+    }
 
     const s = esc;
     switch (def.id) {
@@ -332,11 +344,81 @@ export class Renderizador {
         this.luz(cx, cy - 5, 20 + borb * 6, 0x7cff6b, 0.35 + flash * 0.3);
         break;
       }
+      case 'lanca': {
+        const pulso = 0.5 + 0.5 * Math.sin(tempo * 4 + t.id);
+        // base de pedra e haste dourada apontando para o alvo
+        g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.45));
+        g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        brilhoBorda(g, cx, cy - 3 * s, 8 * s, 0xffffff, 0.3);
+        contorno(g, cx, cy - 3 * s, 8 * s, 8 * s, 0.5);
+        const haste = rot(cx, cy - 3 * s, a, [-4, -1.5, 14 - recuo, -1.5, 14 - recuo, 1.5, -4, 1.5].map((v) => v * s));
+        g.poly(haste).fill(0x8a5a12);
+        // ponta solar: disco que pulsa na frente da lança
+        const px = cx + Math.cos(a) * (15 - recuo) * s;
+        const py = cy - 3 * s + Math.sin(a) * (15 - recuo) * s;
+        g.circle(px, py, (3.6 + pulso * 0.8) * s).fill(0xfff3b0);
+        g.circle(px, py, 2 * s).fill(0xffffff);
+        this.luz(px, py, 16 + pulso * 6 + flash * 10, 0xffb703, 0.5 + flash * 0.3);
+        break;
+      }
+      case 'runica': {
+        const brilho = 0.5 + 0.5 * Math.sin(tempo * 3 + t.id);
+        // pilar de runa com um símbolo que gira acima da base
+        g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.45));
+        g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        contorno(g, cx, cy - 3 * s, 8 * s, 8 * s, 0.5);
+        brilhoBorda(g, cx, cy - 3 * s, 8 * s, 0xffffff, 0.3);
+        const arco = rot(cx, cy - 3 * s, a, [0, -2.5, 13 - recuo, -2.5, 13 - recuo, 2.5, 0, 2.5].map((v) => v * s));
+        g.poly(arco).fill(0x2a6f4e);
+        const ox = cx;
+        const oy = cy - 13 * s;
+        for (let i = 0; i < 3; i++) {
+          const o = tempo * 2.2 + (i * TAU) / 3;
+          g.circle(ox + Math.cos(o) * 5 * s, oy + Math.sin(o) * 2.5 * s, 1.6 * s).fill({ color: 0xc7f9cc, alpha: 0.6 + 0.4 * brilho });
+        }
+        this.luz(cx, cy - 5, 20 + brilho * 5 + flash * 10, 0x80ed99, 0.4 + flash * 0.3);
+        break;
+      }
+      case 'arcabuz': {
+        // suporte de madeira com cano longo; um brilho de mira aparece no fim do cano
+        g.rect(cx - 6 * s, cy - 10 * s, 12 * s, 14 * s).fill(0x3d2b1f);
+        g.circle(cx, cy - 4 * s, 7 * s).fill(cor);
+        contorno(g, cx, cy - 4 * s, 7 * s, 7 * s, 0.5);
+        const cano = rot(cx, cy - 4 * s, a, [-3, -1.5, 18 - recuo, -1.5, 18 - recuo, 1.5, -3, 1.5].map((v) => v * s));
+        g.poly(cano).fill(0x1d2228);
+        const mira = 0.5 + 0.5 * Math.sin(tempo * 5 + t.id);
+        g.circle(cx + Math.cos(a) * (19 - recuo) * s, cy - 4 * s + Math.sin(a) * (19 - recuo) * s, (1.4 + mira * 0.4) * s).fill({ color: 0xff3b3b, alpha: 0.7 });
+        this.luz(cx, cy - 5, 16 + mira * 4 + flash * 8, cor, 0.3 + flash * 0.3);
+        break;
+      }
+      case 'foguete': {
+        // lançador de dois tubos com um foguete pronto na boca
+        g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.45));
+        g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        contorno(g, cx, cy - 3 * s, 8 * s, 8 * s, 0.5);
+        brilhoBorda(g, cx, cy - 3 * s, 8 * s, 0xffffff, 0.3);
+        const tubo = rot(cx, cy - 3 * s, a, [-4, -4, 12 - recuo, -4, 12 - recuo, 4, -4, 4].map((v) => v * s));
+        g.poly(tubo).fill(0x3a3a3a);
+        const ponta = rot(cx, cy - 3 * s, a, [12 - recuo, -2.5, 16 - recuo, 0, 12 - recuo, 2.5].map((v) => v * s));
+        g.poly(ponta).fill(0xffd166);
+        const chama = 0.5 + 0.5 * Math.sin(tempo * 9 + t.id);
+        g.circle(cx - Math.cos(a) * (6 - recuo) * s, cy - 3 * s - Math.sin(a) * (6 - recuo) * s, (1.5 + chama) * s).fill({ color: 0xff7b00, alpha: 0.6 });
+        this.luz(cx, cy - 5, 18 + chama * 5 + flash * 10, 0xe76f51, 0.4 + flash * 0.3);
+        break;
+      }
       default:
         g.rect(cx - 8 * s, cy - 8 * s, 16 * s, 16 * s).fill(cor);
     }
 
     // brilho do disparo na boca
+    if (forma > 1) this.desenharOrnamento(g, cx, cy, esc, def.formas[forma - 2].ornamento, cor);
+    if (t.celestial) {
+      // anel celeste e brilho azulado: marca a Evolução Celestial
+      const pulsoCel = 0.5 + 0.5 * Math.sin(tempo * 2.5 + t.id);
+      g.poly(poligono(cx, cy, 23 * esc, 8, Math.PI / 8)).stroke({ width: 2, color: 0x9ff6ff, alpha: 0.5 + 0.3 * pulsoCel });
+      this.luz(cx, cy - 4, 22 + pulsoCel * 6, 0x9ff6ff, 0.35);
+    }
+    if (forma > 1) this.desenharEfeitosForma(g, cx, cy, esc, forma, cor);
     if (flash > 0 && def.id !== 'tesla' && def.id !== 'gelo') this.luz(cx + Math.cos(a) * 18, cy - 3 + Math.sin(a) * 18, 18, cor, 0.9 * flash);
 
     // marcações de nível
@@ -420,7 +502,7 @@ export class Renderizador {
     const bob = def.voador ? Math.sin(m.tempo * 7 + e.id) * 2.5 : 0;
     const ex = p.x;
     const ey = p.y + bob;
-    const corBase = corInimigo(def.id, def.cor, useUI.getState().skin);
+    const corBase = corEscolhida(`inimigo:${def.id}`, useUI.getState().escolhas, def.cor);
     const c = def.chefe ? mix(corBase, 0xff2a00, Math.min(1, e.fases * 0.28)) : corBase;
     const esc = escurecer(c, 0.38);
     const cla = clarear(c, 0.45);
@@ -547,7 +629,69 @@ export class Renderizador {
 
   // ---------- quadro ----------
 
+  /** Efeitos animados das formas: brilho pulsante (2), faíscas orbitando (3) e aura dourada com luz (4). */
+  private desenharEfeitosForma(g: Graphics, cx: number, cy: number, esc: number, forma: number, cor: number): void {
+    const t = performance.now() / 1000;
+    const pulso = 0.5 + 0.5 * Math.sin(t * 3);
+    // forma 2+: núcleo que pulsa no centro da torre
+    g.circle(cx, cy - 8 * esc, (3 + pulso * 2) * esc).fill({ color: cor, alpha: 0.25 + pulso * 0.25 });
+    if (forma >= 3) {
+      // forma 3+: três faíscas orbitando
+      for (let i = 0; i < 3; i++) {
+        const a = t * 2 + (i * TAU) / 3;
+        g.circle(cx + Math.cos(a) * 18 * esc, cy - 4 * esc + Math.sin(a) * 8 * esc, 1.8 * esc).fill({ color: 0xffffff, alpha: 0.9 });
+      }
+    }
+    if (forma >= 4) {
+      // forma 4: aura dourada, faíscas maiores e luz no entorno
+      g.circle(cx, cy - 4 * esc, (22 + pulso * 3) * esc).stroke({ width: 1.5, color: COR.ouro, alpha: 0.25 + pulso * 0.2 });
+      for (let i = 0; i < 4; i++) {
+        const a = -t * 1.5 + (i * TAU) / 4;
+        g.circle(cx + Math.cos(a) * 24 * esc, cy - 4 * esc + Math.sin(a) * 12 * esc, 2.2 * esc).fill({ color: COR.ouro, alpha: 0.95 });
+      }
+      this.luz(cx, cy - 6 * esc, 26 * esc, cor, 0.35 + pulso * 0.2);
+    }
+  }
+
+  /** Ornamentos das formas 2 a 4: pontas, asas e coroa, desenhados sobre o corpo da torre. */
+  private desenharOrnamento(g: Graphics, cx: number, cy: number, esc: number, tipo: Ornamento, cor: number): void {
+    const cl = clarear(cor, 0.3);
+    if (tipo === 'pontas') {
+      for (const dx of [-1, 1]) {
+        g.poly([cx + dx * 11 * esc, cy - 6 * esc, cx + dx * 16 * esc, cy - 14 * esc, cx + dx * 15 * esc, cy - 2 * esc]).fill(cl);
+      }
+    } else if (tipo === 'asas') {
+      for (const dx of [-1, 1]) {
+        g.poly([cx + dx * 15 * esc, cy - 4 * esc, cx + dx * 27 * esc, cy - 12 * esc, cx + dx * 18 * esc, cy + 6 * esc]).fill({ color: cl, alpha: 0.9 });
+      }
+    } else {
+      // coroa: três pontas no topo
+      for (const dx of [-7, 0, 7]) {
+        g.poly([cx + (dx - 3) * esc, cy - 14 * esc, cx + dx * esc, cy - 24 * esc, cx + (dx + 3) * esc, cy - 14 * esc]).fill(cl);
+      }
+      g.circle(cx, cy - 26 * esc, 2 * esc).fill(COR.ouro);
+    }
+  }
+
+  /** Mapa de calor: células em tons de amarelo a vermelho conforme o tempo que os inimigos passaram ali. */
+  private desenharCalor(): void {
+    const c = this.calor;
+    c.clear();
+    if (!calorLigado()) return;
+    const { cols, rows, grade, maximo } = gradeCalor();
+    if (maximo <= 0) return;
+    for (let r = 0; r < rows; r++) {
+      for (let k = 0; k < cols; k++) {
+        const v = grade[r * cols + k] / maximo;
+        if (v <= 0.02) continue;
+        const cor = v > 0.6 ? 0xff3b2f : v > 0.3 ? 0xff9f1c : 0xffe066;
+        c.rect(k * CELULA_CALOR, r * CELULA_CALOR, CELULA_CALOR, CELULA_CALOR).fill({ color: cor, alpha: 0.12 + v * 0.4 });
+      }
+    }
+  }
+
   desenhar(m: Mundo): void {
+    this.desenharCalor();
     if (!this.mapaAtual || ref.mapa !== this.mapaAtual) {
       if (ref.mapa) this.montarMapa(ref.mapa);
       else return;
@@ -580,7 +724,7 @@ export class Renderizador {
     const fim = mapa.waypoints[mapa.waypoints.length - 1];
     const fx0 = Math.min(Math.max(fim.x, 8), mapa.largura - 8);
     const fy0 = Math.min(Math.max(fim.y, 8), mapa.altura - 8);
-    const corB = corBastiao(COR.dano, useUI.getState().skin);
+    const corB = corEscolhida('bastiao', useUI.getState().escolhas, COR.dano);
     this.luz(fx0, fy0, 40 + 6 * Math.sin(tempo * 3), corB, 0.4);
     this.bastiao(g, fx0, fy0, corB, tempo);
 
@@ -602,7 +746,7 @@ export class Renderizador {
       if (ui.construirId) {
         const def = TORRES[ui.construirId];
         const ok = posicaoValida(m, ref.mapa, mp) && ui.ouro >= custoTorre(m, def.id);
-        const cor = ok ? corTorre(def.id, def.cor, useUI.getState().skin) : COR.dano;
+        const cor = ok ? corEscolhida(`torre:${def.id}`, useUI.getState().escolhas, def.cor) : COR.dano;
         const s = 1 + 0.05 * Math.sin(tempo * 8);
         g.circle(mp.x, mp.y, def.alcance).fill({ color: cor, alpha: 0.1 });
         this.tracejado(g, mp.x, mp.y, def.alcance, cor, 0.6, tempo * 0.5);
@@ -641,7 +785,7 @@ export class Renderizador {
       const uy = dy / d;
       const gelo = p.efeito.lentFator < 1;
       const area = p.efeito.area > 0;
-      const cor = gelo ? 0xcaf0f8 : area ? 0xf8961e : corProjetil(COR.ouro, useUI.getState().skin);
+      const cor = gelo ? 0xcaf0f8 : area ? 0xf8961e : corEscolhida('projetil', useUI.getState().escolhas, COR.ouro);
       for (let i = 3; i >= 1; i--) {
         g.moveTo(p.pos.x, p.pos.y).lineTo(p.pos.x - ux * i * 7, p.pos.y - uy * i * 7).stroke({ width: 4 - i * 0.9, color: cor, alpha: 0.18 + (4 - i) * 0.1 });
       }
@@ -649,7 +793,7 @@ export class Renderizador {
         g.circle(p.pos.x, p.pos.y, 5.5).fill(0x2a2a30);
         g.circle(p.pos.x - 1.2, p.pos.y - 1.2, 2).fill({ color: 0xffffff, alpha: 0.5 });
       } else {
-        const forma = formaProjetil(useUI.getState().skin);
+        const forma = formaEscolhida(useUI.getState().escolhas);
         if (forma === 'losango') {
           g.poly([p.pos.x, p.pos.y - 5, p.pos.x + 3.5, p.pos.y, p.pos.x, p.pos.y + 5, p.pos.x - 3.5, p.pos.y]).fill(cor);
         } else if (forma === 'estrela') {

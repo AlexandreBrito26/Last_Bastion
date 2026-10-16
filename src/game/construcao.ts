@@ -2,12 +2,15 @@ import type { Vec } from '../core/vec';
 import type { Mapa } from './data/mapas';
 import type { Mundo, Torre } from './estado';
 import { TORRES } from './data/torres';
+import { EFEITO_ECONOMIA } from './data/economia';
+import { useUI } from '../store/ui';
 
 /** Cada torre do mesmo tipo já construída encarece a próxima (anti-spam). */
 export const ESCALA_CUSTO = 0.12;
 export function custoTorre(m: Mundo, defId: string): number {
   const n = m.torres.filter((t) => t.defId === defId).length;
-  return Math.round((TORRES[defId].custo * (1 + ESCALA_CUSTO * n)) / 5) * 5;
+  const desc = EFEITO_ECONOMIA[useUI.getState().melhorias.economia];
+  return Math.round((TORRES[defId].custo * (1 + ESCALA_CUSTO * n) * (1 - desc)) / 5) * 5;
 }
 
 const RAIO_TORRE = 16;
