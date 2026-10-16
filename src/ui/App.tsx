@@ -111,7 +111,7 @@ function Tutorial() {
     'As moedas: 🪙 vêm das vitórias e compra skins e melhorias. 💚 cai dos inimigos e dos desafios. 🔴 é rara: cai dos inimigos e dos Relicários Errantes.',
   ];
   return (
-    <div className="hud-painel" style={{ ...painel, position: 'absolute', left: 8, top: 56, width: 280, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-descer .3s both', zIndex: 3 }}>
+    <div className="hud-painel hud-tutorial" style={{ ...painel, position: 'absolute', left: 8, top: 56, width: 280, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-descer .3s both', zIndex: 3 }}>
       <div style={{ fontSize: 15 }}>Como jogar</div>
       <ol style={{ margin: 0, paddingLeft: 18, fontWeight: 400, fontSize: 13, lineHeight: 1.5, display: 'flex', flexDirection: 'column', gap: 4 }}>
         {passos.map((p) => <li key={p}>{p}</li>)}
