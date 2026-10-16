@@ -467,6 +467,58 @@ export const TORRES: Record<string, DefTorre> = {
       ] },
     ],
   },
+  catapulta: {
+    ...z, id: 'catapulta', nome: 'Catapulta Pesada', desc: 'Arremessa pedras pesadas com dano em área. Lenta e só para terrestres. Liberada com 🪙.',
+    custo: 200, desbloqueio: { moeda: 'moedas', preco: 1500 }, antiAereo: false, alcance: 210, cadencia: 0.45, dano: 40, velProjetil: 260, area: 56, cor: 0x8d6e63,
+    formas: [
+      { nome: 'Fundida', cor: 0xa1887f, ornamento: 'pontas' },
+      { nome: 'Pesada', cor: 0x5d4037, ornamento: 'asas' },
+      { nome: 'Titã', cor: 0xd7ccc8, ornamento: 'coroa' },
+    ],
+    arvore: [
+      { nome: 'Impacto', nos: [
+        { nome: 'Pedra afiada', desc: '+30% de dano', custo: 90, mod: { dano: 1.3 } },
+        { nome: 'Pedra de ferro', desc: '+50% de dano', custo: 140, mod: { dano: 1.5 } },
+        { nome: 'Meteoro de pedra', desc: '+80% de dano', custo: 180, mod: { dano: 1.8 } },
+      ] },
+      { nome: 'Alcance', nos: [
+        { nome: 'Braço longo', desc: '+20% de alcance', custo: 60, mod: { alcance: 1.2 } },
+        { nome: 'Contrapeso', desc: '+35% de alcance', custo: 110, mod: { alcance: 1.35 } },
+        { nome: 'Cerco', desc: '+50% de alcance', custo: 160, mod: { alcance: 1.5 } },
+      ] },
+      { nome: 'Área', nos: [
+        { nome: 'Estrondo', desc: '+30% de raio da explosão', custo: 90, mod: { area: 1.3 } },
+        { nome: 'Abalo', desc: '+50% de raio da explosão', custo: 140, mod: { area: 1.5 } },
+        { nome: 'Terremoto', desc: '+70% de raio da explosão', custo: 180, mod: { area: 1.7 } },
+      ] },
+    ],
+  },
+  relampago: {
+    ...z, id: 'relampago', nome: 'Torre Relâmpago', desc: 'Descarga elétrica que salta de inimigo em inimigo e atinge voadores. Liberada com 💚.',
+    tipo: 'cadeia', custo: 180, desbloqueio: { moeda: 'verde', preco: 250 }, antiAereo: true, alcance: 150, cadencia: 1.3, dano: 12, velProjetil: 0, saltos: 3, cor: 0x4cc9f0,
+    formas: [
+      { nome: 'Faísca', cor: 0x4cc9f0, ornamento: 'pontas' },
+      { nome: 'Tempestade', cor: 0x3a86ff, ornamento: 'asas' },
+      { nome: 'Trovão', cor: 0xcaf0f8, ornamento: 'coroa' },
+    ],
+    arvore: [
+      { nome: 'Descarga', nos: [
+        { nome: 'Faísca forte', desc: '+40% de dano', custo: 90, mod: { dano: 1.4 } },
+        { nome: 'Trovão', desc: '+70% de dano', custo: 140, mod: { dano: 1.7 } },
+        { nome: 'Tempestade', desc: '+100% de dano', custo: 180, mod: { dano: 2 } },
+      ] },
+      { nome: 'Cadeia', nos: [
+        { nome: 'Salto extra', desc: '+1 salto', custo: 90, mod: { saltos: 1 } },
+        { nome: 'Salto duplo', desc: '+2 saltos', custo: 140, mod: { saltos: 2 } },
+        { nome: 'Cadeia infinita', desc: '+3 saltos', custo: 180, mod: { saltos: 3 } },
+      ] },
+      { nome: 'Cadência', nos: [
+        { nome: 'Pulso rápido', desc: '+30% de cadência', custo: 60, mod: { cadencia: 1.3 } },
+        { nome: 'Chuva elétrica', desc: '+50% de cadência', custo: 110, mod: { cadencia: 1.5 } },
+        { nome: 'Vendaval', desc: '+70% de cadência', custo: 160, mod: { cadencia: 1.7 } },
+      ] },
+    ],
+  },
 };
 
 export const PRIORIDADES = ['primeiro', 'ultimo', 'forte', 'perto'] as const;

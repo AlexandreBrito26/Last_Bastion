@@ -406,6 +406,28 @@ export class Renderizador {
         this.luz(cx, cy - 5, 18 + chama * 5 + flash * 10, 0xe76f51, 0.4 + flash * 0.3);
         break;
       }
+      case 'catapulta': {
+        // base de madeira, braço de arremesso com pedra no fim
+        g.rect(cx - 10 * s, cy - 2 * s, 20 * s, 6 * s).fill(0x4e342e);
+        g.poly(rot(cx, cy - 2 * s, a, [-2, -1.5, 14 - recuo, -1.5, 14 - recuo, 1.5, -2, 1.5].map((v) => v * s))).fill(0x6d4c41);
+        g.circle(cx + Math.cos(a) * (14 - recuo) * s, cy - 2 * s + Math.sin(a) * (14 - recuo) * s, 4 * s).fill(0x9e9e9e);
+        g.circle(cx, cy - 4 * s, 6 * s).fill(cor);
+        contorno(g, cx, cy - 4 * s, 6 * s, 6 * s, 0.5);
+        this.luz(cx, cy - 5, 14 + flash * 8, cor, 0.25 + flash * 0.3);
+        break;
+      }
+      case 'relampago': {
+        // esfera de energia com raio pulsante no topo
+        g.circle(cx, cy - 2 * s, 9 * s).fill(escurecer(cor, 0.45));
+        g.circle(cx, cy - 3 * s, 8 * s).fill(cor);
+        contorno(g, cx, cy - 3 * s, 8 * s, 8 * s, 0.5);
+        brilhoBorda(g, cx, cy - 3 * s, 8 * s, 0xffffff, 0.3);
+        const pulso = 0.5 + 0.5 * Math.sin(tempo * 11 + t.id);
+        g.poly([cx - 2 * s, cy - 12 * s, cx + 2 * s, cy - 17 * s, cx, cy - 17 * s, cx + 3 * s, cy - 25 * s, cx - 3 * s, cy - 15 * s, cx - 1 * s, cy - 15 * s])
+          .fill({ color: 0xe0f7ff, alpha: 0.6 + 0.4 * pulso });
+        this.luz(cx, cy - 6, 18 + pulso * 6 + flash * 10, 0x4cc9f0, 0.4 + flash * 0.3);
+        break;
+      }
       default:
         g.rect(cx - 8 * s, cy - 8 * s, 16 * s, 16 * s).fill(cor);
     }
