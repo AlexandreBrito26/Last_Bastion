@@ -678,6 +678,9 @@ export function Menu() {
   const s = useUI();
   const [painel, setPainel] = useState<Painel>(null);
   const emAndamento = s.jogoIniciado && s.fase !== 'vitoria' && s.fase !== 'derrota';
+  // resumo do progresso para o topo dos botões
+  const vencidas = MAPAS.filter((m) => (s.progresso[m.id] ?? 0) > 0).length;
+  const estrelas = MAPAS.reduce((soma, m) => soma + (s.progresso[m.id] ?? 0), 0);
 
   const novoJogo = () => setPainel('fases');
   const continuar = () => useUI.getState().definirTela('jogo');
@@ -723,12 +726,17 @@ export function Menu() {
                 ↻ começar um jogo novo
               </button>
             )}
+            <div className="menu-status" style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', font: '600 12px system-ui, sans-serif', opacity: 0.85 }}>
+              <span>🏰 {vencidas}/{MAPAS.length} fases</span>
+              <span>⭐ {estrelas}</span>
+              <span>🪙 {s.moedas}</span>
+            </div>
             <div className="menu-grade" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, width: 280, marginTop: 4 }}>
               <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('loja'); }}>🛒  Loja <span style={{ opacity: 0.7, fontSize: 13 }}>· 🪙 {s.moedas}</span></button>
               <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('diario'); }}>📖  Diário</button>
               <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('opcoes'); }}>♪  Opções</button>
               <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('como'); }}>?  Como jogar</button>
-              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%' }} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
+              <button className="lb-btn menu-btn" style={{ ...botaoMenu(), width: '100%', gridColumn: '1 / -1' }} onClick={() => { audio.tocar('clique'); setPainel('sobre'); }}>i  Sobre</button>
             </div>
           </div>
         )}
