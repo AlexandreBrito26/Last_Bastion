@@ -8,6 +8,7 @@ Tower defense 2D (PixiJS + React + Zustand). 6 torres de ataque (Arqueiro, Canh�
 M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 
 ## Novidades
+- **Pico Gélido**: nova fase no alto da montanha, com cutscene de cinco painéis (cerca de 110 s) e ondas de Yetis de Gelo.
 - **Templo Esquecido**: nova fase no fim da campanha, com cutscene de cinco painéis (cerca de 110 s) e ondas com Besouros, Escudeiros, Golens, Corvos e Lich.
 - **Obelisco de Pedra** (💚): torre antiaérea de pedra, com árvore de três ramos e três formas.
 - **Sentinela de Pedra**: inimigo blindado que aparece nas ondas do Templo Esquecido.

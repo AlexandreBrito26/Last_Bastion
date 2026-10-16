@@ -57,6 +57,7 @@ export const INIMIGOS: Record<string, DefInimigo> = {
     chefe: [{ em: 0.5, invoca: { defId: 'ceifador', qtd: 4 } }],
   },
   sentinela: { ...base, id: 'sentinela', nome: 'Sentinela de Pedra', vida: 300, velocidade: 50, raio: 14, recompensa: 20, cor: 0x9e9e8a, armadura: 6, danoBase: 2 },
+  yeti: { ...base, id: 'yeti', nome: 'Yeti de Gelo', vida: 380, velocidade: 46, raio: 17, recompensa: 24, cor: 0xdbeeff, armadura: 4, danoBase: 3 },
   chefe: {
     ...base, id: 'chefe', nome: 'Chefe', vida: 1800, velocidade: 36, raio: 24, recompensa: 150, cor: 0xff9e00, armadura: 8, danoBase: 7,
     chefe: [

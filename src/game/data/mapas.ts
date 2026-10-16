@@ -548,6 +548,38 @@ export const MAPAS: Mapa[] = [
       { x: 110, y: 260, r: 22, tipo: 'cristal' },
     ],
   },
+
+  {
+    id: 'pico-gelido',
+    nome: 'Pico Gélido',
+    desc: 'Uma trilha de gelo no alto da montanha. Os yetis descem em grupos e o vento apaga as torres mais frágeis.',
+    tema: 'gelo',
+    largura: L,
+    altura: A,
+    larguraTrilha: 40,
+    ouroInicial: 330,
+    vidas: 20,
+    vidaMult: 1.7,
+    qtdMult: 1.45,
+    chefes: 1,
+    extras: [
+      { bonus: 120, grupos: [{ inimigo: 'yeti', quantidade: 6, intervalo: 2 }, { inimigo: 'rapido', quantidade: 10, intervalo: 0.5, atraso: 4 }] },
+      { bonus: 160, grupos: [{ inimigo: 'yeti', quantidade: 8, intervalo: 1.6 }, { inimigo: 'espectro', quantidade: 8, intervalo: 0.8, atraso: 5 }, { inimigo: 'golem', quantidade: 3, intervalo: 3, atraso: 10 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 430 }, { x: 240, y: 430 }, { x: 240, y: 120 }, { x: 420, y: 120 },
+      { x: 420, y: 380 }, { x: 620, y: 380 }, { x: 620, y: 100 }, { x: 800, y: 100 },
+      { x: 800, y: 300 }, { x: 980, y: 300 },
+    ],
+    obstaculos: [
+      { x: 330, y: 260, r: 26, tipo: 'cristal' },
+      { x: 520, y: 240, r: 24, tipo: 'rocha' },
+      { x: 700, y: 230, r: 26, tipo: 'cristal' },
+      { x: 150, y: 260, r: 22, tipo: 'rocha' },
+      { x: 880, y: 440, r: 26, tipo: 'cristal' },
+      { x: 520, y: 480, r: 22, tipo: 'rocha' },
+    ],
+  },
 ];
 
 export const MAPA_1 = MAPAS[0];

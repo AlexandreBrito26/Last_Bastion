@@ -39,6 +39,16 @@ const CUTSCENES: Record<string, Cena> = {
       { texto: 'Abra caminho pelas ruínas, mas lembre: o templo não quer ser lembrado. Cada corredor que você fecha é uma memória a menos.', segundos: 22, cor: 0x2b2214 },
     ],
   },
+  'pico-gelido': {
+    titulo: 'O Pico Gélido',
+    paineis: [
+      { texto: 'Além do deserto e das ruínas, a montanha se ergue acima das nuvens. Lá em cima, a neve nunca derrete e o vento não para.', segundos: 22, cor: 0x1a2d3d },
+      { texto: 'Dizem que os yetis guardam a montanha desde antes do primeiro bastião. Ninguém subiu até o topo e voltou para contar.', segundos: 22, cor: 0x203a4f },
+      { texto: 'Quando a Chama Antiga foi levada, o frio desceu com ela. Os yetis acordaram e começaram a descer a trilha de gelo em grupos.', segundos: 22, cor: 0x17293a },
+      { texto: 'Onde passam, o gelo fica mais grosso. As torres que não resistem ao frio racham e perdem o fôlego. Proteja-as com pedra e fogo.', segundos: 22, cor: 0x13222f },
+      { texto: 'Lá no alto, algo espera. Um rugido ecoa pelas encostas, e a trilha inteira estremece.', segundos: 22, cor: 0x1c2e40 },
+    ],
+  },
 };
 
 /** Cena da fase, ou null se ela não existir. Fases sem cena própria usam o texto curto de HISTORIA. */
