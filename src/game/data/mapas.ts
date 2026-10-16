@@ -515,6 +515,39 @@ export const MAPAS: Mapa[] = [
       { x: 150, y: 120, r: 22, tipo: 'rocha' },
     ],
   },
+
+  {
+    id: 'templo-esquecido',
+    nome: 'Templo Esquecido',
+    desc: 'Ruínas de um templo coberto de cipós. Os corredores se cruzam e os guardiões de pedra despertam em ondas.',
+    tema: 'ruinas',
+    largura: L,
+    altura: A,
+    larguraTrilha: 40,
+    ouroInicial: 340,
+    vidas: 20,
+    vidaMult: 1.8,
+    qtdMult: 1.5,
+    chefes: 1,
+    extras: [
+      { bonus: 110, grupos: [{ inimigo: 'besouro', quantidade: 8, intervalo: 1.2 }, { inimigo: 'escudeiro', quantidade: 6, intervalo: 1.5, atraso: 5 }] },
+      { bonus: 130, grupos: [{ inimigo: 'sentinela', quantidade: 6, intervalo: 2 }, { inimigo: 'curandeiro', quantidade: 3, intervalo: 3, atraso: 4 }] },
+      { bonus: 150, grupos: [{ inimigo: 'golem', quantidade: 4, intervalo: 2.5 }, { inimigo: 'corvo', quantidade: 10, intervalo: 0.6, atraso: 4 }, { inimigo: 'lich', quantidade: 1, intervalo: 0, atraso: 12 }] },
+    ],
+    waypoints: [
+      { x: -20, y: 110 }, { x: 200, y: 110 }, { x: 200, y: 420 }, { x: 380, y: 420 },
+      { x: 380, y: 160 }, { x: 600, y: 160 }, { x: 600, y: 430 }, { x: 800, y: 430 },
+      { x: 800, y: 250 }, { x: 980, y: 250 },
+    ],
+    obstaculos: [
+      { x: 290, y: 280, r: 24, tipo: 'rocha' },
+      { x: 500, y: 300, r: 26, tipo: 'rocha' },
+      { x: 700, y: 330, r: 22, tipo: 'cristal' },
+      { x: 480, y: 80, r: 20, tipo: 'cristal' },
+      { x: 880, y: 380, r: 26, tipo: 'rocha' },
+      { x: 110, y: 260, r: 22, tipo: 'cristal' },
+    ],
+  },
 ];
 
 export const MAPA_1 = MAPAS[0];

@@ -56,6 +56,7 @@ export const INIMIGOS: Record<string, DefInimigo> = {
     ...base, id: 'lich', nome: 'Lich do Pântano', vida: 2300, velocidade: 34, raio: 25, recompensa: 170, cor: 0x3a5a40, armadura: 8, danoBase: 7,
     chefe: [{ em: 0.5, invoca: { defId: 'ceifador', qtd: 4 } }],
   },
+  sentinela: { ...base, id: 'sentinela', nome: 'Sentinela de Pedra', vida: 300, velocidade: 50, raio: 14, recompensa: 20, cor: 0x9e9e8a, armadura: 6, danoBase: 2 },
   chefe: {
     ...base, id: 'chefe', nome: 'Chefe', vida: 1800, velocidade: 36, raio: 24, recompensa: 150, cor: 0xff9e00, armadura: 8, danoBase: 7,
     chefe: [

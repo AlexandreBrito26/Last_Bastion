@@ -428,6 +428,16 @@ export class Renderizador {
         this.luz(cx, cy - 6, 18 + pulso * 6 + flash * 10, 0x4cc9f0, 0.4 + flash * 0.3);
         break;
       }
+      case 'obelisco': {
+        // pilar de pedra com um farol no topo que pulsa
+        g.rect(cx - 5 * s, cy - 12 * s, 10 * s, 18 * s).fill(0x5d6670);
+        g.rect(cx - 3 * s, cy - 12 * s, 3 * s, 18 * s).fill({ color: 0xffffff, alpha: 0.12 });
+        g.poly([cx - 6 * s, cy - 12 * s, cx + 6 * s, cy - 12 * s, cx, cy - 20 * s]).fill(cor);
+        const brilho = 0.5 + 0.5 * Math.sin(tempo * 3 + t.id);
+        g.circle(cx, cy - 13 * s, (2.5 + brilho) * s).fill({ color: 0xffe8a3, alpha: 0.6 + 0.3 * brilho });
+        this.luz(cx, cy - 13, 18 + brilho * 6 + flash * 10, 0xffe8a3, 0.35 + flash * 0.3);
+        break;
+      }
       default:
         g.rect(cx - 8 * s, cy - 8 * s, 16 * s, 16 * s).fill(cor);
     }

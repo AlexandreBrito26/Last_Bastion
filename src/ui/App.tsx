@@ -393,7 +393,7 @@ export function App() {
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', font: '600 11px system-ui, sans-serif', opacity: 0.85 }}>
-                    <span>Forma {formaAtual}/4</span>
+                    <span>Forma {formaAtual}/4{proximoMarco ? ` → ${def.formas[formaAtual - 1].nome}` : ''}</span>
                     <span>{proximoMarco ? `${totalNos}/${proximoMarco} nós` : 'Forma máxima'}</span>
                   </div>
                   <div style={{ height: 6, borderRadius: 3, background: '#1a1433', overflow: 'hidden', marginTop: 3 }}>

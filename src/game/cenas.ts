@@ -29,6 +29,16 @@ const CUTSCENES: Record<string, Cena> = {
       { texto: 'Esta é a primeira de muitas noites de defesa. O bastião resiste. Por enquanto.', segundos: 12, cor: 0x2b1f4a },
     ],
   },
+  'templo-esquecido': {
+    titulo: 'O Templo Esquecido',
+    paineis: [
+      { texto: 'Muito antes do bastião, existiu um templo dedicado a guardar a Chama Antiga. Ninguém lembra o nome de quem o construiu.', segundos: 22, cor: 0x2a2418 },
+      { texto: 'As paredes ainda trazem entalhes de guardiões de pedra, e cipós cobrem quase tudo. Os corredores se cruzam como um labirinto.', segundos: 22, cor: 0x2f2a1c },
+      { texto: 'Segundo a lenda, quando a Chama foi levada ao bastião, o templo ficou vazio. Os guardiões de pedra ficaram para trás, esperando.', segundos: 22, cor: 0x231f15 },
+      { texto: 'A poeira começou a cair das arcadas. Uma pedra se moveu, depois outra. Os guardiões acordam quando sentem a luz de novo.', segundos: 22, cor: 0x1c1912 },
+      { texto: 'Abra caminho pelas ruínas, mas lembre: o templo não quer ser lembrado. Cada corredor que você fecha é uma memória a menos.', segundos: 22, cor: 0x2b2214 },
+    ],
+  },
 };
 
 /** Cena da fase, ou null se ela não existir. Fases sem cena própria usam o texto curto de HISTORIA. */
