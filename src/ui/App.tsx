@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { audio } from '../core/audio';
 import { COR } from '../core/cores';
-import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
+import { chamarOnda, construir, definirPrioridade, habPronta, habRestante, HAB, melhorar, NomeHab, usarCongelar, usarEscudo, usarMeteoro, vender } from '../game/acoes';
 import { custoTorre } from '../game/construcao';
-import { nomeTorre, opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
+import { formaTorre, nomeTorre, opcoesUpgrade, PRIORIDADES, previewStats, REEMBOLSO, statsTorre, TORRES, type Stats } from '../game/data/torres';
 import { MAPAS, mapaPorId } from '../game/data/mapas';
 import { cenaDe } from '../game/cenas';
 import { CenaPlayer } from './Cutscene';
@@ -174,12 +174,17 @@ function BotaoHab({ nome, ativo, onClick }: { nome: NomeHab; ativo: boolean; onC
       style={{
         ...botao(ativo, false),
         minWidth: 40,
+        position: 'relative',
+        overflow: 'hidden',
         opacity: pronta ? 1 : 0.55,
         boxShadow: pronta ? `0 0 14px ${h.cor}99, 0 2px 0 #07050f, inset 0 1px 0 #ffffff22` : undefined,
         border: `1px solid ${pronta ? h.cor : 'transparent'}`,
       }}
     >
-      <span style={{ fontSize: 15 }}>{h.icone}</span> <span className="hud-hab-txt">{pronta ? h.nome : `${resta}s`}</span>
+      <span style={{ fontSize: 15 }}>{h.icone}</span> <span className="hud-hab-txt">{pronta ? h.nome : `${resta}s`}</span>{' '}
+      <kbd style={{ font: '700 10px system-ui, sans-serif', opacity: 0.6, border: '1px solid currentColor', borderRadius: 3, padding: '0 3px' }}>{h.tecla}</kbd>
+      {/* barra de recarga: enche até a habilidade ficar pronta */}
+      <span aria-hidden style={{ position: 'absolute', left: 0, bottom: 0, height: 3, width: `${Math.round((pronta ? 1 : 1 - habRestante(nome) / HAB[nome].recarga) * 100)}%`, background: h.cor, transition: 'width .15s linear' }} />
     </button>
   );
 }
@@ -361,46 +366,111 @@ export function App() {
             const def = TORRES[sel.defId];
             const st = statsTorre(sel);
             const ops = opcoesUpgrade(sel, s.celestialLiberada);
-            return (
+            const opPorRamo = new Map(ops.map((o) => [o.ramo, o] as const));
+            const precoDe = (c: number) => precoUpgrade(c, EFEITO_DESCONTO_MOEDA[s.melhoriasMoeda.desconto]);
+            const formaAtual = formaTorre(sel);
+            const totalNos = sel.ramos.reduce((x, y) => x + y, 0);
+            const proximoMarco = formaAtual >= 4 ? null : formaAtual * 3;
+            const progressoForma = proximoMarco ? (totalNos - (formaAtual - 1) * 3) / 3 : 1;
+            const linhas: [string, string][] = [
+              ['Dano', st.dano.toFixed(0)],
+              ['Cadência', `${st.cadencia.toFixed(1)}/s`],
+              ['Alcance', st.alcance.toFixed(0)],
+              ...(st.area > 0 ? [['Raio', st.area.toFixed(0)] as [string, string]] : []),
+              ...(def.tipo === 'cadeia' ? [['Saltos', String(st.saltos)] as [string, string]] : []),
+              ...(st.lentFator < 1 ? [['Lentidão', `${Math.round((1 - st.lentFator) * 100)}%`] as [string, string]] : []),
+              ...(st.quebra > 0 ? [['Quebra', `${Math.round(st.quebra * 100)}%`] as [string, string]] : []),
+              ...(st.queima > 0 ? [['Queima', `${st.queima.toFixed(0)}/s`] as [string, string]] : []),
+              ...(st.atordoa > 0 ? [['Atordoa', `${st.atordoa.toFixed(2)}s`] as [string, string]] : []),
+            ];
+            const rotulo: CSSProperties = { font: '700 10px system-ui, sans-serif', letterSpacing: 1.5, opacity: 0.6, textTransform: 'uppercase' };
+              return (
               <>
-                <div style={{ fontSize: 16 }}>
-                  {nomeTorre(sel)} · nível {sel.nivel}
-                  <div style={{ fontWeight: 400, fontSize: 11, opacity: 0.8 }}>{def.arvore.map((r, i) => `${r.nome} ${sel.ramos[i] ?? 0}`).join(' · ')}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 6 }}>
+                  <div style={{ fontSize: 16 }}>{nomeTorre(sel)}</div>
+                  <div style={{ font: '600 11px system-ui, sans-serif', opacity: 0.8 }}>Nv {sel.nivel}</div>
                 </div>
-                <div style={{ fontWeight: 400, fontSize: 13, lineHeight: 1.5 }}>
-                  Dano {st.dano.toFixed(0)} · Cadência {st.cadencia.toFixed(1)}/s<br />
-                  Alcance {st.alcance.toFixed(0)}
-                  {st.area > 0 && <> · Raio {st.area.toFixed(0)}</>}
-                  {def.tipo === 'cadeia' && <> · Saltos {st.saltos}</>}
-                  {st.lentFator < 1 && <> · Lentidão {Math.round((1 - st.lentFator) * 100)}%</>}
-                  {st.quebra > 0 && <> · Quebra {Math.round(st.quebra * 100)}%</>}
-                  {st.queima > 0 && <> · Queima {st.queima.toFixed(0)}/s</>}
-                  {st.atordoa > 0 && <> · Atordoa {st.atordoa.toFixed(2)}s</>}
-                  <br />
-                  <span style={{ opacity: 0.7 }}>{def.antiAereo ? 'Acerta terrestres e voadores' : 'Só acerta terrestres'}</span>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', font: '600 11px system-ui, sans-serif', opacity: 0.85 }}>
+                    <span>Forma {formaAtual}/4</span>
+                    <span>{proximoMarco ? `${totalNos}/${proximoMarco} nós` : 'Forma máxima'}</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: '#1a1433', overflow: 'hidden', marginTop: 3 }}>
+                    <div style={{ height: '100%', width: `${Math.round(progressoForma * 100)}%`, background: hex(COR.acento), transition: 'width .3s' }} />
+                  </div>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                  {PRIORIDADES.map((p) => (
-                    <button key={p} className="hud-btn" style={botao(sel.prioridade === p)} onClick={() => { clique(); definirPrioridade(sel.id, p); }}>
-                      {NOME_PRIORIDADE[p]}
-                    </button>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, font: '600 12px system-ui, sans-serif' }}>
+                  {linhas.map(([k, v]) => (
+                    <div key={k} style={{ background: '#1a1433', borderRadius: 6, padding: '3px 6px', display: 'flex', justifyContent: 'space-between', gap: 4 }}>
+                      <span style={{ opacity: 0.7, fontWeight: 400 }}>{k}</span><span>{v}</span>
+                    </div>
                   ))}
                 </div>
-                {ops.length === 0 && <div style={{ fontWeight: 400, fontSize: 13 }}>Todos os ramos completos</div>}
-                {ops.map((o) => (
-                  <button
-                    key={o.ramo}
-                    className="hud-btn"
-                    style={{ ...botao(false, s.ouro < precoUpgrade(o.up.custo, EFEITO_DESCONTO_MOEDA[s.melhoriasMoeda.desconto])), textAlign: 'left' }}
-                    onClick={() => melhorar(sel.id, o.ramo)}
-                  >
-                    {o.ramo < 0 ? 'Celestial' : def.arvore[o.ramo].nome}: {o.up.nome} · {precoUpgrade(o.up.custo, EFEITO_DESCONTO_MOEDA[s.melhoriasMoeda.desconto])}
-                    <br />
-                    <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
-                    <br />
-                    <span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{resumoMudanca(st, previewStats(st, o.up.mod))}</span>
-                  </button>
-                ))}
+                <div style={{ fontWeight: 400, fontSize: 11, opacity: 0.7 }}>{def.antiAereo ? 'Acerta terrestres e voadores' : 'Só acerta terrestres'}</div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={rotulo}>Evolução</div>
+                  {def.arvore.map((r, i) => {
+                    const o = opPorRamo.get(i);
+                    const feitos = sel.ramos[i] ?? 0;
+                    return (
+                      <div key={r.nome} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', font: '600 12px system-ui, sans-serif' }}>
+                          <span>{r.nome}</span>
+                          <span aria-label={`${feitos} de ${r.nos.length}`} style={{ letterSpacing: 2, color: hex(COR.acento) }}>
+                            {r.nos.map((_, k) => (k < feitos ? '●' : '○')).join('')}
+                          </span>
+                        </div>
+                        {o ? (
+                          <button className="hud-btn" style={{ ...botao(false, s.ouro < precoDe(o.up.custo)), textAlign: 'left' }} onClick={() => melhorar(sel.id, i)}>
+                            <span style={{ fontWeight: 700 }}>{o.up.nome}</span> · {precoDe(o.up.custo)}
+                            <br />
+                            <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
+                            <br />
+                            <span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{resumoMudanca(st, previewStats(st, o.up.mod))}</span>
+                          </button>
+                        ) : (
+                          <div style={{ font: '400 11px system-ui, sans-serif', opacity: 0.7 }}>✓ Ramo completo</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {def.id === 'arqueiro' && (
+                  <div style={{ borderTop: '1px dashed #9ff6ff55', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ ...rotulo, color: '#9ff6ff', opacity: 1 }}>Celestial</div>
+                    {sel.celestial ? (
+                      <div style={{ font: '400 11px system-ui, sans-serif', color: '#9ff6ff' }}>✦ Evolução aplicada</div>
+                    ) : opPorRamo.get(-1) ? (() => {
+                      const o = opPorRamo.get(-1)!;
+                      return (
+                        <button className="hud-btn" style={{ ...botao(false, s.ouro < precoDe(o.up.custo)), textAlign: 'left', borderColor: '#9ff6ff', boxShadow: '0 0 12px #9ff6ff55' }} onClick={() => melhorar(sel.id, -1)}>
+                          <span style={{ fontWeight: 700 }}>✦ {o.up.nome}</span> · {precoDe(o.up.custo)}
+                          <br />
+                          <span style={{ fontWeight: 400, fontSize: 11 }}>{o.up.desc}</span>
+                        </button>
+                      );
+                    })() : (
+                      <div style={{ font: '400 11px system-ui, sans-serif', opacity: 0.7 }}>Desbloqueie com 🔴 na Loja</div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={rotulo}>Prioridade</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {PRIORIDADES.map((p) => (
+                      <button key={p} className="hud-btn" style={botao(sel.prioridade === p)} onClick={() => { clique(); definirPrioridade(sel.id, p); }}>
+                        {NOME_PRIORIDADE[p]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+
                 <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => vender(sel.id)}>
                   Vender · +{Math.floor(sel.investido * REEMBOLSO)}
                 </button>
