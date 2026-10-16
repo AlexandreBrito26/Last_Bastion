@@ -235,7 +235,7 @@ export function App() {
           </button>
         )}
         <span style={{ flex: 1 }} />
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6, pointerEvents: 'auto', maxWidth: '100%' }}>
+        <div className="hud-acoes" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 6, pointerEvents: 'auto', maxWidth: '100%' }}>
           <BotaoHab nome="meteoro" ativo={s.habilidade === 'meteoro'} onClick={() => { if (s.habilidade) s.definirHabilidade(null); else if (habPronta('meteoro')) { clique(); s.definirHabilidade('meteoro'); } else audio.tocar('erro'); }} />
           <BotaoHab nome="congelar" ativo={false} onClick={() => usarCongelar()} />
           <BotaoHab nome="escudo" ativo={false} onClick={() => usarEscudo()} />
@@ -294,6 +294,8 @@ export function App() {
 
       {/* Loja */}
       <div className="hud-loja" style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
+        {/* Trilho com rolagem horizontal: no celular as torres cabem sem quebrar a tela */}
+        <div className="hud-trilho" style={{ display: 'flex', gap: 8, alignItems: 'center', minWidth: 0, overflowX: 'auto', touchAction: 'pan-x' }}>
         {Object.values(TORRES).filter((d) => !d.desbloqueio || s.torresLiberadas[d.id]).map((d, i) => {
           const custo = custoTorre(ref.mundo, d.id);
           const semOuro = s.ouro < custo;
@@ -319,10 +321,11 @@ export function App() {
               }}
             >
               <i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: hex(d.cor), marginRight: 6, boxShadow: `0 0 6px ${hex(d.cor)}` }} />
-              {Object.keys(TORRES).indexOf(d.id) + 1}. {d.nome} · {custo}
+              {Object.keys(TORRES).indexOf(d.id) + 1}. <span className="hud-nome">{d.nome}</span> · {custo}
             </button>
           );
         })}
+        </div>
           {/* Ficha da torre sob o ponteiro (loja) */}
         {idFicha && TORRES[idFicha] && (() => {
           const d = TORRES[idFicha];
@@ -353,7 +356,7 @@ export function App() {
 
       {/* Painel da torre selecionada */}
       {sel && (
-        <div key={sel.id} className="hud-painel" style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
+        <div key={sel.id} className="hud-painel hud-painel-torre" style={{ ...painel, position: 'absolute', right: 8, bottom: 8, width: 230, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-esq .25s both' }}>
           {(() => {
             const def = TORRES[sel.defId];
             const st = statsTorre(sel);

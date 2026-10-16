@@ -64,6 +64,12 @@ export const ESTILOS = `
 .compacto .hud-loja { gap: 5px !important; padding: 6px !important; left: max(6px, env(safe-area-inset-left)) !important; bottom: max(6px, env(safe-area-inset-bottom)) !important; }
 .compacto .hud-painel .hud-btn { min-height: 36px; }
 .compacto .hud-fim-titulo { font-size: 36px !important; }
+/* Celular na horizontal: a barra de ações rola em uma linha só, a loja mostra só o número e o custo */
+.compacto .hud-acoes { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto; width: 100%; touch-action: pan-x; scrollbar-width: none; padding-bottom: 2px; }
+.compacto .hud-acoes::-webkit-scrollbar { display: none; }
+.compacto .hud-nome { display: none; }
+.compacto .hud-loja { right: max(6px, env(safe-area-inset-right)); }
+.compacto .hud-painel-torre { bottom: 72px !important; right: max(6px, env(safe-area-inset-right)) !important; max-height: calc(100% - 150px) !important; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
