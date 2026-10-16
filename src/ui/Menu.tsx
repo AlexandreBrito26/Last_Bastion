@@ -358,7 +358,7 @@ function PreviaItemCanvas({ chave, tema, corBase }: { chave: string; tema: strin
     raf = requestAnimationFrame(quadro);
     return () => cancelAnimationFrame(raf);
   }, [chave, tema, corBase, escolhas]);
-  return <canvas ref={ref} style={{ width: '100%', height: 140, borderRadius: 8, border: '1px solid #3d2f66' }} />;
+  return <canvas ref={ref} style={{ width: '100%', height: 'clamp(84px, 24vh, 140px)', borderRadius: 8, border: '1px solid #3d2f66' }} />;
 }
 
 function Diario({ fechar }: { fechar: () => void }) {
