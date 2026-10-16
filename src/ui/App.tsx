@@ -13,6 +13,7 @@ import { continuarSemFim, novaPartida } from '../game/partida';
 import { entrada, ref } from '../game/ref';
 import { chaveFase, useUI } from '../store/ui';
 import { ESTILOS } from './estilos';
+import { aplicarHud, gravarHud, lerHud, type PrefsHud } from './hudPrefs';
 import { Menu } from './Menu';
 import { alternarTelaCheia } from './telaCheia';
 import { alternarCalor, calorLigado } from '../game/calor';
@@ -193,6 +194,9 @@ const clique = () => audio.tocar('clique');
 
 export function App() {
   const s = useUI();
+  const [hudAberto, setHudAberto] = useState(false);
+  const [hudPrefs, setHudPrefs] = useState<PrefsHud>(() => lerHud());
+  useEffect(() => { aplicarHud(hudPrefs); }, []);
   const [hover, setHover] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ id: number; texto: string } | null>(null);
   const avisar = (texto: string) => {
@@ -230,6 +234,7 @@ export function App() {
 
       {/* Barra superior */}
       <div className="hud-topo" style={{ position: 'absolute', top: 8, left: 8, right: 8, display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', textShadow: '0 1px 2px #000', animation: 'lb-descer .4s both' }}>
+        <button className="hud-btn" aria-label="Opções da HUD" aria-expanded={hudAberto} style={{ ...botao(hudAberto), pointerEvents: 'auto' }} onClick={() => { clique(); setHudAberto((v) => !v); }}>⚙</button>
         <Contador rotulo="Ouro" valor={s.ouro} cor={hex(COR.ouro)} />
         <Contador rotulo="Vidas" valor={s.vidas} cor={hex(COR.vida)} animacao="lb-tremer .4s" alerta={s.vidas > 0 && s.vidas <= 5} />
         <span>Onda {s.onda}/{s.totalOndas}<span className="hud-dica" style={{ opacity: 0.55, fontWeight: 400 }}> · {mapaPorId(s.mapaId).nome}</span></span>
@@ -294,6 +299,21 @@ export function App() {
             if (s.construirId && construir(s.construirId, entrada.mouse)) { s.definirConstruir(null); entrada.mouse = null; try { navigator.vibrate?.(25); } catch { /* */ } }
           }}>{s.habilidade ? '☄ Lançar' : '✔ Construir'}</button>
           <button className="hud-btn" style={{ ...botao(), padding: '14px 18px', fontSize: 16, minHeight: 52, background: '#6b1d3a' }} onClick={() => { clique(); avisar(s.habilidade ? 'Meteoro cancelado' : 'Construção cancelada'); s.definirConstruir(null); s.definirHabilidade(null); entrada.mouse = null; }}>✖ Cancelar</button>
+        </div>
+      )}
+
+      {hudAberto && (
+        <div className="hud-opcoes hud-painel" role="dialog" aria-label="Opções da HUD">
+          <div style={{ fontSize: 14 }}>Layout da HUD</div>
+          {([['fina', 'HUD fina (celular)'], ['tutorial', 'Mostrar tutorial'], ['nomes', 'Mostrar nomes das torres']] as const).map(([k, rotulo]) => (
+            <label key={k}>
+              <span>{rotulo}</span>
+              <input type="checkbox" checked={hudPrefs[k]} onChange={(e) => {
+                const n = { ...hudPrefs, [k]: e.target.checked };
+                setHudPrefs(n); gravarHud(n); aplicarHud(n);
+              }} />
+            </label>
+          ))}
         </div>
       )}
 
