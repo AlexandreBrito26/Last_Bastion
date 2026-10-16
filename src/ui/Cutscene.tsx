@@ -59,14 +59,17 @@ export function CenaPlayer({
   if (!painel) return null;
   const cor = hex(painel.cor);
   return (
-    <div style={{
+    <div
+      className="cena-player"
+      onClick={() => { audio.tocar('clique'); avancar(); }}
+      style={{
       position: 'absolute', inset: 0, zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 18, padding: 24,
       background: `radial-gradient(ellipse at 50% 40%, ${cor}, #0c0a1df2 70%)`, transition: 'background 1.2s ease', pointerEvents: 'auto',
     }}>
       <div style={{ position: 'absolute', top: 14, left: 0, right: 0, textAlign: 'center', font: '700 13px system-ui, sans-serif', letterSpacing: 3, color: hex(COR.acento) }}>
         {cena.titulo.toUpperCase()}
       </div>
-      <p key={passo} style={{ maxWidth: 580, margin: 0, font: '500 20px Georgia, serif', lineHeight: 1.65, textAlign: 'center', color: hex(COR.ui), animation: 'lb-subir .6s both', textShadow: '0 2px 12px #000' }}>
+      <p key={passo} className="cena-texto" style={{ maxWidth: 580, margin: 0, font: '500 20px Georgia, serif', lineHeight: 1.65, textAlign: 'center', color: hex(COR.ui), animation: 'lb-subir .6s both', textShadow: '0 2px 12px #000' }}>
         {painel.texto}
       </p>
       <div style={{ font: '600 12px system-ui, sans-serif', opacity: 0.6 }}>{passo + 1} / {cena.paineis.length}</div>
@@ -74,8 +77,8 @@ export function CenaPlayer({
         <div key={`barra-${passo}`} style={{ height: '100%', background: hex(COR.acento), animation: `lb-barra ${painel.segundos}s linear both` }} />
       </div>
       <div style={{ display: 'flex', gap: 10, marginTop: 6 }}>
-        <button className="hud-btn" style={botao()} onClick={() => { audio.tocar('clique'); onFim(); }}>Pular cutscene</button>
-        <button className="hud-btn" style={botao(true)} onClick={() => { audio.tocar('clique'); avancar(); }}>
+        <button className="hud-btn" style={botao()} onClick={(e) => { e.stopPropagation(); audio.tocar('clique'); onFim(); }}>Pular cutscene</button>
+        <button className="hud-btn" style={botao(true)} onClick={(e) => { e.stopPropagation(); audio.tocar('clique'); avancar(); }}>
           {ultimo ? 'Começar ▶' : 'Continuar ▶'}
         </button>
       </div>
