@@ -68,7 +68,7 @@ function Fases({ fechar }: { fechar: () => void }) {
     useUI.getState().iniciarIntro(m.id);
   };
   return (
-    <div style={{ width: 'min(860px, 94%)', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', animation: 'lb-entrar .25s both' }}>
+    <div style={{ width: 'min(860px, 94%)', maxHeight: '88vh', overflowY: 'auto', padding: '4px 6px 60px', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center', animation: 'lb-entrar .25s both' }}>
       <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Escolha a fase</div>
       <button className="lb-btn" onClick={() => { audio.tocar('clique'); s.definirDesafio(!s.desafio); }} title="Inimigos +35%, vida +30%, ouro -15%, 5 vidas a menos" style={{ ...botaoMenu(s.desafio), width: 'auto', textAlign: 'center', padding: '6px 16px', fontSize: 14 }}>
         {s.desafio ? '⚔ Modo Desafio: ligado' : 'Modo Desafio: desligado'}
@@ -87,7 +87,7 @@ function Fases({ fechar }: { fechar: () => void }) {
               disabled={!liberada}
               className="lb-btn fase-card"
               onClick={() => iniciar(m)}
-              style={{ flex: '1 1 220px', maxWidth: 270, padding: 8, textAlign: 'left', border: '1px solid #3d2f66', borderRadius: 12, background: '#0c0a1ddd', color: hex(COR.ui), cursor: liberada ? 'pointer' : 'not-allowed', opacity: liberada ? 1 : 0.5, position: 'relative' }}
+              style={{ flex: '1 1 220px', maxWidth: 270, padding: 8, textAlign: 'left', border: '1px solid #3d2f66', borderRadius: 12, background: '#0c0a1d', color: liberada ? hex(COR.ui) : '#8a8aa0', cursor: liberada ? 'pointer' : 'not-allowed', position: 'relative' }}
             >
               <Previa mapa={m} />
               {!liberada && <div style={{ position: 'absolute', top: 8, left: 8, right: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#000a', borderRadius: 8, font: '700 28px system-ui' }}>🔒</div>}
@@ -127,8 +127,8 @@ function MelhoriasVerde() {
   const s = useUI();
   const [aviso, setAviso] = useState<string | null>(null);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: '1px solid #2ecc71' }}>
-      <div style={{ font: '700 15px system-ui, sans-serif', color: '#2ecc71' }}>💚 Melhorias da moeda verde</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' }}>
+      <div style={{ font: '700 15px system-ui, sans-serif', color: '#2ecc71' }}>Melhorias da moeda verde</div>
       {TIPOS_MELHORIA.map((t) => {
         const nivel = s.melhorias[t];
         const maximo = nivel >= NIVEL_MAX;
@@ -141,7 +141,7 @@ function MelhoriasVerde() {
               {maximo ? (
                 <span style={{ font: '600 12px system-ui, sans-serif', color: '#2ecc71' }}>Máximo</span>
               ) : (
-                <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 10px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
+                <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 12px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
                   onClick={() => { if (s.comprarMelhoria(t)) { audio.tocar('clique'); setAviso(null); } else { audio.tocar('erro'); setAviso(`Faltam ${custo - s.verdes} 💚.`); } }}>
                   Melhorar · 💚 {custo}
                 </button>
@@ -168,8 +168,8 @@ function MelhoriasMoeda() {
   const s = useUI();
   const [aviso, setAviso] = useState<string | null>(null);
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: `1px solid ${hex(COR.ouro)}` }}>
-      <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.ouro) }}>🪙 Melhorias permanentes</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' }}>
+      <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.ouro) }}>Melhorias permanentes</div>
       {TIPOS_MELHORIA_MOEDA.map((t) => {
         const nivel = s.melhoriasMoeda[t];
         const maximo = nivel >= NIVEL_MAX;
@@ -182,7 +182,7 @@ function MelhoriasMoeda() {
               {maximo ? (
                 <span style={{ font: '600 12px system-ui, sans-serif', color: hex(COR.ouro) }}>Máximo</span>
               ) : (
-                <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 10px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
+                <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 12px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
                   onClick={() => { if (s.comprarMelhoriaMoeda(t)) { audio.tocar('clique'); setAviso(null); } else { audio.tocar('erro'); setAviso(`Faltam ${custo - s.moedas} 🪙.`); } }}>
                   Melhorar · 🪙 {custo}
                 </button>
@@ -201,7 +201,7 @@ function MelhoriasMoeda() {
           <div key={c} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <span style={{ font: '600 13px system-ui, sans-serif' }}>{CONSUMIVEIS[c].nome} <span style={{ opacity: 0.6 }}>tem {s.consumiveis[c]}</span></span>
-              <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 10px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
+              <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 12px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
                 onClick={() => { if (s.comprarConsumivel(c)) { audio.tocar('clique'); setAviso(null); } else { audio.tocar('erro'); setAviso(`Faltam ${CONSUMIVEIS[c].preco - s.moedas} 🪙.`); } }}>
                 Comprar · 🪙 {CONSUMIVEIS[c].preco}
               </button>
@@ -224,8 +224,8 @@ function DesafiosDia() {
   const txt = (r: { moedas?: number; verdes?: number; rubis?: number }) =>
     [r.moedas ? `🪙 ${r.moedas}` : '', r.verdes ? `💚 ${r.verdes}` : '', r.rubis ? `🔴 ${r.rubis}` : ''].filter(Boolean).join(' · ');
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: `1px solid ${hex(COR.acento)}` }}>
-      <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.acento) }}>📅 Desafios de hoje</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' }}>
+      <div style={{ font: '700 15px system-ui, sans-serif', color: hex(COR.acento) }}>Desafios de hoje</div>
       {sorteados.map((d) => {
         const p = progressoDe(estado, d.id);
         const feito = p >= d.meta;
@@ -239,7 +239,7 @@ function DesafiosDia() {
             {resgatado ? (
               <span style={{ font: '600 12px system-ui, sans-serif', color: '#2ecc71' }}>Resgatado</span>
             ) : (
-              <button className="lb-btn" disabled={!feito} style={{ ...botaoMenu(feito), padding: '4px 10px', fontSize: 12, opacity: feito ? 1 : 0.5 }}
+              <button className="lb-btn" disabled={!feito} style={{ ...botaoMenu(feito), padding: '4px 12px', fontSize: 12, opacity: feito ? 1 : 0.5 }}
                 onClick={() => { if (s.resgatarDesafio(d.id)) { audio.tocar('clique'); setAviso(null); } else { audio.tocar('erro'); } }}>
                 Resgatar
               </button>
@@ -259,8 +259,8 @@ function TorresBloqueadas() {
   const liberadas = Object.values(TORRES).filter((d) => d.desbloqueio && s.torresLiberadas[d.id]);
   const simbolo = (m: 'moedas' | 'verde') => (m === 'verde' ? '💚' : '🪙');
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: '1px solid #2ecc71' }}>
-      <div style={{ font: '700 15px system-ui, sans-serif', color: '#2ecc71' }}>🗼 Torres para liberar</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' }}>
+      <div style={{ font: '700 15px system-ui, sans-serif', color: '#2ecc71' }}>Torres para liberar</div>
       {bloqueadas.map((d) => {
         const { moeda, preco } = d.desbloqueio!;
         const saldo = moeda === 'verde' ? s.verdes : s.moedas;
@@ -269,7 +269,7 @@ function TorresBloqueadas() {
           <div key={d.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <span style={{ font: '600 13px system-ui, sans-serif' }}>{d.nome}</span>
-              <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 10px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
+              <button className="lb-btn" disabled={!pode} style={{ ...botaoMenu(pode), padding: '4px 12px', fontSize: 12, opacity: pode ? 1 : 0.5 }}
                 onClick={() => { if (s.desbloquearTorre(d.id)) { audio.tocar('clique'); setAviso(null); } else { audio.tocar('erro'); setAviso(`Faltam ${preco - saldo} ${simbolo(moeda)}.`); } }}>
                 Liberar · {simbolo(moeda)} {preco}
               </button>
@@ -314,8 +314,8 @@ function BackupSave() {
       <div style={{ font: '600 13px system-ui, sans-serif', opacity: 0.85 }}>Backup do progresso</div>
       <div style={{ font: '400 12px system-ui, sans-serif', opacity: 0.7 }}>Exporte seu save para um arquivo e importe em outro aparelho. Nada é enviado para a nuvem.</div>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <button className="lb-btn" style={{ ...botaoMenu(), padding: '6px 14px', fontSize: 13 }} onClick={exportar}>Exportar save</button>
-        <label className="lb-btn" style={{ ...botaoMenu(), padding: '6px 14px', fontSize: 13, cursor: 'pointer' }}>
+        <button className="lb-btn" style={{ ...botaoMenu(), padding: '6px 16px', fontSize: 13 }} onClick={exportar}>Exportar save</button>
+        <label className="lb-btn" style={{ ...botaoMenu(), padding: '6px 16px', fontSize: 13, cursor: 'pointer' }}>
           Importar save
           <input type="file" accept="application/json,.json" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void importar(f); }} />
         </label>
@@ -368,7 +368,7 @@ function Diario({ fechar }: { fechar: () => void }) {
   const [passo, setPasso] = useState(0);
   const cenaRever = reviendo ? cenaDe(reviendo) : null;
   return (
-    <div className="menu-info" style={{ width: 560, maxWidth: '94%', maxHeight: '86vh', overflowY: 'auto', background: '#0c0a1dee', border: '1px solid #3d2f66', borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 12, animation: 'lb-entrar .25s both' }}>
+    <div className="menu-info" style={{ width: 640, maxWidth: '96%', maxHeight: '86vh', overflowY: 'auto', background: '#0c0a1dee', border: '1px solid #3d2f66', borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 12, animation: 'lb-entrar .25s both' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
         <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Diário</div>
         <div style={{ font: '600 13px system-ui, sans-serif', opacity: 0.7 }}>{s.vistas.length} / {fasesComCena().length} cutscenes</div>
@@ -383,11 +383,11 @@ function Diario({ fechar }: { fechar: () => void }) {
         const vista = s.vistas.includes(id);
         const expandida = aberta === id;
         return (
-          <div key={id} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: '1px solid #3d2f66' }}>
+          <div key={id} style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
               <span style={{ font: '600 14px system-ui, sans-serif' }}>{vista ? cena.titulo : '???'} <span style={{ opacity: 0.55, fontWeight: 400, fontSize: 12 }}>· {mapa.nome}</span></span>
               {vista ? (
-                <button className="lb-btn" style={{ ...botaoMenu(), padding: '4px 10px', fontSize: 12 }} onClick={() => { audio.tocar('clique'); setAberta(expandida ? null : id); }}>
+                <button className="lb-btn" style={{ ...botaoMenu(), padding: '4px 12px', fontSize: 12 }} onClick={() => { audio.tocar('clique'); setAberta(expandida ? null : id); }}>
                   {expandida ? 'Fechar' : 'Ler'}
                 </button>
               ) : (
@@ -400,14 +400,14 @@ function Diario({ fechar }: { fechar: () => void }) {
                 {cena.paineis.map((p, i) => (
                   <p key={i} style={{ margin: 0, font: '400 14px/1.55 Georgia, serif', color: hex(COR.ui), opacity: 0.9 }}>{p.texto}</p>
                 ))}
-                <button className="lb-btn" style={{ ...botaoMenu(true), padding: '6px 14px', fontSize: 13, alignSelf: 'flex-start' }}
+                <button className="lb-btn" style={{ ...botaoMenu(true), padding: '6px 16px', fontSize: 13, alignSelf: 'flex-start' }}
                   onClick={() => { audio.tocar('clique'); setPasso(0); setReviendo(id); }}>▶ Rever cutscene</button>
               </>
             )}
           </div>
         );
       })}
-      <button className="lb-btn" style={{ ...botaoMenu(), alignSelf: 'flex-end', padding: '6px 14px', fontSize: 13 }} onClick={() => { audio.tocar('clique'); fechar(); }}>Fechar</button>
+      <button className="lb-btn" style={{ ...botaoMenu(), alignSelf: 'flex-end', padding: '6px 16px', fontSize: 13 }} onClick={() => { audio.tocar('clique'); fechar(); }}>Fechar</button>
       {cenaRever && reviendo && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#000' }}>
           <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -416,6 +416,20 @@ function Diario({ fechar }: { fechar: () => void }) {
         </div>
       )}
     </div>
+  );
+}
+
+const estiloCartao: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8, padding: 12, borderRadius: 10, background: '#120e26', border: '1px solid #3d2f66' };
+const estiloSeg = (ativo: boolean): CSSProperties => ({
+  flex: '1 1 0', minHeight: 40, padding: '6px 10px', fontSize: 13, fontWeight: 600, borderRadius: 8, cursor: 'pointer', color: '#fff',
+  border: `1px solid ${ativo ? hex(COR.acento) : '#3d2f66'}`, background: ativo ? '#3d2f66' : '#1a1433', opacity: ativo ? 1 : 0.75,
+});
+
+function Saldo({ icone, valor, cor }: { icone: string; valor: number; cor: string }) {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', borderRadius: 999, background: '#1a1433', border: `1px solid ${cor}`, color: cor, font: '700 14px system-ui, sans-serif' }}>
+      {icone} {valor}
+    </span>
   );
 }
 
@@ -433,6 +447,7 @@ function Loja({ fechar }: { fechar: () => void }) {
   const atual = s.escolhas[item.key] ?? 'padrao';
   const [temaPrev, setTemaPrev] = useState<string>(atual);
   const temaMostrado = temaPrev;
+  const simboloMoeda = (m: 'ouro' | 'verde' | 'rubi') => (m === 'verde' ? '💚' : m === 'rubi' ? '🔴' : '🪙');
 
   const abrirTema = (tema: Skin) => {
     if (s.possui(item.key, tema.id)) {
@@ -443,111 +458,122 @@ function Loja({ fechar }: { fechar: () => void }) {
     }
     if (s.comprarItem(item.key, tema.id)) {
       audio.tocar('clique');
-      setAviso(`${item.nome}: ${tema.nome} comprada e equipada!`);
+      setAviso(`${item.nome}: ${tema.nome} comprada e equipada.`);
     } else {
       audio.tocar('erro');
       const { preco, moeda } = precoDoItem(tema.id);
       const falta = preco - (moeda === 'verde' ? s.verdes : moeda === 'rubi' ? s.rubis : s.moedas);
-      setAviso(`Faltam ${falta} ${moeda === 'verde' ? '💚' : moeda === 'rubi' ? '🔴' : '🪙'}.`);
+      setAviso(`Faltam ${falta} ${simboloMoeda(moeda)} para ${tema.nome}.`);
     }
   };
 
+  const nomeDoTema = (id: string) => SKINS.find((k) => k.id === id)?.nome ?? 'Padrão';
+
   return (
-    <div className="menu-info" style={{ width: 620, maxWidth: '94%', background: '#0c0a1dee', border: '1px solid #3d2f66', borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 12, animation: 'lb-entrar .25s both' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+    <div className="menu-info" style={{ width: 640, maxWidth: '96%', background: '#0c0a1df2', border: '1px solid #3d2f66', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, boxSizing: 'border-box', animation: 'lb-entrar .25s both' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
         <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Loja</div>
-        <div style={{ display: 'flex', gap: 12, font: '700 16px system-ui, sans-serif' }}>
-          <span style={{ color: hex(COR.ouro) }}>🪙 {s.moedas}</span>
-          <span style={{ color: '#2ecc71' }}>💚 {s.verdes}</span>
-          <span style={{ color: '#e63946' }}>🔴 {s.rubis}</span>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <Saldo icone="🪙" valor={s.moedas} cor={hex(COR.ouro)} />
+          <Saldo icone="💚" valor={s.verdes} cor="#2ecc71" />
+          <Saldo icone="🔴" valor={s.rubis} cor="#e63946" />
         </div>
       </div>
-      <div style={{ font: '400 13px system-ui, sans-serif', opacity: 0.8 }}>
-        Escolha um item e compre a skin dele. Cada item tem a sua. 🪙 vem das vitórias e das ondas sem fim. 💚 cai dos inimigos e dos desafios. 🔴 é rara e cai dos inimigos e dos Relicários Errantes.
-      </div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        {ABAS_LOJA.map(([id, rotulo]) => (
-          <button key={id} className="lb-btn" onClick={() => { audio.tocar('clique'); setAba(id); setAviso(null); }}
-            style={{ ...botaoMenu(aba === id), padding: '6px 12px', fontSize: 13, opacity: aba === id ? 1 : 0.6 }}>{rotulo}</button>
-        ))}
-      </div>
-      {aba === 'desafios' && <DesafiosDia />}
-      {aba === 'melhorias' && (<>
-      <MelhoriasVerde />
-      <MelhoriasMoeda />
-      </>)}
-      {aba === 'torres' && <TorresBloqueadas />}
-      {aba === 'melhorias' && (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: 10, borderRadius: 8, background: '#120e26', border: '1px solid #e63946' }}>
-        <div style={{ font: '700 15px system-ui, sans-serif', color: '#e63946' }}>✨ Evolução Celestial (Arqueiro)</div>
-        <div style={{ font: '400 12px system-ui, sans-serif', opacity: 0.75 }}>
-          Desbloqueie com 🔴 e depois aplique em cada Arqueiro durante a partida (400 🪙). Dá +150% de dano, +40% de cadência e +25% de alcance.
-        </div>
-        {s.celestialLiberada ? (
-          <span style={{ font: '600 12px system-ui, sans-serif', color: '#9ff6ff' }}>Desbloqueada</span>
-        ) : (
-          <button className="lb-btn" disabled={s.rubis < 10} onClick={() => { if (s.desbloquearCelestial()) audio.tocar('clique'); else audio.tocar('erro'); }}
-            style={{ ...botaoMenu(s.rubis >= 10), padding: '6px 14px', fontSize: 13, alignSelf: 'flex-start', opacity: s.rubis >= 10 ? 1 : 0.5 }}>
-            Desbloquear · 🔴 10
-          </button>
-        )}
-      </div>
-      )}
-      {aba === 'skins' && (<>
+
       <div style={{ display: 'flex', gap: 6 }}>
-        {GRUPOS_LOJA.map((g) => (
-          <button key={g} className="lb-btn" onClick={() => { audio.tocar('clique'); setGrupo(g); setChave(ITENS_SKIN.find((i) => i.grupo === g)!.key); setAviso(null); }}
-            style={{ ...botaoMenu(grupo === g), padding: '6px 14px', fontSize: 13, opacity: grupo === g ? 1 : 0.6 }}>{g}</button>
+        {ABAS_LOJA.map(([id, rotulo]) => (
+          <button key={id} className="lb-btn" onClick={() => { audio.tocar('clique'); setAba(id); setAviso(null); }} style={estiloSeg(aba === id)}>{rotulo}</button>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: 6 }}>
-        {itens.map((it) => {
-          const sel = it.key === item.key;
-          const cor = corDoItem(it.key, s.escolhas[it.key] ?? 'padrao', corBaseItem(it.key));
-          return (
-            <button key={it.key} className="lb-btn" onClick={() => { audio.tocar('clique'); setChave(it.key); setTemaPrev(s.escolhas[it.key] ?? 'padrao'); setAviso(null); }}
-              style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 6, cursor: 'pointer', font: '600 12px system-ui, sans-serif', color: '#fff',
-                background: sel ? '#3d2f66' : '#1a1433', border: `1px solid ${sel ? hex(COR.acento) : '#3d2f66'}` }}>
-              <span style={{ width: 14, height: 14, borderRadius: 3, background: hex(cor), border: '1px solid #000', flexShrink: 0 }} />
-              {it.nome}
-            </button>
-          );
-        })}
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 10, borderRadius: 8, background: '#120e26', border: '1px solid #3d2f66' }}>
-        <PreviaItemCanvas key={`${item.key}|${temaMostrado}`} chave={item.key} tema={temaMostrado} corBase={corBaseItem(item.key)} />
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div style={{ font: '700 15px system-ui, sans-serif' }}>{item.nome}</div>
-          <div style={{ font: '400 12px system-ui, sans-serif', opacity: 0.7 }}>Equipada: {SKINS.find((k) => k.id === atual)?.nome ?? 'Padrão'} · Prévia: {SKINS.find((k) => k.id === temaMostrado)?.nome ?? 'Padrão'}</div>
+
+      {aba === 'skins' && (<>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {GRUPOS_LOJA.map((g) => (
+            <button key={g} className="lb-btn" onClick={() => { audio.tocar('clique'); setGrupo(g); setChave(ITENS_SKIN.find((i) => i.grupo === g)!.key); setAviso(null); }}
+              style={{ ...estiloSeg(grupo === g), minHeight: 34, fontSize: 12 }}>{g}</button>
+          ))}
         </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+          {itens.map((it) => {
+            const sel = it.key === item.key;
+            const cor = corDoItem(it.key, s.escolhas[it.key] ?? 'padrao', corBaseItem(it.key));
+            return (
+              <button key={it.key} className="lb-btn" onClick={() => { audio.tocar('clique'); setChave(it.key); setTemaPrev(s.escolhas[it.key] ?? 'padrao'); setAviso(null); }}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 36, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', font: '600 13px system-ui, sans-serif', color: '#fff',
+                  background: sel ? '#3d2f66' : '#1a1433', border: `1px solid ${sel ? hex(COR.acento) : '#3d2f66'}` }}>
+                <span style={{ width: 14, height: 14, borderRadius: 3, background: hex(cor), border: '1px solid #000', flexShrink: 0 }} />
+                {it.nome}
+              </button>
+            );
+          })}
+        </div>
+
+        <div style={estiloCartao}>
+          <PreviaItemCanvas key={`${item.key}|${temaMostrado}`} chave={item.key} tema={temaMostrado} corBase={corBaseItem(item.key)} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: 6 }}>
+            <div style={{ font: '700 16px system-ui, sans-serif' }}>{item.nome}</div>
+            <div style={{ font: '400 12px system-ui, sans-serif', opacity: 0.75 }}>
+              Equipada: {nomeDoTema(atual)} · Prévia: {nomeDoTema(temaMostrado)}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
           {SKINS.filter((tema) => podeNoItem(tema.id, item.key)).map((tema) => {
             const tem = s.possui(item.key, tema.id);
             const equipada = atual === tema.id;
+            const previa = temaMostrado === tema.id;
             const { preco, moeda } = precoDoItem(tema.id);
             const cor = corDoItem(item.key, tema.id, corBaseItem(item.key));
             const saldo = moeda === 'verde' ? s.verdes : moeda === 'rubi' ? s.rubis : s.moedas;
             const pode = tem || saldo >= preco;
+            const rotuloBotao = tem ? 'Equipar' : tema.preco === 0 ? 'Grátis' : `${simboloMoeda(moeda)} ${preco}`;
             return (
-              <div key={tema.id} title={tema.desc} onClick={() => { audio.tocar('clique'); setTemaPrev(tema.id); }} style={{ cursor: 'pointer', width: 120, display: 'flex', flexDirection: 'column', gap: 4, padding: 6, borderRadius: 6, background: '#1a1433', border: `1px solid ${equipada ? hex(COR.acento) : temaMostrado === tema.id ? hex(COR.ouro) : '#3d2f66'}` }}>
-                <div style={{ height: 34, borderRadius: 4, background: hex(cor), border: '1px solid #000' }} />
-                <div style={{ font: '600 12px system-ui, sans-serif' }}>{tema.nome}</div>
+              <div key={tema.id} title={tema.desc} onClick={() => { audio.tocar('clique'); setTemaPrev(tema.id); }}
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6, padding: 8, borderRadius: 10, background: '#1a1433',
+                  border: `2px solid ${equipada ? hex(COR.acento) : previa ? hex(COR.ouro) : '#3d2f66'}` }}>
+                <div style={{ height: 44, borderRadius: 6, background: hex(cor), border: '1px solid #000' }} />
+                <div style={{ font: '700 13px system-ui, sans-serif' }}>{tema.nome}</div>
+                <div style={{ font: '400 11px/1.3 system-ui, sans-serif', opacity: 0.7, minHeight: 28 }}>{tema.desc}</div>
                 {equipada ? (
-                  <span style={{ font: '600 11px system-ui, sans-serif', color: hex(COR.acento) }}>Equipada</span>
+                  <span style={{ font: '700 12px system-ui, sans-serif', color: hex(COR.acento), textAlign: 'center', minHeight: 36, lineHeight: '36px' }}>Equipada</span>
                 ) : (
-                  <button className="lb-btn" disabled={!pode} onClick={() => abrirTema(tema)}
-                    style={{ ...botaoMenu(pode), padding: '3px 6px', fontSize: 11, opacity: pode ? 1 : 0.5 }}>
-                    {tem ? 'Equipar' : tema.preco === 0 ? 'Grátis' : `Comprar · ${moeda === 'verde' ? '💚' : moeda === 'rubi' ? '🔴' : '🪙'} ${preco}`}
+                  <button className="lb-btn" disabled={!pode} onClick={(e) => { e.stopPropagation(); abrirTema(tema); }}
+                    style={{ ...botaoMenu(pode), minHeight: 36, padding: '4px 12px', fontSize: 13, opacity: pode ? 1 : 0.5 }}>
+                    {rotuloBotao}
                   </button>
                 )}
               </div>
             );
           })}
         </div>
-      </div>
       </>)}
-      {aviso && <div style={{ font: '600 13px system-ui, sans-serif', color: hex(COR.acento) }}>{aviso}</div>}
-      <button className="lb-btn" style={{ ...botaoMenu(), alignSelf: 'flex-end', padding: '6px 14px', fontSize: 13 }} onClick={() => { audio.tocar('clique'); fechar(); }}>Fechar</button>
+
+      {aba === 'melhorias' && (<>
+        <MelhoriasVerde />
+        <MelhoriasMoeda />
+        <div style={{ ...estiloCartao, borderColor: '#e63946' }}>
+          <div style={{ font: '700 15px system-ui, sans-serif', color: '#e63946' }}>Evolução Celestial (Arqueiro)</div>
+          <div style={{ font: '400 12px/1.4 system-ui, sans-serif', opacity: 0.75 }}>
+            Desbloqueie com 🔴 e depois aplique em cada Arqueiro durante a partida (400 🪙). Dá +150% de dano, +40% de cadência e +25% de alcance.
+          </div>
+          {s.celestialLiberada ? (
+            <span style={{ font: '600 12px system-ui, sans-serif', color: '#9ff6ff' }}>Desbloqueada</span>
+          ) : (
+            <button className="lb-btn" disabled={s.rubis < 10} onClick={() => { if (s.desbloquearCelestial()) audio.tocar('clique'); else audio.tocar('erro'); }}
+              style={{ ...botaoMenu(s.rubis >= 10), minHeight: 36, padding: '4px 12px', fontSize: 13, alignSelf: 'flex-start', opacity: s.rubis >= 10 ? 1 : 0.5 }}>
+              Desbloquear · 🔴 10
+            </button>
+          )}
+        </div>
+      </>)}
+
+      {aba === 'torres' && <TorresBloqueadas />}
+      {aba === 'desafios' && <DesafiosDia />}
+
+      {aviso && <div style={{ font: '600 13px system-ui, sans-serif', color: hex(COR.acento), textAlign: 'center' }}>{aviso}</div>}
+      <button className="lb-btn" style={{ ...botaoMenu(), alignSelf: 'flex-end', padding: '6px 16px', fontSize: 14, minHeight: 40 }} onClick={() => { audio.tocar('clique'); fechar(); }}>Fechar</button>
     </div>
   );
 }
@@ -589,7 +615,7 @@ function Opcoes() {
 
 function PainelInfo({ tipo, fechar }: { tipo: Exclude<Painel, null | 'fases'>; fechar: () => void }) {
   return (
-    <div className="menu-info" style={{ width: 460, maxWidth: '90%', background: '#0c0a1dee', border: `1px solid #3d2f66`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
+    <div className="menu-info" style={{ width: 640, maxWidth: '96%', background: '#0c0a1dee', border: `1px solid #3d2f66`, borderRadius: 10, padding: 18, display: 'flex', flexDirection: 'column', gap: 10, animation: 'lb-entrar .25s both' }}>
       {tipo === 'como' ? (
         <>
           <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Como jogar</div>
