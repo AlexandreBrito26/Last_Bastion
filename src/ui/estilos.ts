@@ -72,6 +72,10 @@ export const ESTILOS = `
 .hud-hamb { display: none; }
 .compacto .hud-hamb { display: inline-flex; min-height: 40px; }
 .compacto .hud-trilho { display: none !important; }
+/* Painel da torre (celular): faixa larga acima da loja, com upgrades em duas colunas */
+.compacto .hud-painel-torre { left: 8px !important; right: 8px !important; width: auto !important; max-height: calc(100% - 175px) !important; display: grid !important; grid-template-columns: 1fr 1fr; gap: 6px !important; align-content: start; }
+.compacto .hud-painel-torre > div { grid-column: 1 / -1; }
+.compacto .hud-painel-torre > .hud-btn { min-width: 0; }
 .compacto .hud-gaveta { width: auto !important; max-height: calc(100% - 96px) !important; }
 .compacto .hud-loja { right: auto !important; }
 /* Painéis do menu (Loja, Opções, Diário, Como jogar): cabem na altura da tela e rolam por dentro */
@@ -80,7 +84,7 @@ export const ESTILOS = `
 /* Tutorial da primeira partida: menor e sem cobrir a barra superior */
 .compacto .hud-tutorial { top: auto !important; bottom: 72px !important; width: 260px !important; font-size: 12px !important; max-height: calc(100% - 175px) !important; overflow-y: auto; gap: 6px !important; }
 .compacto .hud-tutorial ol { font-size: 12px !important; }
-.compacto .hud-painel-torre { bottom: 72px !important; right: max(6px, env(safe-area-inset-right)) !important; max-height: calc(100% - 150px) !important; }
+.compacto .hud-painel-torre { bottom: 72px !important; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
