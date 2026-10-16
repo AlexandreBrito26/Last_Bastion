@@ -598,7 +598,7 @@ export function opcoesUpgrade(t: Torre, celestialLiberada = false): OpcaoUpgrade
   const def = TORRES[t.defId];
   const ops: OpcaoUpgrade[] = [];
   def.arvore.forEach((ramo, r) => {
-    const prox = ramo.nos[t.ramos[r]];
+    const prox = ramo.nos[t.ramos[r] ?? 0];
     if (prox) ops.push({ ramo: r, up: prox });
   });
   if (def.id === 'arqueiro' && celestialLiberada && !t.celestial) ops.push({ ramo: RAMO_CELESTIAL, up: CELESTIAL });
