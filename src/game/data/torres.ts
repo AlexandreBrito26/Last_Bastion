@@ -519,6 +519,32 @@ export const TORRES: Record<string, DefTorre> = {
       ] },
     ],
   },
+  obelisco: {
+    ...z, id: 'obelisco', nome: 'Obelisco de Pedra', desc: 'Pilar antigo que dispara feixes de luz contra terrestres e voadores. Liberado com 💚.',
+    custo: 170, desbloqueio: { moeda: 'verde', preco: 400 }, antiAereo: true, alcance: 170, cadencia: 0.9, dano: 22, velProjetil: 420, cor: 0x9aa5b1,
+    formas: [
+      { nome: 'Coluna', cor: 0xb8c2cc, ornamento: 'pontas' },
+      { nome: 'Farol', cor: 0x7d8b99, ornamento: 'asas' },
+      { nome: 'Sol Antigo', cor: 0xffe8a3, ornamento: 'coroa' },
+    ],
+    arvore: [
+      { nome: 'Feixe', nos: [
+        { nome: 'Luz forte', desc: '+35% de dano', custo: 90, mod: { dano: 1.35 } },
+        { nome: 'Luz intensa', desc: '+60% de dano', custo: 140, mod: { dano: 1.6 } },
+        { nome: 'Raio solar', desc: '+90% de dano', custo: 180, mod: { dano: 1.9 } },
+      ] },
+      { nome: 'Alcance', nos: [
+        { nome: 'Farol alto', desc: '+20% de alcance', custo: 60, mod: { alcance: 1.2 } },
+        { nome: 'Farol largo', desc: '+40% de alcance', custo: 110, mod: { alcance: 1.4 } },
+        { nome: 'Vigia', desc: '+60% de alcance', custo: 160, mod: { alcance: 1.6 } },
+      ] },
+      { nome: 'Cadência', nos: [
+        { nome: 'Pulso de pedra', desc: '+30% de cadência', custo: 60, mod: { cadencia: 1.3 } },
+        { nome: 'Pulso firme', desc: '+50% de cadência', custo: 110, mod: { cadencia: 1.5 } },
+        { nome: 'Coração de pedra', desc: '+70% de cadência', custo: 160, mod: { cadencia: 1.7 } },
+      ] },
+    ],
+  },
 };
 
 export const PRIORIDADES = ['primeiro', 'ultimo', 'forte', 'perto'] as const;
