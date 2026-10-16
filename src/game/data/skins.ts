@@ -177,6 +177,16 @@ export const SKINS: Skin[] = [
     id: 'coral', nome: 'Coral', desc: 'Rosa-coral como recife ao entardecer.', preco: 210,
     cores: { arqueiro: 0xff6f61, canhao: 0xe4572e, gelo: 0xffb4a2, tesla: 0xff8c69, alquimista: 0xffa69e, totem: 0xffe5d9, morteiro: 0xc9184a, ballista: 0xf25c54, cristal: 0xff9b85, lanca: 0xffd6a5, runica: 0xff7d7d, arcabuz: 0x8d2f1f, foguete: 0xffbe0b },
   },
+  {
+    id: 'lirio', nome: 'Lírio Noturno', desc: 'Pétalas roxas e prata. Só com moeda verde.', preco: 320, moeda: 'verde',
+    cores: { relampago: 0xb388ff, catapulta: 0xc7b8ea, arqueiro: 0x9d7bd8 },
+    bastiao: 0x7e57c2, projetil: 0xe1d5ff, projetilForma: 'losango',
+  },
+  {
+    id: 'ferrugem', nome: 'Ferrugem', desc: 'Metal corroído pelo tempo. Só com moeda vermelha, para Catapulta e Canhão.', preco: 16, moeda: 'rubi',
+    itens: ['torre:catapulta', 'torre:canhao'],
+    cores: { catapulta: 0xb5562b, canhao: 0x8c3b1e },
+  },
 ];
 
 export const CHAVE_SKIN = 'last-bastion:skin';

@@ -50,7 +50,7 @@ export function gerarOndas(cfg: { qtdMult: number; extras: DefOnda[]; chefes: nu
 // ---------- modo sem fim (endless) ----------
 
 /** Ciclo de inimigos usado nas ondas infinitas (sem chefes). */
-const CICLO_INFINITO = ['basico', 'rapido', 'voador', 'tanque', 'enxame', 'curandeiro', 'espectro', 'sapador', 'golem', 'ceifador', 'escudeiro', 'corvo', 'ogro'];
+const CICLO_INFINITO = ['basico', 'rapido', 'voador', 'tanque', 'enxame', 'curandeiro', 'espectro', 'sapador', 'golem', 'ceifador', 'escudeiro', 'corvo', 'ogro', 'besouro'];
 
 /**
  * Onda gerada depois da última onda da fase, no modo sem fim.

@@ -436,13 +436,35 @@ function Saldo({ icone, valor, cor }: { icone: string; valor: number; cor: strin
 type AbaLoja = 'skins' | 'melhorias' | 'torres' | 'desafios';
 const ABAS_LOJA: [AbaLoja, string][] = [['skins', 'Skins'], ['melhorias', 'Melhorias'], ['torres', 'Torres'], ['desafios', 'Desafios']];
 
+/** Miniatura do item em canvas 2D (um quadro estático, para não pesar com muitos itens na grade). */
+function Miniatura({ chave, tema, corBase }: { chave: string; tema: string; corBase: number }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const c = ref.current;
+    const ctx = c?.getContext('2d');
+    if (!c || !ctx) return;
+    desenharPreviaItem(ctx, c.width, c.height, 0, { chave, tema, corBase, escolhas: useUI.getState().escolhas });
+  }, [chave, tema, corBase]);
+  return <canvas ref={ref} width={80} height={60} aria-hidden style={{ width: 40, height: 30, borderRadius: 5, flexShrink: 0, border: '1px solid #000', background: '#0c0a1d' }} />;
+}
+
 function Loja({ fechar }: { fechar: () => void }) {
   const s = useUI();
   const [grupo, setGrupo] = useState<GrupoItem>('Torres');
   const [chave, setChave] = useState<string>('torre:arqueiro');
   const [aba, setAba] = useState<AbaLoja>('skins');
   const [aviso, setAviso] = useState<string | null>(null);
+  const [menuAberto, setMenuAberto] = useState(false);
   const itens = ITENS_SKIN.filter((i) => i.grupo === grupo);
+  // Seções da loja: cada grupo de skin e as demais abas, todas no menu hambúrguer.
+  const SECOES: { id: string; rotulo: string; ativo: boolean; abrir: () => void }[] = [
+    ...GRUPOS_LOJA.map((g) => ({
+      id: `skin-${g}`, rotulo: `Skins · ${g}`, ativo: aba === 'skins' && grupo === g,
+      abrir: () => { setAba('skins'); setGrupo(g); setChave(ITENS_SKIN.find((i) => i.grupo === g)!.key); },
+    })),
+    ...ABAS_LOJA.filter(([id]) => id !== 'skins').map(([id, rotulo]) => ({ id, rotulo, ativo: aba === id, abrir: () => setAba(id) })),
+  ];
+  const nomeSecao = SECOES.find((x) => x.ativo)?.rotulo ?? 'Skins';
   const item = ITENS_SKIN.find((i) => i.key === chave) ?? itens[0];
   const atual = s.escolhas[item.key] ?? 'padrao';
   const [temaPrev, setTemaPrev] = useState<string>(atual);
@@ -472,7 +494,14 @@ function Loja({ fechar }: { fechar: () => void }) {
   return (
     <div className="menu-info" style={{ width: 640, maxWidth: '96%', background: '#0c0a1df2', border: '1px solid #3d2f66', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12, boxSizing: 'border-box', animation: 'lb-entrar .25s both' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-        <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>Loja</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button className="lb-btn" aria-label="Menu da loja" aria-expanded={menuAberto}
+            onClick={() => { audio.tocar('clique'); setMenuAberto((v) => !v); }}
+            style={{ ...botaoMenu(menuAberto), width: 44, minHeight: 40, padding: '4px 0', fontSize: 18, flexShrink: 0, textAlign: 'center' }}>☰</button>
+          <div style={{ font: '700 20px system-ui, sans-serif', color: hex(COR.acento) }}>
+            Loja <span style={{ font: '600 13px system-ui, sans-serif', opacity: 0.75 }}>· {nomeSecao}</span>
+          </div>
+        </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <Saldo icone="🪙" valor={s.moedas} cor={hex(COR.ouro)} />
           <Saldo icone="💚" valor={s.verdes} cor="#2ecc71" />
@@ -480,29 +509,26 @@ function Loja({ fechar }: { fechar: () => void }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 6 }}>
-        {ABAS_LOJA.map(([id, rotulo]) => (
-          <button key={id} className="lb-btn" onClick={() => { audio.tocar('clique'); setAba(id); setAviso(null); }} style={estiloSeg(aba === id)}>{rotulo}</button>
-        ))}
+      <div style={{ position: 'relative', height: 0 }}>
+        {menuAberto && (
+          <div role="menu" style={{ position: 'absolute', top: 6, left: 0, zIndex: 5, width: 240, maxHeight: '70vh', overflowY: 'auto', background: '#1a1433', border: '1px solid #3d2f66', borderRadius: 10, padding: 6, display: 'flex', flexDirection: 'column', gap: 4, boxShadow: '0 10px 28px #000c' }}>
+            {SECOES.map((sec) => (
+              <button key={sec.id} role="menuitem" className="lb-btn" onClick={() => { audio.tocar('clique'); sec.abrir(); setMenuAberto(false); setAviso(null); }}
+                style={{ ...estiloSeg(sec.ativo), textAlign: 'left', minHeight: 40, fontSize: 13 }}>{sec.rotulo}</button>
+            ))}
+          </div>
+        )}
       </div>
 
       {aba === 'skins' && (<>
-        <div style={{ display: 'flex', gap: 6 }}>
-          {GRUPOS_LOJA.map((g) => (
-            <button key={g} className="lb-btn" onClick={() => { audio.tocar('clique'); setGrupo(g); setChave(ITENS_SKIN.find((i) => i.grupo === g)!.key); setAviso(null); }}
-              style={{ ...estiloSeg(grupo === g), minHeight: 34, fontSize: 12 }}>{g}</button>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
           {itens.map((it) => {
             const sel = it.key === item.key;
-            const cor = corDoItem(it.key, s.escolhas[it.key] ?? 'padrao', corBaseItem(it.key));
             return (
               <button key={it.key} className="lb-btn" onClick={() => { audio.tocar('clique'); setChave(it.key); setTemaPrev(s.escolhas[it.key] ?? 'padrao'); setAviso(null); }}
-                style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 36, padding: '6px 10px', borderRadius: 8, cursor: 'pointer', font: '600 13px system-ui, sans-serif', color: '#fff',
+                style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 36, padding: '6px 10px', borderRadius: 8, flexShrink: 0, cursor: 'pointer', font: '600 13px system-ui, sans-serif', color: '#fff',
                   background: sel ? '#3d2f66' : '#1a1433', border: `1px solid ${sel ? hex(COR.acento) : '#3d2f66'}` }}>
-                <span style={{ width: 14, height: 14, borderRadius: 3, background: hex(cor), border: '1px solid #000', flexShrink: 0 }} />
+                <Miniatura chave={it.key} tema={s.escolhas[it.key] ?? 'padrao'} corBase={corBaseItem(it.key)} />
                 {it.nome}
               </button>
             );
@@ -519,7 +545,7 @@ function Loja({ fechar }: { fechar: () => void }) {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
           {SKINS.filter((tema) => podeNoItem(tema.id, item.key)).map((tema) => {
             const tem = s.possui(item.key, tema.id);
             const equipada = atual === tema.id;
@@ -531,9 +557,9 @@ function Loja({ fechar }: { fechar: () => void }) {
             const rotuloBotao = tem ? 'Equipar' : tema.preco === 0 ? 'Grátis' : `${simboloMoeda(moeda)} ${preco}`;
             return (
               <div key={tema.id} title={tema.desc} onClick={() => { audio.tocar('clique'); setTemaPrev(tema.id); }}
-                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6, padding: 8, borderRadius: 10, background: '#1a1433',
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 6, padding: 8, borderRadius: 10, background: '#1a1433', flex: '0 0 128px',
                   border: `2px solid ${equipada ? hex(COR.acento) : previa ? hex(COR.ouro) : '#3d2f66'}` }}>
-                <div style={{ height: 44, borderRadius: 6, background: hex(cor), border: '1px solid #000' }} />
+                <div style={{ height: 30, borderRadius: 6, background: hex(cor), border: '1px solid #000' }} />
                 <div style={{ font: '700 13px system-ui, sans-serif' }}>{tema.nome}</div>
                 <div style={{ font: '400 11px/1.3 system-ui, sans-serif', opacity: 0.7, minHeight: 28 }}>{tema.desc}</div>
                 {equipada ? (

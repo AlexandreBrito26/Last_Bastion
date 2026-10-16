@@ -196,13 +196,15 @@ export function FundoMenu() {
     };
 
     const quadro = (agora: number) => {
-      const dt = Math.min(0.05, (agora - ultimo) / 1000);
+      // dt nunca negativo: o timestamp do rAF pode ser anterior ao performance.now() inicial
+      const dt = Math.max(0, Math.min(0.05, (agora - ultimo) / 1000));
       ultimo = agora;
       if (!reduzir) tempo += dt;
 
       const total = CENAS.length * DURACAO;
-      const t = tempo % total;
-      const idx = Math.floor(t / DURACAO);
+      const t = ((tempo % total) + total) % total;
+      // clamp: arredondamento de ponto flutuante na borda do ciclo podia gerar índice 6 (fora do array)
+      const idx = Math.min(CENAS.length - 1, Math.floor(t / DURACAO));
       const local = t - idx * DURACAO;
       const atual = CENAS[idx];
       const anterior = CENAS[(idx + CENAS.length - 1) % CENAS.length];

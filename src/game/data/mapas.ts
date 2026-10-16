@@ -433,6 +433,7 @@ export const MAPAS: Mapa[] = [
     extras: [
       { bonus: 100, grupos: [{ inimigo: 'golem', quantidade: 4, intervalo: 3 }, { inimigo: 'ceifador', quantidade: 6, intervalo: 0.7, atraso: 6 }] },
       { bonus: 120, grupos: [{ inimigo: 'corvo', quantidade: 12, intervalo: 0.5 }, { inimigo: 'curandeiro', quantidade: 4, intervalo: 2, atraso: 8 }] },
+      { bonus: 180, grupos: [{ inimigo: 'besouro', quantidade: 6, intervalo: 1.4 }, { inimigo: 'lich', quantidade: 1, intervalo: 0, atraso: 10 }] },
       { bonus: 160, grupos: [{ inimigo: 'golemGigante', quantidade: 1, intervalo: 0 }, { inimigo: 'golem', quantidade: 3, intervalo: 4, atraso: 8 }] },
     ],
     waypoints: [
