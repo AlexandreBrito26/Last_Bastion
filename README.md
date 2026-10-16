@@ -8,6 +8,13 @@ Tower defense 2D (PixiJS + React + Zustand). 6 torres de ataque (Arqueiro, Canh�
 M liga/desliga o som · F tela cheia · H mapa de calor · R reinicia.
 
 ## Novidades
+- **Templo Esquecido**: nova fase no fim da campanha, com cutscene de cinco painéis (cerca de 110 s) e ondas com Besouros, Escudeiros, Golens, Corvos e Lich.
+- **Obelisco de Pedra** (💚): torre antiaérea de pedra, com árvore de três ramos e três formas.
+- **Sentinela de Pedra**: inimigo blindado que aparece nas ondas do Templo Esquecido.
+- **Loja**: as seções ficam no menu ☰, e itens e skins rolam na horizontal. Cada item tem miniatura em canvas.
+- **Painel da torre**: forma com progresso até a próxima, estatísticas em grade, evolução por ramo e Celestial destacada.
+- **HUD no celular**: barra superior em uma linha, botão ⚙ com opções (HUD fina, tutorial e nomes das torres).
+- **Menu principal**: resumo de fases, estrelas e moedas, e "Sobre" ocupando a linha inteira.
 - **Cutscene da primeira fase (O Primeiro Bastião)**: 8 painéis, cerca de 2 minutos e 15 segundos. Cada painel passa sozinho, com barra de progresso. Enter ou Espaço avança, Esc ou "Pular cutscene" encerra.
 - **Diário**: no menu principal, guarda a história de cada fase que você já viu, mesmo que tenha pulado. Dá para ler e rever a cutscene de novo.
 - **Moeda rubi 🔴**: terceira moeda, cai dos inimigos com 0,5% de chance (1 a 3 por drop).
