@@ -80,7 +80,7 @@ export const ESTILOS = `
 @media (pointer: coarse) {
   .hud-btn, .lb-btn { min-height: 40px; }
   .hud-btn { touch-action: manipulation; }
-  .menu-info { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+  .menu-info { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; touch-action: pan-y; }
 }
 @media (max-width: 760px), (max-height: 520px) {
   .cena-texto { font-size: 17px !important; line-height: 1.5 !important; }
