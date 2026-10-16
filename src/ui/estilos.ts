@@ -69,6 +69,12 @@ export const ESTILOS = `
 .compacto .hud-acoes::-webkit-scrollbar { display: none; }
 .compacto .hud-nome { display: none; }
 .compacto .hud-loja { right: max(6px, env(safe-area-inset-right)); }
+/* Painéis do menu (Loja, Opções, Diário, Como jogar): cabem na altura da tela e rolam por dentro */
+.compacto .menu-info { max-height: calc(100vh - 16px) !important; max-height: calc(100dvh - 16px) !important; padding: 10px !important; gap: 8px !important; box-sizing: border-box; }
+.compacto .menu-info .lb-btn { min-height: 34px; }
+/* Tutorial da primeira partida: menor e sem cobrir a barra superior */
+.compacto .hud-tutorial { top: auto !important; bottom: 72px !important; width: 260px !important; font-size: 12px !important; max-height: calc(100% - 175px) !important; overflow-y: auto; gap: 6px !important; }
+.compacto .hud-tutorial ol { font-size: 12px !important; }
 .compacto .hud-painel-torre { bottom: 72px !important; right: max(6px, env(safe-area-inset-right)) !important; max-height: calc(100% - 150px) !important; }
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
