@@ -76,6 +76,16 @@ export const ESTILOS = `
 .compacto .hud-tutorial { top: auto !important; bottom: 72px !important; width: 260px !important; font-size: 12px !important; max-height: calc(100% - 175px) !important; overflow-y: auto; gap: 6px !important; }
 .compacto .hud-tutorial ol { font-size: 12px !important; }
 .compacto .hud-painel-torre { bottom: 72px !important; right: max(6px, env(safe-area-inset-right)) !important; max-height: calc(100% - 150px) !important; }
+/* Toque: alvos de pelo menos 40px (dedo), painéis com rolagem suave e textos da cutscene que cabem no celular. */
+@media (pointer: coarse) {
+  .hud-btn, .lb-btn { min-height: 40px; }
+  .hud-btn { touch-action: manipulation; }
+  .menu-info { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+}
+@media (max-width: 760px), (max-height: 520px) {
+  .cena-texto { font-size: 17px !important; line-height: 1.5 !important; }
+  .cena-player { gap: 12px !important; }
+}
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
