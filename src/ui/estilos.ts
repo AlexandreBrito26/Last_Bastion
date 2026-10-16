@@ -68,6 +68,11 @@ export const ESTILOS = `
 .compacto .hud-acoes { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto; width: 100%; touch-action: pan-x; scrollbar-width: none; padding-bottom: 2px; }
 .compacto .hud-acoes::-webkit-scrollbar { display: none; }
 .compacto .hud-nome { display: none; }
+/* Celular: botões secundários da barra superior ficam atrás do ⋯ */
+.hud-mais { display: none; }
+.compacto .hud-mais { display: inline-flex; min-height: 40px; }
+.compacto .hud-sec-grupo { display: none !important; }
+.compacto .hud-sec-grupo.aberto { display: flex !important; width: 100%; justify-content: flex-end; }
 /* Celular: a loja vira um botão ☰ que abre a gaveta de torres por seção */
 .hud-hamb { display: none; }
 .compacto .hud-hamb { display: inline-flex; min-height: 40px; }

@@ -200,6 +200,7 @@ export function App() {
   const [hover, setHover] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ id: number; texto: string } | null>(null);
   const [gavetaAberta, setGavetaAberta] = useState(false);
+  const [maisAberto, setMaisAberto] = useState(false);
   const [secaoTorre, setSecaoTorre] = useState<(typeof SECOES_TORRE)[number]['id']>('terra');
   const avisar = (texto: string) => {
     const id = Date.now();
@@ -254,9 +255,13 @@ export function App() {
             <button key={v} className="hud-btn" style={botao(s.velocidade === v)} onClick={() => { clique(); s.definirVelocidade(v); }}>{v}x</button>
           ))}
           <button className="hud-btn" style={botao(s.pausado)} onClick={() => { clique(); s.alternarPausa(); }}>{s.pausado ? 'Continuar' : 'Pausar'}</button>
-          <BotaoCalor />
-          <BotaoTelaCheia />
-          <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
+          {/* Celular: calor, tela cheia e som ficam atrás do botão ⋯ */}
+          <div className={`hud-sec-grupo${maisAberto ? ' aberto' : ''}`} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <BotaoCalor />
+            <BotaoTelaCheia />
+            <button className="hud-btn" style={botao(s.mudo)} onClick={s.alternarMudo} title={s.mudo ? 'Som desligado (M)' : 'Som ligado (M)'} aria-label={s.mudo ? 'Ativar som' : 'Desativar som'}>{s.mudo ? '🔇' : '🔊'}</button>
+          </div>
+          <button className="hud-btn hud-mais" style={botao(maisAberto)} onClick={() => { clique(); setMaisAberto((a) => !a); }} aria-label="Mais opções">⋯</button>
           <button className="hud-btn" style={botao()} onClick={() => { clique(); s.definirTela('menu'); }}>Menu</button>
         </div>
       </div>
