@@ -186,10 +186,21 @@ function BotaoHab({ nome, ativo, onClick }: { nome: NomeHab; ativo: boolean; onC
 
 const clique = () => audio.tocar('clique');
 
+/** Seções da gaveta de torres (celular): pelo que a torre faz, não pela ordem do código. */
+const SECOES_TORRE = [
+  { id: 'terra', nome: 'Terra' },
+  { id: 'ar', nome: 'Ar e terra' },
+  { id: 'suporte', nome: 'Suporte' },
+] as const;
+const secaoDe = (d: { suporte?: boolean; antiAereo: boolean }): (typeof SECOES_TORRE)[number]['id'] =>
+  d.suporte ? 'suporte' : d.antiAereo ? 'ar' : 'terra';
+
 export function App() {
   const s = useUI();
   const [hover, setHover] = useState<string | null>(null);
   const [aviso, setAviso] = useState<{ id: number; texto: string } | null>(null);
+  const [gavetaAberta, setGavetaAberta] = useState(false);
+  const [secaoTorre, setSecaoTorre] = useState<(typeof SECOES_TORRE)[number]['id']>('terra');
   const avisar = (texto: string) => {
     const id = Date.now();
     setAviso({ id, texto });
@@ -294,6 +305,15 @@ export function App() {
 
       {/* Loja */}
       <div className="hud-loja" style={{ ...painel, position: 'absolute', left: 8, bottom: 8, display: 'flex', gap: 8, alignItems: 'center', animation: 'lb-subir .4s both' }}>
+        {/* Celular: botão que abre a gaveta de torres por seção */}
+        <button
+          className="hud-btn hud-hamb"
+          style={botao(!!s.construirId)}
+          onClick={() => { clique(); setGavetaAberta((a) => !a); }}
+          aria-label="Abrir lista de torres"
+        >
+          ☰ {s.construirId && TORRES[s.construirId] ? TORRES[s.construirId].nome : 'Torres'}
+        </button>
         {/* Trilho com rolagem horizontal: no celular as torres cabem sem quebrar a tela */}
         <div className="hud-trilho" style={{ display: 'flex', gap: 8, alignItems: 'center', minWidth: 0, overflowX: 'auto', touchAction: 'pan-x' }}>
         {Object.values(TORRES).filter((d) => !d.desbloqueio || s.torresLiberadas[d.id]).map((d, i) => {
@@ -350,6 +370,45 @@ export function App() {
           {s.habilidade ? 'Mire o meteoro no mapa' : s.construirId ? 'Toque e arraste no mapa · confirme no botão' : 'Escolha uma torre para construir'}
         </span>
       </div>
+
+      {/* Gaveta de torres (celular): seções com atalhos de um toque */}
+      {gavetaAberta && (
+        <div className="hud-painel hud-gaveta" style={{ ...painel, position: 'absolute', left: 8, right: 8, bottom: 72, display: 'flex', flexDirection: 'column', gap: 8, animation: 'lb-subir .2s both', zIndex: 4 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {SECOES_TORRE.map((sec) => (
+              <button key={sec.id} className="hud-btn" style={{ ...botao(secaoTorre === sec.id), flex: 1 }} onClick={() => { clique(); setSecaoTorre(sec.id); }}>
+                {sec.nome}
+              </button>
+            ))}
+            <button className="hud-btn" style={{ ...botao(), background: '#6b1d3a' }} onClick={() => setGavetaAberta(false)} aria-label="Fechar lista de torres">✕</button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(96px, 1fr))', gap: 6, overflowY: 'auto', maxHeight: 'calc(100% - 110px)' }}>
+            {Object.values(TORRES).filter((d) => (!d.desbloqueio || s.torresLiberadas[d.id]) && secaoDe(d) === secaoTorre).map((d) => {
+              const custo = custoTorre(ref.mundo, d.id);
+              const semOuro = s.ouro < custo && s.construirId !== d.id;
+              const ativa = s.construirId === d.id;
+              return (
+                <button
+                  key={d.id}
+                  className="hud-btn"
+                  style={{ ...botao(ativa, semOuro), textAlign: 'left', lineHeight: 1.25, padding: '6px 8px' }}
+                  onClick={() => {
+                    if (semOuro) { audio.tocar('erro'); avisar(`Faltam ${custo - s.ouro} de ouro`); return; }
+                    clique();
+                    s.definirConstruir(ativa ? null : d.id);
+                    setGavetaAberta(false);
+                  }}
+                >
+                  <i style={{ display: 'inline-block', width: 8, height: 8, borderRadius: 2, background: hex(d.cor), marginRight: 6, boxShadow: `0 0 6px ${hex(d.cor)}` }} />
+                  {d.nome}
+                  <br />
+                  <span style={{ fontWeight: 400, fontSize: 11, opacity: 0.85 }}>{Object.keys(TORRES).indexOf(d.id) + 1} · 🪙 {custo}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {s.tela === 'jogo' && <Tutorial />}
       {s.tela === 'jogo' && <Intro />}

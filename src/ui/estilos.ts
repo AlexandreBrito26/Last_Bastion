@@ -68,7 +68,12 @@ export const ESTILOS = `
 .compacto .hud-acoes { flex-wrap: nowrap !important; justify-content: flex-start !important; overflow-x: auto; width: 100%; touch-action: pan-x; scrollbar-width: none; padding-bottom: 2px; }
 .compacto .hud-acoes::-webkit-scrollbar { display: none; }
 .compacto .hud-nome { display: none; }
-.compacto .hud-loja { right: max(6px, env(safe-area-inset-right)); }
+/* Celular: a loja vira um botão ☰ que abre a gaveta de torres por seção */
+.hud-hamb { display: none; }
+.compacto .hud-hamb { display: inline-flex; min-height: 40px; }
+.compacto .hud-trilho { display: none !important; }
+.compacto .hud-gaveta { width: auto !important; max-height: calc(100% - 96px) !important; }
+.compacto .hud-loja { right: auto !important; }
 /* Painéis do menu (Loja, Opções, Diário, Como jogar): cabem na altura da tela e rolam por dentro */
 .compacto .menu-info { max-height: calc(100vh - 16px) !important; max-height: calc(100dvh - 16px) !important; padding: 10px !important; gap: 8px !important; box-sizing: border-box; }
 .compacto .menu-info .lb-btn { min-height: 34px; }
