@@ -76,6 +76,18 @@ export const ESTILOS = `
 .compacto .hud-tutorial { top: auto !important; bottom: 72px !important; width: 260px !important; font-size: 12px !important; max-height: calc(100% - 175px) !important; overflow-y: auto; gap: 6px !important; }
 .compacto .hud-tutorial ol { font-size: 12px !important; }
 .compacto .hud-painel-torre { bottom: 72px !important; right: max(6px, env(safe-area-inset-right)) !important; max-height: calc(100% - 150px) !important; }
+/* HUD em uma linha só no celular: barra superior e ações com rolagem horizontal */
+.compacto .hud-topo { flex-wrap: nowrap !important; align-items: center; }
+.compacto .hud-topo > * { flex-shrink: 0; }
+.compacto .hud-acoes { flex: 1 1 auto !important; min-width: 0; width: auto !important; }
+/* Preferências da HUD (ver hudPrefs.ts) */
+.hud-fina .hud-btn { font-size: 11px !important; min-height: 30px !important; padding: 4px 7px !important; }
+.hud-fina .hud-topo { font-size: 12px !important; }
+.hud-sem-tutorial .hud-tutorial { display: none !important; }
+.hud-com-nomes .hud-nome { display: inline !important; }
+.hud-com-nomes .hud-dica { display: inline !important; }
+.hud-opcoes { position: absolute; top: 48px; right: 8px; z-index: 6; pointer-events: auto; width: 230px; display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 10px; background: #1a1433f2; border: 1px solid #3d2f66; font: 600 13px system-ui, sans-serif; }
+.hud-opcoes label { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 34px; cursor: pointer; }
 /* Toque: alvos de pelo menos 40px (dedo), painéis com rolagem suave e textos da cutscene que cabem no celular. */
 @media (pointer: coarse) {
   .hud-btn, .lb-btn { min-height: 40px; }
